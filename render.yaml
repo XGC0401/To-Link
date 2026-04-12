@@ -27,7 +27,6 @@ services:
 
   - type: web
     name: neighbourhood-frontend
-    runtime: node
     rootDir: neighbourHood-frontend
     plan: free
     buildCommand: npm ci && npm run build
