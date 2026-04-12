@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeighbourHood - Class Diagram</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f7f8fa;
+            --panel: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --ok: #0f766e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            margin: 0 0 24px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: 0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #fff;
+            background: var(--primary);
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        .secondary {
+            background: var(--ok);
+        }
+
+        .secondary:hover {
+            background: #0d5f58;
+        }
+
+        .diagram-wrap {
+            overflow-x: auto;
+            border: 1px dashed var(--line);
+            border-radius: 10px;
+            padding: 12px;
+            background: #fff;
+        }
+
+        .mermaid {
+            min-width: 850px;
+        }
+
+        .diagram-canvas {
+            min-width: 850px;
+        }
+
+        .diagram-canvas svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .hint {
+            margin-top: 20px;
+            padding: 12px 14px;
+            background: #eef5ff;
+            border: 1px solid #dbeafe;
+            border-radius: 10px;
+            color: #1e3a8a;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>NeighbourHood Conceptual Class Diagram</h1>
+        <p class="subtitle">
+            This diagram is designed from a conceptual planning perspective (independent of existing code) for early
+            architecture discussion.
+        </p>
+
+        <div class="grid">
+            <section class="card" id="class-card">
+                <div class="card-head">
+                    <h2>Class Diagram</h2>
+                    <div class="actions">
+                        <button onclick="downloadSvg('class-diagram', 'NeighbourHood-Class')">Download SVG</button>
+                        <button class="secondary" onclick="downloadMmd('class-diagram', 'NeighbourHood-Class')">Download
+                            Mermaid Source</button>
+                    </div>
+                </div>
+                <div class="diagram-wrap">
+                    <div id="class-diagram" class="diagram-canvas"></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="hint">
+            Usage: Open this page directly in a browser to export the class diagram. If you run the Nuxt dev server, you
+            can also access it at /uml-diagrams.html.
+        </div>
+    </div>
+
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose'
+        });
+
+        const classDiagramSource = `classDiagram
+class User {
+    +Long id
+    +String email
+    +String passwordHash
+    +String displayName
+    +String status
+    +register()
+    +login()
+    +updateProfile()
+}
+
+class Role {
+    +Long id
+    +String roleName
+}
+
+class Profile {
+    +Long id
+    +String avatarUrl
+    +String bio
+    +String location
+    +Integer points
+    +updateSelfIntro()
+}
+
+class Post {
+    +Long id
+    +String title
+    +String content
+    +String type
+    +String visibility
+    +DateTime createdAt
+    +publish()
+    +edit()
+    +delete()
+}
+
+class Photo {
+    +Long id
+    +String fileUrl
+    +String fileType
+    +Integer fileSize
+    +upload()
+    +remove()
+}
+
+class Comment {
+    +Long id
+    +String content
+    +DateTime createdAt
+    +create()
+    +delete()
+}
+
+class Quest {
+    +Long id
+    +String title
+    +String description
+    +Integer rewardPoints
+    +String status
+    +joinQuest()
+    +submitCompletion()
+}
+
+class Reward {
+    +Long id
+    +String name
+    +Integer costPoints
+    +Integer stock
+    +redeem()
+}
+
+class ShopOffer {
+    +Long id
+    +String offerTitle
+    +String offerDetail
+    +DateTime validUntil
+    +publishOffer()
+}
+
+class AuthService {
+    +registerUser()
+    +authenticate()
+    +issueToken()
+}
+
+class PostService {
+    +createPost()
+    +updatePost()
+    +listFeed()
+}
+
+class QuestService {
+    +createQuest()
+    +joinQuest()
+    +completeQuest()
+}
+
+class RewardService {
+    +redeemReward()
+    +checkBalance()
+}
+
+class NotificationService {
+    +notifyNewPost()
+    +notifyQuestUpdate()
+}
+
+Role "1" <-- "*" User : assigned
+User "1" --> "1" Profile : owns
+User "1" --> "*" Post : writes
+Post "1" --> "*" Photo : contains
+Post "1" --> "*" Comment : receives
+User "1" --> "*" Comment : writes
+User "1" --> "*" Quest : participates
+User "1" --> "*" Reward : redeems
+ShopOffer "*" --> "1" User : publishedBy
+
+AuthService ..> User : manages
+PostService ..> Post : manages
+PostService ..> Photo : manages
+QuestService ..> Quest : manages
+RewardService ..> Reward : manages
+NotificationService ..> User : informs`;
+
+        async function renderClassDiagram() {
+            const container = document.getElementById('class-diagram');
+            if (!container) return;
+
+            try {
+                const { svg } = await mermaid.render('class-diagram-svg', classDiagramSource);
+                container.innerHTML = svg;
+            } catch (error) {
+                container.innerHTML = '<div style="color:#b91c1c;font-size:14px;">Failed to render diagram. Please refresh the page.</div>';
+                console.error(error);
+            }
+        }
+
+        renderClassDiagram();
+
+        window.downloadSvg = function (containerId, fileName) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const svg = container.querySelector('svg');
+            if (!svg) {
+                alert('The diagram is still rendering. Please try again in a moment.');
+                return;
+            }
+
+            const serializer = new XMLSerializer();
+            let source = serializer.serializeToString(svg);
+
+            if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
+                source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            }
+
+            const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${fileName}.svg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        };
+
+        window.downloadMmd = function (containerId, fileName) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const source = containerId === 'class-diagram' ? classDiagramSource : container.textContent.trim();
+            const blob = new Blob([source], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${fileName}.mmd`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        };
+    </script>
+</body>
+
+</html>
