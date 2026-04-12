@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: neighbourhood-backend
+    env: java
+    rootDir: neighbourHood-backend
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/neighbourHood-backend-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: JAVA_VERSION
+        value: 17
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+
+  - type: web
+    name: neighbourhood-frontend
+    env: node
+    rootDir: neighbourHood-frontend
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run preview -- --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NUXT_PUBLIC_API_BASE_URL
+        sync: false
