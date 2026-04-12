@@ -1,7 +1,7 @@
 services:
   - type: web
     name: neighbourhood-backend
-    env: java
+    runtime: jvm
     rootDir: neighbourHood-backend
     plan: free
     buildCommand: mvn clean package -DskipTests
@@ -28,7 +28,7 @@ services:
 
   - type: web
     name: neighbourhood-frontend
-    env: node
+    runtime: node
     rootDir: neighbourHood-frontend
     plan: free
     buildCommand: npm ci && npm run build
