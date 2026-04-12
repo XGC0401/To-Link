@@ -1,7 +1,6 @@
 services:
   - type: web
     name: neighbourhood-backend
-    runtime: jvm
     rootDir: neighbourHood-backend
     plan: free
     buildCommand: mvn clean package -DskipTests
