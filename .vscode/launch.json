@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Backend",
+            "request": "launch",
+            "mainClass": "com.feature.neighbourHood_backend.Application",
+            "projectName": "neighbourHood-backend",
+            "cwd": "${workspaceFolder}/neighbourHood-backend",
+            "env": {
+                "SPRING_DATASOURCE_URL": "jdbc:postgresql://ep-noisy-block-ao0y8qj7-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_WqU6AwaD3ojc&sslmode=require&channelBinding=require",
+                "supabase.endpoint": "https://oenfvtbsyogshoiurduh.supabase.co",
+                "supabase.access-key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lbmZ2dGJzeW9nc2hvaXVyZHVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTg0MzEsImV4cCI6MjA5MjI3NDQzMX0.Gsl7G31HkRQKEr_LpTN45k6zFTyBqXcDQNA2irDmVTY",
+                "supabase.secret-key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lbmZ2dGJzeW9nc2hvaXVyZHVoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjY5ODQzMSwiZXhwIjoyMDkyMjc0NDMxfQ.l2NaRz1SpXS9o0O0Zh0r_3tCkYHuPLODfgKDGnnh_Fs",
+                "SUPABASE_BUCKET": "uploads"
+            }
+        }
+    ]
+}
