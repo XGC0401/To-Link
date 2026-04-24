@@ -36,7 +36,7 @@ public class GlobalCorsConfig {
                         // 允許跨域攜帶cookie資訊，預設跨網域請求是不攜帶cookie資訊的。
                         .allowCredentials(true)
                         // 允許使用那些請求方式
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         // 允許哪些Header
                         .allowedHeaders("*")
                         // 可獲取哪些Header（因為跨網域預設不能取得全部Header資訊）

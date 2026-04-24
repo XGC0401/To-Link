@@ -2,6 +2,7 @@ package com.feature.neighbourHood_backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -29,15 +30,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // 禁用 CSRF（API 不需要）
+                .cors(Customizer.withDefaults()) // delegate to WebMvcConfigurer CORS config
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 不使用 session，用 JWT
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/login", "/api/register", "/db-test").permitAll() // 這些不需要認證
-                        .anyRequest().authenticated() // 其他請求需要認證
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
+                        .requestMatchers("/api/login", "/api/register", "/db-test").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(new jwtAuthFilter(jwtUtil, userService),
-                        UsernamePasswordAuthenticationFilter.class); // 加入 JWT filter
+                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
