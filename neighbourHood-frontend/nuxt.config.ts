@@ -38,7 +38,8 @@ export default defineNuxtConfig({
     n8nWebhookUrl: import.meta.env.N8N_WEBHOOK_URL || '',
     n8nInternalToken: import.meta.env.N8N_INTERNAL_TOKEN || '',
     public: {
-      n8nEnabled: Boolean(import.meta.env.N8N_WEBHOOK_URL)
+      n8nEnabled: Boolean(import.meta.env.N8N_WEBHOOK_URL),
+      apiBaseUrl: import.meta.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api'
     }
   },
   ssr: false,

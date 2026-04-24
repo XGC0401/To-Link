@@ -2,9 +2,12 @@ import axios from 'axios';
 import type { BasicResponse, loginParams, User } from '~/api/types/common';
 import { Storage } from "../utils/storage"
 
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api'
-});
+const createAxiosInstance = () => {
+  const config = useRuntimeConfig()
+  return axios.create({
+    baseURL: config.public.apiBaseUrl
+  })
+}
 
 const isValidJwt = (token: string) => token.split('.').length === 3;
 
@@ -48,7 +51,7 @@ export type Options = { headers?: Record<string, any>; code?: number; message?: 
 
 export async function login(params: loginParams): Promise<APIResponse<BasicResponse<String>>> {
   try {
-    const { data, headers } = await axiosInstance.post<BasicResponse<String>>(`/login`, { email: params.email, password: params.password });
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<String>>(`/login`, { email: params.email, password: params.password });
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);
@@ -58,7 +61,7 @@ export async function login(params: loginParams): Promise<APIResponse<BasicRespo
 
 export async function getUser(): Promise<APIResponse<User>> {
   try {
-    const { data, headers } = await axiosInstance.get<User>(`/admin/user`, getConfig());
+    const { data, headers } = await createAxiosInstance().get<User>(`/admin/user`, getConfig());
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);
@@ -68,7 +71,7 @@ export async function getUser(): Promise<APIResponse<User>> {
 
 export async function updateEmail(email: string): Promise<APIResponse<BasicResponse<String>>> {
   try {
-    const { data, headers } = await axiosInstance.post<BasicResponse<String>>(`/admin/user/email`, { email }, getConfig());
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<String>>(`/admin/user/email`, { email }, getConfig());
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);

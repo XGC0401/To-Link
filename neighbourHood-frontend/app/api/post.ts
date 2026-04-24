@@ -3,9 +3,12 @@ import type { Post } from '~/api/types/post';
 import { Storage } from '../utils/storage';
 import type { BasicResponse } from './types/common';
 
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api'
-});
+const createAxiosInstance = () => {
+  const config = useRuntimeConfig()
+  return axios.create({
+    baseURL: config.public.apiBaseUrl
+  })
+}
 
 const isValidJwt = (token: string) => token.split('.').length === 3;
 
@@ -53,7 +56,7 @@ export type Options = { headers?: Record<string, any>; code?: number; message?: 
 
 export async function getPost(): Promise<APIResponse<BasicResponse<Post[]>>> {
   try {
-    const { data, headers } = await axiosInstance.get<BasicResponse<Post[]>>(`/post/`, getConfig());
+    const { data, headers } = await createAxiosInstance().get<BasicResponse<Post[]>>(`/post/`, getConfig());
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);
@@ -63,7 +66,7 @@ export async function getPost(): Promise<APIResponse<BasicResponse<Post[]>>> {
 
 export async function publishPost(formdata: FormData): Promise<APIResponse<BasicResponse<Boolean>>> {
   try {
-    const { data, headers } = await axiosInstance.post<BasicResponse<Boolean>>(`/post/create-post`, formdata, getConfig());
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<Boolean>>(`/post/create-post`, formdata, getConfig());
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);
@@ -86,7 +89,7 @@ export async function likePost(postID: number): Promise<APIResponse<BasicRespons
         'Content-Type': 'application/json'
       }
     };
-    const { data, headers } = await axiosInstance.post<BasicResponse<Boolean>>(`/post/like-post`, postID, likeConfig);
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<Boolean>>(`/post/like-post`, postID, likeConfig);
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);
