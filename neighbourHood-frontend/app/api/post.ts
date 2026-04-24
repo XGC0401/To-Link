@@ -5,8 +5,10 @@ import type { BasicResponse } from './types/common';
 
 const createAxiosInstance = () => {
   const config = useRuntimeConfig()
+  const rawBaseUrl = String(config.public.apiBaseUrl || '').replace(/\/$/, '')
+  const baseURL = rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl}/api`
   return axios.create({
-    baseURL: config.public.apiBaseUrl
+    baseURL
   })
 }
 
