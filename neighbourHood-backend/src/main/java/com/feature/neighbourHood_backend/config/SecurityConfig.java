@@ -30,13 +30,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // delegate to WebMvcConfigurer CORS config
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
-                        .requestMatchers("/api/login", "/api/register", "/db-test").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS).permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/login").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/register").permitAll()
+                        .requestMatchers("/db-test").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new jwtAuthFilter(jwtUtil, userService),
