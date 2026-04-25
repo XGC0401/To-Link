@@ -85,11 +85,11 @@
 
           <el-form :model="loginForm" ref="loginFormRef" label-position="top" :rules="loginRules">
             <el-form-item :label="t('email')" prop="email">
-              <el-input v-model="loginForm.email" :placeholder="t('emailPlaceholder')"></el-input>
+              <el-input v-model="loginForm.email" :placeholder="safePlaceholder('emailPlaceholder')"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('password')" prop="password">
-              <el-input :type="passwordVisible ? 'text' : 'password'" v-model="loginForm.password" :placeholder="t('passwordPlaceholder')">
+              <el-input :type="passwordVisible ? 'text' : 'password'" v-model="loginForm.password" :placeholder="safePlaceholder('passwordPlaceholder')">
                 <template #suffix>
                   <el-button text @click="togglePasswordVisibility">
                     <el-icon>
@@ -115,43 +115,43 @@
         <!-- Register Form -->
         <div v-else class="form-wrapper">
           <div class="login-header">
-            <h1 class="login-title">{{ t('createAccount') || 'Create Account' }}</h1>
-            <p class="login-subtitle">{{ t('registerSubtitle') || 'Sign up to join our community' }}</p>
+            <h1 class="login-title">{{ t('createAccount') }}</h1>
+            <p class="login-subtitle">{{ t('registerSubtitle') }}</p>
           </div>
 
           <el-alert v-if="showError" :title="errorMessage" type="error" :closeable="true" @close="showError = false"
             show-icon class="error-alert" />
 
           <el-form :model="registerForm" ref="registerFormRef" label-position="top" :rules="registerRules">
-            <el-form-item :label="t('name') || 'Name'" prop="name">
-              <el-input v-model="registerForm.name" :placeholder="t('namePlaceholder') || 'e.g., Chan Tai Man'"></el-input>
+            <el-form-item :label="t('name')" prop="name">
+              <el-input v-model="registerForm.name" :placeholder="safePlaceholder('namePlaceholder')"></el-input>
             </el-form-item>
 
-            <el-form-item :label="t('age') || 'Age'" prop="age">
-              <el-input v-model="registerForm.age" :placeholder="t('agePlaceholder') || 'e.g., 18'"></el-input>
+            <el-form-item :label="t('age')" prop="age">
+              <el-input v-model="registerForm.age" :placeholder="safePlaceholder('agePlaceholder')"></el-input>
             </el-form-item>
 
-            <el-form-item :label="t('hkid') || 'HKID'" prop="hkid">
-              <el-input v-model="registerForm.hkid" :placeholder="t('hkidPlaceholder') || 'e.g., S112233(4)'"></el-input>
+            <el-form-item :label="t('hkid')" prop="hkid">
+              <el-input v-model="registerForm.hkid" :placeholder="safePlaceholder('hkidPlaceholder')"></el-input>
             </el-form-item>
 
-            <el-form-item :label="t('address1') || 'Address Line 1'" prop="address1">
-              <el-input v-model="registerForm.address1" :placeholder="t('address1Placeholder') || 'Flat/Unit and Floor'">
+            <el-form-item :label="t('address1')" prop="address1">
+              <el-input v-model="registerForm.address1" :placeholder="safePlaceholder('address1Placeholder')">
               </el-input>
             </el-form-item>
 
-            <el-form-item :label="t('address2') || 'Address Line 2'" prop="address2">
+            <el-form-item :label="t('address2')" prop="address2">
               <el-input v-model="registerForm.address2"
-                :placeholder="t('address2Placeholder') || 'Building/Block and Street'">
+                :placeholder="safePlaceholder('address2Placeholder')">
               </el-input>
             </el-form-item>
 
-            <el-form-item :label="t('address3') || 'Address Line 3 (Optional)'" prop="address3">
+            <el-form-item :label="t('address3')" prop="address3">
               <el-input v-model="registerForm.address3"
-                :placeholder="t('address3Placeholder') || 'District and Region (Optional)'"></el-input>
+                :placeholder="safePlaceholder('address3Placeholder')"></el-input>
             </el-form-item>
 
-            <el-form-item :label="t('phone') || 'Phone'" prop="phone">
+            <el-form-item :label="t('phone')" prop="phone">
               <div class="phone-input-wrapper">
                 <!-- Custom country code picker -->
                 <div class="cc-picker" ref="ccPickerRef">
@@ -164,7 +164,7 @@
                       <input
                         v-model="ccSearch"
                         class="cc-search-input"
-                        :placeholder="t('searchCountry') || 'Search country...'"
+                        :placeholder="safePlaceholder('searchCountry')"
                         @click.stop
                         @keydown.stop
                       />
@@ -172,7 +172,7 @@
                     <div class="cc-scroll">
                       <template v-if="nearestCountryOption && !ccSearch">
                         <div class="cc-group-label cc-group-label--nearest">
-                          📍 {{ t('nearestLocationSection') || t('nearestCountrySection') || 'Nearest location' }}{{ nearestCity ? ` · ${nearestCity}` : '' }}
+                          📍 {{ t('nearestLocationSection') || t('nearestCountrySection') }}{{ nearestCity ? ` · ${nearestCity}` : '' }}
                         </div>
                         <div
                           class="cc-item"
@@ -186,7 +186,7 @@
                       </template>
 
                       <template v-for="group in filteredCountryGroups" :key="group.letter">
-                        <div class="cc-group-label">{{ `${group.letter} ---------` }}</div>
+                        <div class="cc-group-label">{{ group.letter }}</div>
                         <div
                           v-for="c in group.countries"
                           :key="c.countryCode"
@@ -200,7 +200,7 @@
                       </template>
 
                       <div v-if="filteredCountryGroups.length === 0 && ccSearch" class="cc-no-results">
-                        {{ t('noResults') || 'No results found' }}
+                        {{ t('noResults') }}
                       </div>
                     </div>
                   </div>
@@ -208,18 +208,18 @@
                 <!-- Phone number input -->
                 <el-input
                   v-model="registerForm.phone"
-                  :placeholder="t('phonePlaceholder') || 'e.g., 9123 4567'"
+                  :placeholder="safePlaceholder('phonePlaceholder')"
                   class="phone-number-input"
                 />
               </div>
             </el-form-item>
 
             <el-form-item :label="t('email')" prop="email">
-              <el-input v-model="registerForm.email" :placeholder="t('emailPlaceholder')"></el-input>
+              <el-input v-model="registerForm.email" :placeholder="safePlaceholder('emailPlaceholder')"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('password')" prop="password">
-              <el-input :type="registerPasswordVisible ? 'text' : 'password'" v-model="registerForm.password" :placeholder="t('passwordPlaceholder')">
+              <el-input :type="registerPasswordVisible ? 'text' : 'password'" v-model="registerForm.password" :placeholder="safePlaceholder('passwordPlaceholder')">
                 <template #suffix>
                   <el-button text @click="toggleRegisterPasswordVisibility">
                     <el-icon>
@@ -230,19 +230,19 @@
               </el-input>
             </el-form-item>
 
-            <el-form-item :label="t('status') || 'Status (Optional)'" prop="status">
-              <el-select v-model="registerForm.status" :placeholder="t('selectStatus') || 'Select status'" clearable>
-                <el-option :label="t('statusStudent') || 'Student'" value="Student" />
-                <el-option :label="t('statusWorker') || 'Worker'" value="Worker" />
-                <el-option :label="t('statusFreelancer') || 'Freelancer'" value="Freelancer" />
-                <el-option :label="t('statusRetired') || 'Retired'" value="Retired" />
-                <el-option :label="t('statusOther') || 'Other'" value="Other" />
+            <el-form-item :label="t('status')" prop="status">
+              <el-select v-model="registerForm.status" :placeholder="safePlaceholder('selectStatus')" clearable>
+                <el-option :label="t('statusStudent')" value="Student" />
+                <el-option :label="t('statusWorker')" value="Worker" />
+                <el-option :label="t('statusFreelancer')" value="Freelancer" />
+                <el-option :label="t('statusRetired')" value="Retired" />
+                <el-option :label="t('statusOther')" value="Other" />
               </el-select>
             </el-form-item>
 
             <el-form-item>
               <el-button type="primary" @click="handleRegister" class="log-in-btn" :loading="isRegistering" :disabled="isRegistering">
-                {{ isRegistering ? t('registering') || 'Registering...' : t('register') || 'Register' }}
+                {{ isRegistering ? t('registering') : t('register') }}
               </el-button>
             </el-form-item>
           </el-form>
@@ -262,6 +262,9 @@ import { getUser, login, register } from '~/api/auth'
 import { ArrowDown, Moon, Sunny, View, TurnOff } from '@element-plus/icons-vue'
 import { Storage } from '~/utils/storage'
 import { ElMessage } from 'element-plus'
+
+const LOGIN_SUCCESS_CODE = '200'
+const LOGIN_FAILED_CODE = '1001'
 
 interface CountryDialOption {
   countryName: string
@@ -325,6 +328,11 @@ const ccSearch = ref('')
 const ccPickerRef = ref<HTMLElement | null>(null)
 
 const getDisplayLocale = () => (locale.value === 'zh' ? 'zh-Hant' : 'en')
+
+const safePlaceholder = (key: string): string => {
+  const translated = String(t(key))
+  return translated === key ? '' : translated
+}
 
 const getLocalizedCountryName = (countryCode: string, fallbackName: string) => {
   try {
@@ -408,31 +416,31 @@ const loginRules = computed(() => ({
 
 const registerRules = computed(() => ({
   name: [
-    { required: true, message: t('nameRequired') || 'Name is required', trigger: 'blur' },
+    { required: true, message: t('nameRequired'), trigger: 'blur' },
   ],
   age: [
-    { required: true, message: t('ageRequired') || 'Age is required', trigger: 'blur' },
+    { required: true, message: t('ageRequired'), trigger: 'blur' },
   ],
   hkid: [
-    { required: true, message: t('hkidRequired') || 'HKID is required', trigger: 'blur' },
+    { required: true, message: t('hkidRequired'), trigger: 'blur' },
   ],
   address1: [
-    { required: true, message: t('address1Required') || 'Address line 1 is required', trigger: 'blur' },
+    { required: true, message: t('address1Required'), trigger: 'blur' },
   ],
   address2: [
-    { required: true, message: t('address2Required') || 'Address line 2 is required', trigger: 'blur' },
+    { required: true, message: t('address2Required'), trigger: 'blur' },
   ],
   phone: [
-    { required: true, message: t('phoneRequired') || 'Phone number is required', trigger: 'blur' },
-    { pattern: /^[0-9()\-\s]{6,20}$/, message: t('phoneInvalid') || 'Invalid phone number', trigger: 'blur' },
+    { required: true, message: t('phoneRequired'), trigger: 'blur' },
+    { pattern: /^[0-9()\-\s]{6,20}$/, message: t('phoneInvalid'), trigger: 'blur' },
   ],
   email: [
-    { required: true, message: t('emailRequired') || 'Email is required', trigger: 'blur' },
-    { type: 'email', message: t('emailInvalid') || 'Invalid email', trigger: 'blur' },
+    { required: true, message: t('emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('emailInvalid'), trigger: 'blur' },
   ],
   password: [
-    { required: true, message: t('passwordRequired') || 'Password is required', trigger: 'blur' },
-    { min: 6, message: t('passwordMinLength') || 'Password must be at least 6 characters', trigger: 'blur' },
+    { required: true, message: t('passwordRequired'), trigger: 'blur' },
+    { min: 6, message: t('passwordMinLength'), trigger: 'blur' },
   ],
 }))
 
@@ -450,15 +458,18 @@ const handleLogin = async () => {
     await loginFormRef.value.validate()
     const [error, data] = await login(loginForm)
     if (!error && data) {
+      const responseCode = data.code || LOGIN_SUCCESS_CODE
+      const responseMessage = data.message || 'Login successful'
       const token = typeof data.data === 'string' ? data.data : ''
       const isValidJwt = token.split('.').length === 3
       if (!isValidJwt) {
         showError.value = true
-        errorMessage.value = t('invalidCredentials')
+        errorMessage.value = `[${LOGIN_FAILED_CODE}] ${t('invalidCredentials')}`
         Storage.remove("token")
         return
       }
       Storage.set("token", token)
+      ElMessage.success(`[${responseCode}] ${responseMessage}`)
       if (rememberMe.value) {
         localStorage.setItem('rememberEmail', 'true')
         localStorage.setItem('rememberEmailValue', loginForm.email)
@@ -482,7 +493,7 @@ const handleLogin = async () => {
     }
   } catch (error) {
     showError.value = true
-    errorMessage.value = t('logingFailed')
+    errorMessage.value = `[UNKNOWN] ${t('logingFailed')}`
   } finally {
     isLoggingIn.value = false
   }
@@ -521,7 +532,7 @@ const handleRegister = async () => {
       registerForm.email = ''
       registerForm.password = ''
       registerForm.status = ''
-      ElMessage.success(t('registrationSuccess') || 'Registration successful! Please log in.')
+      ElMessage.success(t('registrationSuccess'))
     } else if (error) {
       showError.value = true
       const errorCode = error.response?.data?.code || 'UNKNOWN'
@@ -531,12 +542,12 @@ const handleRegister = async () => {
       } else if (error.response?.status) {
         errorMessage.value = `[${errorCode}] ${t('registrationFailed')} (HTTP ${error.response.status})`
       } else {
-        errorMessage.value = `[${errorCode}] ${t('registrationFailed') || 'Registration failed'}`
+        errorMessage.value = `[${errorCode}] ${t('registrationFailed')}`
       }
     }
   } catch (error) {
     showError.value = true
-    errorMessage.value = t('registrationFailed') || 'Registration failed'
+    errorMessage.value = t('registrationFailed')
   } finally {
     isRegistering.value = false
   }
