@@ -44,13 +44,47 @@ public class User {
     @Column(name = "house")
     private String house;
 
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "address1")
+    private String address1;
+
+    @Column(name = "address2")
+    private String address2;
+
+    @Column(name = "address3")
+    private String address3;
+
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "status")
+    private String status;
+
     public User(String username, String email, String password, Role userRole) {
         this.uuid = UUID.randomUUID();
         this.username = username;
         this.email = email;
         this.password = password;
         this.roles.add(userRole);
-        // this.likePosts = new HashSet<>();
+    }
+
+    public User(String username, String email, String password, String hkid,
+                Integer age, String address1, String address2, String address3,
+                String phone, String status, Role userRole) {
+        this.uuid = UUID.randomUUID();
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.hkid = hkid;
+        this.age = age;
+        this.address1 = address1;
+        this.address2 = address2;
+        this.address3 = address3;
+        this.phone = phone;
+        this.status = status;
+        this.roles.add(userRole);
     }
 
     @JsonIgnore

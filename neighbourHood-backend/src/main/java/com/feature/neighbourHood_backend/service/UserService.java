@@ -55,7 +55,9 @@ public class UserService implements UserDetailsService {
         return false;
     }
 
-    public boolean register(String username, String email, String password) {
+    public boolean register(String username, String email, String password,
+                             String hkid, Integer age, String address1, String address2,
+                             String address3, String phone, String status) {
         // Validate inputs
         if (username == null || username.isBlank()) {
             throw new BusinessException(ErrorCode.VALIDATION_NAME_EMPTY, "Username is required");
@@ -96,7 +98,8 @@ public class UserService implements UserDetailsService {
         }
 
         try {
-            User rUser = new User(username, email, encoder.encode(password), role.get());
+            User rUser = new User(username, email, encoder.encode(password), hkid,
+                    age, address1, address2, address3, phone, status, role.get());
             userRepository.save(rUser);
             return true;
         } catch (Exception ex) {

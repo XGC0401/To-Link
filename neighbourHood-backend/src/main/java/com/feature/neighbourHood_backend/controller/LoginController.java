@@ -64,15 +64,34 @@ public class LoginController {
     public ApiResponse<String> register(@RequestBody RegisterRequestDTO request) {
         try {
             // Validate that all required fields are present
-            if (request.getUsername() == null || request.getUsername().isBlank() ||
+            if (request.getName() == null || request.getName().isBlank() ||
                     request.getEmail() == null || request.getEmail().isBlank() ||
                     request.getPassword() == null || request.getPassword().isBlank()) {
                 throw new BusinessException(ErrorCode.AUTH_MISSING_REQUIRED_FIELDS,
-                        "Username, email, and password are required");
+                        "Name, email, and password are required");
             }
 
-            boolean response = userService.register(request.getUsername(), request.getEmail(),
-                    request.getPassword());
+            Integer age = null;
+            if (request.getAge() != null && !request.getAge().isBlank()) {
+                try {
+                    age = Integer.parseInt(request.getAge());
+                } catch (NumberFormatException e) {
+                    throw new BusinessException(ErrorCode.VALIDATION_AGE_INVALID, "Age must be a valid number");
+                }
+            }
+
+            boolean response = userService.register(
+                    request.getName(),
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getHkid(),
+                    age,
+                    request.getAddress1(),
+                    request.getAddress2(),
+                    request.getAddress3(),
+                    request.getPhone(),
+                    request.getStatus()
+            );
 
             if (response) {
                 return new ApiResponse<>(ErrorCode.SUCCESS, true, null, "Registration successful");

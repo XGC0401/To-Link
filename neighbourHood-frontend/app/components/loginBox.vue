@@ -152,44 +152,66 @@
             </el-form-item>
 
             <el-form-item :label="t('phone') || 'Phone'" prop="phone">
-              <el-input v-model="registerForm.phone" :placeholder="t('phonePlaceholder') || 'e.g., 9123 4567'">
-                <template #prepend>
-                  <el-select v-model="selectedCountryDialCode" class="country-code-select" filterable>
-                    <!-- Nearest section -->
-                    <el-optgroup v-if="nearestCountryOption" :label="`${t('nearestCountrySection') || 'Nearest'} - ${nearestCity || (t('unknownLocation') || 'Unknown')}`" class="country-group-nearest">
-                      <el-option
-                        :key="`nearest-${nearestCountryOption.countryCode}`"
-                        :label="`${getLocalizedCountryName(nearestCountryOption.countryCode, nearestCountryOption.countryName)} (${nearestCountryOption.dialCode})`"
-                        :value="nearestCountryOption.dialCode"
+              <div class="phone-input-wrapper">
+                <!-- Custom country code picker -->
+                <div class="cc-picker" ref="ccPickerRef">
+                  <button type="button" class="cc-trigger" @click="toggleCcDropdown">
+                    <span class="cc-dial">{{ selectedCountryDialCode }}</span>
+                    <span class="cc-arrow" :class="{ open: ccDropdownOpen }">▾</span>
+                  </button>
+                  <div v-show="ccDropdownOpen" class="cc-panel">
+                    <div class="cc-search-wrap">
+                      <input
+                        v-model="ccSearch"
+                        class="cc-search-input"
+                        :placeholder="t('searchCountry') || 'Search country...'"
+                        @click.stop
+                        @keydown.stop
                       />
-                    </el-optgroup>
+                    </div>
+                    <div class="cc-scroll">
+                      <template v-if="nearestCountryOption && !ccSearch">
+                        <div class="cc-group-label cc-group-label--nearest">
+                          📍 {{ t('nearestCountrySection') || 'Nearest' }}{{ nearestCity ? ` · ${nearestCity}` : '' }}
+                        </div>
+                        <div
+                          class="cc-item"
+                          :class="{ 'cc-item--active': selectedCountryDialCode === nearestCountryOption.dialCode }"
+                          @click="selectDialCode(nearestCountryOption.dialCode)"
+                        >
+                          <span class="cc-item-name">{{ getLocalizedCountryName(nearestCountryOption.countryCode, nearestCountryOption.countryName) }}</span>
+                          <span class="cc-item-code">{{ nearestCountryOption.dialCode }}</span>
+                        </div>
+                        <div class="cc-divider" />
+                      </template>
 
-                    <!-- Alphabetical country groups -->
-                    <el-optgroup
-                      v-for="group in countryGroupedByLetter"
-                      :key="`group-${group.letter}`"
-                      :label="group.letter"
-                      class="country-group"
-                    >
-                      <el-option
-                        :key="`separator-${group.letter}`"
-                        :label="`${group.letter} -------`"
-                        :value="`__separator_${group.letter}`"
-                        disabled
-                        class="country-divider-option"
-                      />
-                      <el-option
-                        v-for="country in group.countries"
-                        :key="`${country.countryCode}-${country.dialCode}`"
-                        :label="country.dialCode"
-                        :value="country.dialCode"
-                      >
-                        <span>{{ getLocalizedCountryName(country.countryCode, country.countryName) }} ({{ country.dialCode }})</span>
-                      </el-option>
-                    </el-optgroup>
-                  </el-select>
-                </template>
-              </el-input>
+                      <template v-for="group in filteredCountryGroups" :key="group.letter">
+                        <div class="cc-group-label">{{ group.letter }}</div>
+                        <div
+                          v-for="c in group.countries"
+                          :key="c.countryCode"
+                          class="cc-item"
+                          :class="{ 'cc-item--active': selectedCountryDialCode === c.dialCode }"
+                          @click="selectDialCode(c.dialCode)"
+                        >
+                          <span class="cc-item-name">{{ getLocalizedCountryName(c.countryCode, c.countryName) }}</span>
+                          <span class="cc-item-code">{{ c.dialCode }}</span>
+                        </div>
+                      </template>
+
+                      <div v-if="filteredCountryGroups.length === 0 && ccSearch" class="cc-no-results">
+                        {{ t('noResults') || 'No results found' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Phone number input -->
+                <el-input
+                  v-model="registerForm.phone"
+                  :placeholder="t('phonePlaceholder') || 'e.g., 9123 4567'"
+                  class="phone-number-input"
+                />
+              </div>
             </el-form-item>
 
             <el-form-item :label="t('email')" prop="email">
@@ -298,6 +320,9 @@ const selectedCountryDialCode = ref('+852')
 const countryDialOptions = ref<CountryDialOption[]>([])
 const detectedCountryCode = ref('')
 const nearestCity = ref('')
+const ccDropdownOpen = ref(false)
+const ccSearch = ref('')
+const ccPickerRef = ref<HTMLElement | null>(null)
 
 const getDisplayLocale = () => (locale.value === 'zh' ? 'zh-Hant' : 'en')
 
@@ -357,6 +382,20 @@ const countryGroupedByLetter = computed<CountryGroup[]>(() => {
     })
   }
 
+  return result
+})
+
+const filteredCountryGroups = computed<CountryGroup[]>(() => {
+  const search = ccSearch.value.trim().toLowerCase()
+  if (!search) return countryGroupedByLetter.value
+  const result: CountryGroup[] = []
+  for (const group of countryGroupedByLetter.value) {
+    const filtered = group.countries.filter(c => {
+      const name = getLocalizedCountryName(c.countryCode, c.countryName).toLowerCase()
+      return name.includes(search) || c.dialCode.includes(search) || c.countryCode.toLowerCase().includes(search)
+    })
+    if (filtered.length > 0) result.push({ letter: group.letter, countries: filtered })
+  }
   return result
 })
 
@@ -508,6 +547,24 @@ const handleRegister = async () => {
   }
 }
 
+const toggleCcDropdown = () => {
+  ccDropdownOpen.value = !ccDropdownOpen.value
+  if (ccDropdownOpen.value) ccSearch.value = ''
+}
+
+const selectDialCode = (dialCode: string) => {
+  selectedCountryDialCode.value = dialCode
+  ccDropdownOpen.value = false
+  ccSearch.value = ''
+}
+
+const handleCcClickOutside = (e: MouseEvent) => {
+  if (ccPickerRef.value && !ccPickerRef.value.contains(e.target as Node)) {
+    ccDropdownOpen.value = false
+    ccSearch.value = ''
+  }
+}
+
 const handleLanguageChange = () => {
   const newLocale = locale.value === 'en' ? 'zh' : 'en'
   setLocale(newLocale)
@@ -626,6 +683,7 @@ const detectNearestCountry = async () => {
 onMounted(() => {
   loadCountryDialOptions()
   detectNearestCountry()
+  document.addEventListener('click', handleCcClickOutside)
 
   const savedLanguage = localStorage.getItem('userLanguage')
   if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'zh')) {
@@ -667,6 +725,7 @@ onMounted(() => {
   onUnmounted(() => {
     window.removeEventListener('pointermove', handlePointer)
     window.removeEventListener('pointerleave', handlePointerLeave)
+    document.removeEventListener('click', handleCcClickOutside)
   })
 })
 </script>
@@ -1143,109 +1202,250 @@ onMounted(() => {
   box-shadow: 0 0 0 1px rgba(130, 145, 189, 0.28), 0 10px 20px rgba(0, 0, 0, 0.28) !important;
 }
 
-.country-code-select {
-  width: 190px;
+/* ── Custom phone country picker ──────────────────────────────── */
+.phone-input-wrapper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
 }
 
-.login-container :deep(.el-input-group__prepend) {
-  background: linear-gradient(180deg, rgba(251, 253, 255, 0.98) 0%, rgba(242, 247, 255, 0.95) 100%) !important;
-  border: 1px solid rgba(171, 183, 214, 0.52) !important;
-  border-right: 1px solid rgba(171, 183, 214, 0.45) !important;
-  border-radius: 12px 0 0 12px !important;
-  padding: 0 10px !important;
-  transition: border-color 0.25s ease, background 0.25s ease;
+.cc-picker {
+  position: relative;
+  flex-shrink: 0;
 }
 
-.login-container :deep(.country-code-select .el-select__wrapper) {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
+.cc-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
   min-height: 44px;
-  padding-left: 2px !important;
-  padding-right: 2px !important;
+  padding: 0 14px;
+  background: linear-gradient(180deg, rgba(251, 253, 255, 0.98) 0%, rgba(242, 247, 255, 0.95) 100%);
+  border: 1px solid rgba(171, 183, 214, 0.52);
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
 }
 
-.login-container.dark-mode :deep(.el-input-group__prepend) {
-  background: linear-gradient(180deg, rgba(47, 61, 94, 0.94) 0%, rgba(33, 45, 75, 0.92) 100%) !important;
-  border-color: rgba(130, 145, 189, 0.28) !important;
+.cc-trigger:hover {
+  background: rgba(238, 244, 255, 0.98);
+  border-color: rgba(86, 122, 229, 0.45);
 }
 
-.login-container.dark-mode :deep(.country-code-select .el-select__wrapper) {
-  background: transparent !important;
-  box-shadow: none !important;
+.cc-trigger:focus-visible {
+  border-color: rgba(86, 122, 229, 0.7);
 }
 
-.login-container :deep(.country-code-select .el-select__selected-item),
-.login-container :deep(.country-code-select .el-select__placeholder) {
-  font-weight: 600;
-  color: #3a4a72 !important;
+.cc-dial {
+  font-size: 14px;
+  font-weight: 700;
+  color: #3a4a72;
+  letter-spacing: 0.3px;
 }
 
-.login-container.dark-mode :deep(.country-code-select .el-select__selected-item),
-.login-container.dark-mode :deep(.country-code-select .el-select__placeholder) {
-  color: #dde7ff !important;
+.cc-arrow {
+  font-size: 14px;
+  color: #8896b8;
+  transition: transform 0.2s ease;
+  display: inline-block;
+  line-height: 1;
+  margin-top: 1px;
 }
 
-.login-container :deep(.country-code-select .el-select__caret) {
-  color: #6d7da7 !important;
+.cc-arrow.open {
+  transform: rotate(180deg);
+}
+
+.phone-input-wrapper :deep(.phone-number-input .el-input__wrapper) {
+  border-radius: 0 12px 12px 0 !important;
+}
+
+/* Dropdown panel */
+.cc-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 9999;
+  width: 290px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(42, 58, 103, 0.18), 0 2px 8px rgba(42, 58, 103, 0.08);
+  border: 1px solid rgba(171, 183, 214, 0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cc-search-wrap {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid rgba(171, 183, 214, 0.22);
+  background: rgba(247, 250, 255, 0.95);
+}
+
+.cc-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(171, 183, 214, 0.48);
+  border-radius: 8px;
+  padding: 7px 10px;
   font-size: 13px;
+  color: #2f3b5a;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s ease;
 }
 
-.login-container.dark-mode :deep(.country-code-select .el-select__caret) {
-  color: #9eb0dc !important;
+.cc-search-input:focus {
+  border-color: rgba(86, 122, 229, 0.6);
 }
 
-.login-container :deep(.el-input-group__prepend:hover) {
-  border-color: rgba(86, 122, 229, 0.48) !important;
+.cc-search-input::placeholder {
+  color: #a8b6d4;
 }
 
-.login-container :deep(.el-input-group:focus-within .el-input-group__prepend) {
-  border-color: rgba(86, 122, 229, 0.7) !important;
-  background: linear-gradient(180deg, rgba(252, 254, 255, 0.99) 0%, rgba(241, 247, 255, 0.98) 100%) !important;
+.cc-scroll {
+  max-height: 256px;
+  overflow-y: auto;
+  padding: 4px 0;
 }
 
-.login-container.dark-mode :deep(.el-input-group:focus-within .el-input-group__prepend) {
-  border-color: rgba(126, 164, 255, 0.55) !important;
-  background: linear-gradient(180deg, rgba(55, 72, 109, 0.98) 0%, rgba(39, 52, 84, 0.95) 100%) !important;
+.cc-scroll::-webkit-scrollbar { width: 4px; }
+.cc-scroll::-webkit-scrollbar-track { background: transparent; }
+.cc-scroll::-webkit-scrollbar-thumb {
+  background: rgba(171, 183, 214, 0.45);
+  border-radius: 4px;
 }
 
-.login-container :deep(.country-meta-option) {
-  color: #6f7b99 !important;
+.cc-group-label {
+  padding: 6px 14px 2px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #9aaace;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.cc-group-label--nearest {
+  color: #5a7acc;
+  font-size: 11px;
+}
+
+.cc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.13s ease;
+}
+
+.cc-item:hover {
+  background: rgba(86, 122, 229, 0.07);
+}
+
+.cc-item--active {
+  background: rgba(86, 122, 229, 0.11);
+}
+
+.cc-item-name {
+  font-size: 13px;
+  color: #2f3b5a;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc-item--active .cc-item-name {
+  color: #3d5bbf;
+  font-weight: 600;
+}
+
+.cc-item-code {
   font-size: 12px;
   font-weight: 600;
+  color: #637299;
+  flex-shrink: 0;
+  background: rgba(86, 122, 229, 0.08);
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-variant-numeric: tabular-nums;
 }
 
-.login-container :deep(.country-divider-option) {
-  color: #9aa5c3 !important;
-  letter-spacing: 1px;
+.cc-item--active .cc-item-code {
+  color: #3d5bbf;
+  background: rgba(86, 122, 229, 0.16);
+}
+
+.cc-divider {
+  height: 1px;
+  background: rgba(171, 183, 214, 0.28);
+  margin: 5px 14px;
+}
+
+.cc-no-results {
+  padding: 20px 14px;
   text-align: center;
-}
-
-.login-container.dark-mode :deep(.country-meta-option) {
-  color: #9fb0d8 !important;
-}
-
-.login-container.dark-mode :deep(.country-divider-option) {
-  color: #7f8db0 !important;
-}
-
-.login-container :deep(.country-group-nearest .el-option) {
-  padding-left: 20px;
-}
-
-.login-container :deep(.country-group .el-option) {
-  padding-left: 20px;
-}
-
-.login-container :deep(.el-optgroup__title) {
-  color: #2f3b5a;
-  font-weight: 700;
+  color: #a8b6d4;
   font-size: 13px;
-  letter-spacing: 0.5px;
 }
 
-.login-container.dark-mode :deep(.el-optgroup__title) {
-  color: #dce4ff;
+/* Dark mode */
+.dark-mode .cc-trigger {
+  background: linear-gradient(180deg, rgba(47, 61, 94, 0.94) 0%, rgba(33, 45, 75, 0.92) 100%);
+  border-color: rgba(130, 145, 189, 0.3);
+}
+
+.dark-mode .cc-trigger:hover {
+  background: rgba(58, 76, 118, 0.96);
+  border-color: rgba(126, 164, 255, 0.4);
+}
+
+.dark-mode .cc-dial { color: #dde7ff; }
+.dark-mode .cc-arrow { color: #9eb0dc; }
+
+.dark-mode .cc-panel {
+  background: #1b2840;
+  border-color: rgba(130, 145, 189, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.dark-mode .cc-search-wrap {
+  background: rgba(22, 33, 56, 0.95);
+  border-bottom-color: rgba(130, 145, 189, 0.16);
+}
+
+.dark-mode .cc-search-input {
+  background: rgba(36, 50, 80, 0.85);
+  border-color: rgba(130, 145, 189, 0.28);
+  color: #dde7ff;
+}
+
+.dark-mode .cc-search-input:focus { border-color: rgba(126, 164, 255, 0.5); }
+.dark-mode .cc-search-input::placeholder { color: #6275a0; }
+.dark-mode .cc-group-label { color: #5c6f98; }
+.dark-mode .cc-group-label--nearest { color: #7b9fd8; }
+
+.dark-mode .cc-item:hover { background: rgba(126, 164, 255, 0.09); }
+.dark-mode .cc-item--active { background: rgba(126, 164, 255, 0.15); }
+
+.dark-mode .cc-item-name { color: #c5d4f0; }
+.dark-mode .cc-item--active .cc-item-name { color: #93b8ff; font-weight: 600; }
+
+.dark-mode .cc-item-code { color: #7a94c8; background: rgba(126, 164, 255, 0.09); }
+.dark-mode .cc-item--active .cc-item-code { color: #93b8ff; background: rgba(126, 164, 255, 0.18); }
+
+.dark-mode .cc-divider { background: rgba(130, 145, 189, 0.18); }
+.dark-mode .cc-scroll::-webkit-scrollbar-thumb { background: rgba(130, 145, 189, 0.28); }
+
+.dark-mode .phone-input-wrapper :deep(.phone-number-input .el-input__wrapper) {
+  border-radius: 0 12px 12px 0 !important;
 }
 
 .login-container :deep(.el-input-number__wrapper) {

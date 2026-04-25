@@ -1,40 +1,47 @@
 package com.feature.neighbourHood_backend.model.DTO;
 
 public class RegisterRequestDTO {
-    private String username;
+    private String name;
+    private String age;
+    private String hkid;
+    private String address1;
+    private String address2;
+    private String address3;
+    private String phone;
     private String email;
     private String password;
+    private String status;
 
     public RegisterRequestDTO() {
     }
 
-    public RegisterRequestDTO(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getUsername() {
-        return username;
-    }
+    public String getAge() { return age; }
+    public void setAge(String age) { this.age = age; }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public String getHkid() { return hkid; }
+    public void setHkid(String hkid) { this.hkid = hkid; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getAddress1() { return address1; }
+    public void setAddress1(String address1) { this.address1 = address1; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getAddress2() { return address2; }
+    public void setAddress2(String address2) { this.address2 = address2; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getAddress3() { return address3; }
+    public void setAddress3(String address3) { this.address3 = address3; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }
