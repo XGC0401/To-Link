@@ -155,16 +155,47 @@
               <el-input v-model="registerForm.phone" :placeholder="t('phonePlaceholder') || 'e.g., 9123 4567'">
                 <template #prepend>
                   <el-select v-model="selectedCountryDialCode" class="country-code-select" filterable>
-                    <el-option
-                      v-for="option in countryDialDropdownOptions"
-                      :key="option.key"
-                      :label="option.selectedLabel"
-                      :value="option.value"
-                      :disabled="option.disabled"
-                      :class="option.className"
+                    <!-- Nearest section -->
+                    <el-optgroup v-if="nearestCountryOption" :label="t('nearestCountrySection') || 'Nearest'" class="country-group-nearest">
+                      <el-option
+                        :key="`nearest-${nearestCountryOption.countryCode}`"
+                        :label="nearestCountryOption.dialCode"
+                        :value="nearestCountryOption.dialCode"
+                      >
+                        <span>{{ getLocalizedCountryName(nearestCountryOption.countryCode, nearestCountryOption.countryName) }} ({{ nearestCountryOption.dialCode }})</span>
+                      </el-option>
+                      <el-option
+                        key="nearest-city-info"
+                        :label="`${t('nearestCity') || 'Nearest city'}: ${nearestCity || (t('unknownLocation') || 'Unknown')}`"
+                        :value="'__nearest_city_info'"
+                        disabled
+                        class="country-meta-option"
+                      />
+                    </el-optgroup>
+
+                    <!-- Alphabetical country groups -->
+                    <el-optgroup
+                      v-for="group in countryGroupedByLetter"
+                      :key="`group-${group.letter}`"
+                      :label="group.letter"
+                      class="country-group"
                     >
-                      <span>{{ option.dropdownLabel }}</span>
-                    </el-option>
+                      <el-option
+                        :key="`separator-${group.letter}`"
+                        :label="'──────────────'"
+                        :value="`__separator_${group.letter}`"
+                        disabled
+                        class="country-divider-option"
+                      />
+                      <el-option
+                        v-for="country in group.countries"
+                        :key="`${country.countryCode}-${country.dialCode}`"
+                        :label="country.dialCode"
+                        :value="country.dialCode"
+                      >
+                        <span>{{ getLocalizedCountryName(country.countryCode, country.countryName) }} ({{ country.dialCode }})</span>
+                      </el-option>
+                    </el-optgroup>
                   </el-select>
                 </template>
               </el-input>
@@ -225,13 +256,9 @@ interface CountryDialOption {
   dialCode: string
 }
 
-interface CountryDialDropdownOption {
-  key: string
-  selectedLabel: string
-  dropdownLabel: string
-  value: string
-  disabled: boolean
-  className?: string
+interface CountryGroup {
+  letter: string
+  countries: CountryDialOption[]
 }
 
 const { t, locale, setLocale } = useI18n()
@@ -307,63 +334,39 @@ const nearestCountryOption = computed(() => {
   return localizedCountryDialOptions.value.find((item) => item.countryCode === detectedCountryCode.value) || null
 })
 
-const countryDialDropdownOptions = computed<CountryDialDropdownOption[]>(() => {
+const countryGroupedByLetter = computed<CountryGroup[]>(() => {
   const allOptions = localizedCountryDialOptions.value
   const nearest = nearestCountryOption.value
+  
+  let countriesForGrouping = allOptions
+  if (nearest) {
+    countriesForGrouping = allOptions.filter((item) => item.countryCode !== nearest.countryCode)
+  }
 
-  const mapCountryOption = (country: CountryDialOption): CountryDialDropdownOption => {
+  const grouped = new Map<string, CountryDialOption[]>()
+  for (const country of countriesForGrouping) {
     const localizedName = getLocalizedCountryName(country.countryCode, country.countryName)
-    return {
-      key: `${country.countryCode}-${country.dialCode}`,
-      selectedLabel: country.dialCode,
-      dropdownLabel: `${localizedName} (${country.dialCode})`,
-      value: country.dialCode,
-      disabled: false,
+    const letter = localizedName.charAt(0).toUpperCase()
+    if (!grouped.has(letter)) {
+      grouped.set(letter, [])
     }
+    grouped.get(letter)!.push(country)
   }
 
-  if (!nearest) {
-    return allOptions.map(mapCountryOption)
+  const result: CountryGroup[] = []
+  const sortedLetters = Array.from(grouped.keys()).sort()
+  for (const letter of sortedLetters) {
+    result.push({
+      letter,
+      countries: grouped.get(letter)!.sort((a, b) => {
+        const nameA = getLocalizedCountryName(a.countryCode, a.countryName)
+        const nameB = getLocalizedCountryName(b.countryCode, b.countryName)
+        return nameA.localeCompare(nameB)
+      }),
+    })
   }
 
-  const nearestLocalizedName = getLocalizedCountryName(nearest.countryCode, nearest.countryName)
-  const nearestCityLabel = nearestCity.value || (t('unknownLocation') || 'Unknown')
-  const rest = allOptions.filter((item) => item.countryCode !== nearest.countryCode)
-
-  return [
-    {
-      key: 'nearest-header',
-      selectedLabel: t('nearestCountrySection') || 'Nearest',
-      dropdownLabel: t('nearestCountrySection') || 'Nearest',
-      value: '__nearest_header',
-      disabled: true,
-      className: 'country-meta-option',
-    },
-    {
-      key: `nearest-${nearest.countryCode}-${nearest.dialCode}`,
-      selectedLabel: nearest.dialCode,
-      dropdownLabel: `${nearestLocalizedName} (${nearest.dialCode})`,
-      value: nearest.dialCode,
-      disabled: false,
-    },
-    {
-      key: 'nearest-city',
-      selectedLabel: `${t('nearestCity') || 'Nearest city'}: ${nearestCityLabel}`,
-      dropdownLabel: `${t('nearestCity') || 'Nearest city'}: ${nearestCityLabel}`,
-      value: '__nearest_city',
-      disabled: true,
-      className: 'country-meta-option',
-    },
-    {
-      key: 'country-separator',
-      selectedLabel: '----------------',
-      dropdownLabel: '----------------',
-      value: '__country_separator',
-      disabled: true,
-      className: 'country-divider-option',
-    },
-    ...rest.map(mapCountryOption),
-  ]
+  return result
 })
 
 const loginRules = computed(() => ({
@@ -775,7 +778,7 @@ onMounted(() => {
   justify-content: flex-start;
   align-items: flex-start;
   min-height: 100%;
-  padding-top: 120px;
+  padding-top: 85px;
 }
 
 .brand-title {
@@ -1195,6 +1198,25 @@ onMounted(() => {
 
 .login-container.dark-mode :deep(.country-divider-option) {
   color: #7f8db0 !important;
+}
+
+.login-container :deep(.country-group-nearest .el-option) {
+  padding-left: 20px;
+}
+
+.login-container :deep(.country-group .el-option) {
+  padding-left: 20px;
+}
+
+.login-container :deep(.el-optgroup__title) {
+  color: #2f3b5a;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.login-container.dark-mode :deep(.el-optgroup__title) {
+  color: #dce4ff;
 }
 
 .login-container :deep(.el-input-number__wrapper) {
