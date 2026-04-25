@@ -128,7 +128,7 @@
             </el-form-item>
 
             <el-form-item :label="t('age') || 'Age'" prop="age">
-              <el-input-number v-model="registerForm.age" :min="0" :max="150" controls-position="right" style="width: 100%"></el-input-number>
+              <el-input v-model.number="registerForm.age" type="number" :min="0" :max="150" :placeholder="t('agePlaceholder') || 'e.g., 18'"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('hkid') || 'HKID'" prop="hkid">
@@ -136,15 +136,34 @@
             </el-form-item>
 
             <el-form-item :label="t('address1') || 'Address Line 1'" prop="address1">
-              <el-input v-model="registerForm.address1" :placeholder="t('addressPlaceholder') || ''"></el-input>
+              <el-input v-model="registerForm.address1" :placeholder="t('address1Placeholder') || 'Flat/Unit and Floor'">
+              </el-input>
             </el-form-item>
 
             <el-form-item :label="t('address2') || 'Address Line 2'" prop="address2">
-              <el-input v-model="registerForm.address2" :placeholder="t('addressPlaceholder') || ''"></el-input>
+              <el-input v-model="registerForm.address2"
+                :placeholder="t('address2Placeholder') || 'Building/Block and Street'">
+              </el-input>
             </el-form-item>
 
             <el-form-item :label="t('address3') || 'Address Line 3 (Optional)'" prop="address3">
-              <el-input v-model="registerForm.address3" :placeholder="t('addressPlaceholder') || ''"></el-input>
+              <el-input v-model="registerForm.address3"
+                :placeholder="t('address3Placeholder') || 'District and Region (Optional)'"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="t('phone') || 'Phone'" prop="phone">
+              <el-input v-model="registerForm.phone" :placeholder="t('phonePlaceholder') || 'e.g., 9123 4567'">
+                <template #prepend>
+                  <el-select v-model="selectedCountryDialCode" class="country-code-select" filterable>
+                    <el-option
+                      v-for="country in sortedCountryDialOptions"
+                      :key="`${country.countryCode}-${country.dialCode}`"
+                      :label="formatCountryOptionLabel(country)"
+                      :value="country.dialCode"
+                    />
+                  </el-select>
+                </template>
+              </el-input>
             </el-form-item>
 
             <el-form-item :label="t('email')" prop="email">
@@ -196,6 +215,12 @@ import { ArrowDown, Moon, Sunny, View, TurnOff } from '@element-plus/icons-vue'
 import { Storage } from '~/utils/storage'
 import { ElMessage } from 'element-plus'
 
+interface CountryDialOption {
+  countryName: string
+  countryCode: string
+  dialCode: string
+}
+
 const { t, locale, setLocale } = useI18n()
 const isDarkMode = ref(false)
 const isLoginMode = ref(true)
@@ -226,6 +251,7 @@ const registerForm = reactive<registerParams>({
   address1: '',
   address2: '',
   address3: '',
+  phone: '',
   email: '',
   password: '',
   status: ''
@@ -237,6 +263,24 @@ const showError = ref(false)
 const errorMessage = ref('')
 const isLoggingIn = ref(false)
 const isRegistering = ref(false)
+const selectedCountryDialCode = ref('+852')
+const countryDialOptions = ref<CountryDialOption[]>([])
+const detectedCountryCode = ref('')
+
+const sortedCountryDialOptions = computed(() => {
+  const options = countryDialOptions.value
+  if (!detectedCountryCode.value) {
+    return options
+  }
+
+  const nearest = options.find((item) => item.countryCode === detectedCountryCode.value)
+  if (!nearest) {
+    return options
+  }
+
+  const rest = options.filter((item) => item.countryCode !== detectedCountryCode.value)
+  return [nearest, ...rest]
+})
 
 const loginRules = computed(() => ({
   email: [
@@ -265,6 +309,10 @@ const registerRules = computed(() => ({
   ],
   address2: [
     { required: true, message: t('address2Required') || 'Address line 2 is required', trigger: 'blur' },
+  ],
+  phone: [
+    { required: true, message: t('phoneRequired') || 'Phone number is required', trigger: 'blur' },
+    { pattern: /^[0-9()\-\s]{6,20}$/, message: t('phoneInvalid') || 'Invalid phone number', trigger: 'blur' },
   ],
   email: [
     { required: true, message: t('emailRequired') || 'Email is required', trigger: 'blur' },
@@ -340,7 +388,12 @@ const handleRegister = async () => {
   isRegistering.value = true
   try {
     await registerFormRef.value.validate()
-    const [error, data] = await register(registerForm)
+    const registerPayload: registerParams = {
+      ...registerForm,
+      phone: `${selectedCountryDialCode.value} ${registerForm.phone}`.trim(),
+    }
+
+    const [error, data] = await register(registerPayload)
     if (!error && data) {
       showError.value = false
       // After successful registration, switch to login mode
@@ -352,6 +405,7 @@ const handleRegister = async () => {
       registerForm.address1 = ''
       registerForm.address2 = ''
       registerForm.address3 = ''
+      registerForm.phone = ''
       registerForm.email = ''
       registerForm.password = ''
       registerForm.status = ''
@@ -403,7 +457,103 @@ const applyTheme = () => {
   }
 }
 
+const formatCountryOptionLabel = (country: CountryDialOption) => {
+  if (country.countryCode === detectedCountryCode.value) {
+    return `${t('nearestCountry') || 'Nearest'} - ${country.countryName} (${country.dialCode})`
+  }
+  return `${country.countryName} (${country.dialCode})`
+}
+
+const fallbackCountryDialOptions: CountryDialOption[] = [
+  { countryName: 'China', countryCode: 'CN', dialCode: '+86' },
+  { countryName: 'Hong Kong', countryCode: 'HK', dialCode: '+852' },
+  { countryName: 'Japan', countryCode: 'JP', dialCode: '+81' },
+  { countryName: 'Singapore', countryCode: 'SG', dialCode: '+65' },
+  { countryName: 'South Korea', countryCode: 'KR', dialCode: '+82' },
+  { countryName: 'Taiwan', countryCode: 'TW', dialCode: '+886' },
+  { countryName: 'United Kingdom', countryCode: 'GB', dialCode: '+44' },
+  { countryName: 'United States', countryCode: 'US', dialCode: '+1' },
+].sort((a, b) => a.countryName.localeCompare(b.countryName))
+
+const loadCountryDialOptions = async () => {
+  try {
+    const res = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,idd')
+    if (!res.ok) {
+      throw new Error('Failed to fetch country list')
+    }
+
+    const countries = await res.json()
+    const parsed = (countries as Array<any>)
+      .map((item) => {
+        const countryName = item?.name?.common
+        const countryCode = item?.cca2?.toUpperCase?.()
+        const root = item?.idd?.root || ''
+        const suffix = Array.isArray(item?.idd?.suffixes) && item.idd.suffixes.length > 0
+          ? String(item.idd.suffixes[0])
+          : ''
+        const dialCode = `${root}${suffix}`
+
+        return {
+          countryName,
+          countryCode,
+          dialCode,
+        }
+      })
+      .filter((item) => item.countryName && item.countryCode && /^\+\d+$/.test(item.dialCode))
+
+    const uniqueByCountry = new Map<string, CountryDialOption>()
+    for (const item of parsed) {
+      if (!uniqueByCountry.has(item.countryCode)) {
+        uniqueByCountry.set(item.countryCode, item as CountryDialOption)
+      }
+    }
+
+    countryDialOptions.value = Array.from(uniqueByCountry.values())
+      .sort((a, b) => a.countryName.localeCompare(b.countryName))
+
+    if (!countryDialOptions.value.some((item) => item.dialCode === selectedCountryDialCode.value)) {
+      selectedCountryDialCode.value = countryDialOptions.value[0]?.dialCode || '+852'
+    }
+  } catch {
+    countryDialOptions.value = fallbackCountryDialOptions
+  }
+}
+
+const detectNearestCountry = async () => {
+  if (!navigator.geolocation) {
+    return
+  }
+
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    try {
+      const { latitude, longitude } = position.coords
+      const reverseUrl = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+      const reverseRes = await fetch(reverseUrl)
+      if (!reverseRes.ok) {
+        return
+      }
+
+      const reverseData = await reverseRes.json()
+      const countryCode = reverseData?.address?.country_code?.toUpperCase?.() || ''
+      if (!countryCode) {
+        return
+      }
+
+      detectedCountryCode.value = countryCode
+      const nearest = countryDialOptions.value.find((item) => item.countryCode === countryCode)
+      if (nearest) {
+        selectedCountryDialCode.value = nearest.dialCode
+      }
+    } catch {
+      // Ignore location lookup failures and keep alphabetical list fallback.
+    }
+  })
+}
+
 onMounted(() => {
+  loadCountryDialOptions()
+  detectNearestCountry()
+
   const savedLanguage = localStorage.getItem('userLanguage')
   if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'zh')) {
     setLocale(savedLanguage)
@@ -543,9 +693,10 @@ onMounted(() => {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   min-height: 100%;
+  padding-top: 80px;
 }
 
 .brand-title {
@@ -917,6 +1068,34 @@ onMounted(() => {
 .login-container.dark-mode :deep(.el-select__wrapper) {
   background-color: rgba(43, 55, 84, 0.72) !important;
   box-shadow: 0 0 0 1px rgba(130, 145, 189, 0.28), 0 10px 20px rgba(0, 0, 0, 0.28) !important;
+}
+
+.country-code-select {
+  width: 165px;
+}
+
+.login-container :deep(.el-input-group__prepend) {
+  background: rgba(246, 249, 255, 0.95) !important;
+  border: 1px solid rgba(171, 183, 214, 0.45) !important;
+  border-right: none !important;
+  padding: 0 8px !important;
+}
+
+.login-container :deep(.country-code-select .el-select__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  min-height: 44px;
+}
+
+.login-container.dark-mode :deep(.el-input-group__prepend) {
+  background: rgba(36, 49, 79, 0.9) !important;
+  border-color: rgba(130, 145, 189, 0.28) !important;
+}
+
+.login-container.dark-mode :deep(.country-code-select .el-select__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .login-container :deep(.el-input-number__wrapper) {
