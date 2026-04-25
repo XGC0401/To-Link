@@ -310,13 +310,14 @@ const handleLogin = async () => {
       await navigateTo('/home')
     } else if (error) {
       showError.value = true
+      const errorCode = error.response?.data?.code || 'UNKNOWN'
       const serverMessage = error.response?.data?.message || error.response?.data || ''
       if (serverMessage) {
-        errorMessage.value = String(serverMessage)
+        errorMessage.value = `[${errorCode}] ${String(serverMessage)}`
       } else if (error.response?.status) {
-        errorMessage.value = `${t('invalidCredentials')} (${error.response.status})`
+        errorMessage.value = `[${errorCode}] ${t('invalidCredentials')} (HTTP ${error.response.status})`
       } else {
-        errorMessage.value = t('invalidCredentials')
+        errorMessage.value = `[${errorCode}] ${t('invalidCredentials')}`
       }
     }
   } catch (error) {
@@ -357,13 +358,14 @@ const handleRegister = async () => {
       ElMessage.success(t('registrationSuccess') || 'Registration successful! Please log in.')
     } else if (error) {
       showError.value = true
+      const errorCode = error.response?.data?.code || 'UNKNOWN'
       const serverMessage = error.response?.data?.message || error.response?.data || ''
       if (serverMessage) {
-        errorMessage.value = String(serverMessage)
+        errorMessage.value = `[${errorCode}] ${String(serverMessage)}`
       } else if (error.response?.status) {
-        errorMessage.value = `${t('registrationFailed')} (${error.response.status})`
+        errorMessage.value = `[${errorCode}] ${t('registrationFailed')} (HTTP ${error.response.status})`
       } else {
-        errorMessage.value = t('registrationFailed') || 'Registration failed'
+        errorMessage.value = `[${errorCode}] ${t('registrationFailed') || 'Registration failed'}`
       }
     }
   } catch (error) {
@@ -539,6 +541,11 @@ onMounted(() => {
   z-index: 1;
   max-width: 460px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100%;
 }
 
 .brand-title {
@@ -549,7 +556,6 @@ onMounted(() => {
   line-height: 0.98;
   text-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
   animation: floatIn 900ms ease both;
-  margin-top: -8px;
 }
 
 .brand-description {

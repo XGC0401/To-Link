@@ -15,6 +15,8 @@ import com.feature.neighbourHood_backend.model.DTO.ApiResponse;
 import com.feature.neighbourHood_backend.model.DTO.LoginRequestDTO;
 import com.feature.neighbourHood_backend.model.DTO.RegisterRequestDTO;
 import com.feature.neighbourHood_backend.service.UserService;
+import com.feature.neighbourHood_backend.util.BusinessException;
+import com.feature.neighbourHood_backend.util.ErrorCode;
 import com.feature.neighbourHood_backend.util.jwtUtil;
 
 @RestController
@@ -33,24 +35,55 @@ public class LoginController {
 
     @PostMapping("/login")
     public ApiResponse<String> login(@RequestBody LoginRequestDTO dto) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
+        try {
+            // Validate inputs
+            if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+                throw new BusinessException(ErrorCode.VALIDATION_EMAIL_INVALID, "Email is required");
+            }
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(dto.getEmail());
-        String token = jwtUtil.createToken(userDetails);
+            if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+                throw new BusinessException(ErrorCode.VALIDATION_PASSWORD_WEAK, "Password is required");
+            }
 
-        return new ApiResponse<>(true, token, "success");
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(dto.getEmail());
+            String token = jwtUtil.createToken(userDetails);
+
+            return new ApiResponse<>(ErrorCode.SUCCESS, true, token, "Login successful");
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new BusinessException(ErrorCode.AUTH_INVALID_CREDENTIALS, "Invalid email or password");
+        }
     }
 
     @PostMapping("/register")
     public ApiResponse<String> register(@RequestBody RegisterRequestDTO request) {
-        Boolean response = userService.register(request.getUsername(), request.getEmail(), request.getPassword());
+        try {
+            // Validate that all required fields are present
+            if (request.getUsername() == null || request.getUsername().isBlank() ||
+                    request.getEmail() == null || request.getEmail().isBlank() ||
+                    request.getPassword() == null || request.getPassword().isBlank()) {
+                throw new BusinessException(ErrorCode.AUTH_MISSING_REQUIRED_FIELDS,
+                        "Username, email, and password are required");
+            }
 
-        if (response) {
-            return new ApiResponse<>(true, "success");
-        } else {
-            return new ApiResponse<>(false, "Email is registered");
+            boolean response = userService.register(request.getUsername(), request.getEmail(),
+                    request.getPassword());
+
+            if (response) {
+                return new ApiResponse<>(ErrorCode.SUCCESS, true, null, "Registration successful");
+            } else {
+                return new ApiResponse<>(ErrorCode.AUTH_ROLE_NOT_FOUND, false, null,
+                        "Registration failed: Role not found");
+            }
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "Registration failed: " + ex.getMessage());
         }
     }
 }
