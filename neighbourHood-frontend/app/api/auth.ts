@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { BasicResponse, loginParams, User } from '~/api/types/common';
+import type { BasicResponse, loginParams, registerParams, User } from '~/api/types/common';
 import { Storage } from "../utils/storage"
 
 const createAxiosInstance = () => {
@@ -54,6 +54,16 @@ export type Options = { headers?: Record<string, any>; code?: number; message?: 
 export async function login(params: loginParams): Promise<APIResponse<BasicResponse<String>>> {
   try {
     const { data, headers } = await createAxiosInstance().post<BasicResponse<String>>(`/login`, { email: params.email, password: params.password });
+    return [null, data, { headers }];
+  } catch (error: any) {
+    console.error(error);
+    return [error, error.response?.status];
+  }
+}
+
+export async function register(params: registerParams): Promise<APIResponse<BasicResponse<String>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<String>>(`/register`, params);
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);

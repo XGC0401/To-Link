@@ -55,41 +55,131 @@
             </template>
           </el-dropdown>
         </div>
-        <div class="login-header">
-          <h1 class="login-title">{{ t('loginTitle') }}</h1>
-          <p class="login-subtitle">{{ t('loginSubtitle') }}</p>
+
+        <div class="mode-tabs">
+          <button 
+            class="tab-button" 
+            :class="{ active: isLoginMode }"
+            @click="isLoginMode = true"
+          >
+            {{ t('login') }}
+          </button>
+          <button 
+            class="tab-button" 
+            :class="{ active: !isLoginMode }"
+            @click="isLoginMode = false"
+          >
+            {{ t('register') }}
+          </button>
         </div>
 
-        <el-alert v-if="showError" :title="errorMessage" type="error" :closeable="true" @close="showError = false"
-          show-icon class="error-alert" />
+        <!-- Login Form -->
+        <div v-if="isLoginMode" class="form-wrapper">
+          <div class="login-header">
+            <h1 class="login-title">{{ t('loginTitle') }}</h1>
+            <p class="login-subtitle">{{ t('loginSubtitle') }}</p>
+          </div>
 
-        <el-form :model="loginForm" ref="loginFormRef" label-position="top" :rules="rules">
-          <el-form-item :label="t('email')" prop="email">
-            <el-input v-model="loginForm.email" :placeholder="t('emailPlaceholder')"></el-input>
-          </el-form-item>
+          <el-alert v-if="showError" :title="errorMessage" type="error" :closeable="true" @close="showError = false"
+            show-icon class="error-alert" />
 
-          <el-form-item :label="t('password')" prop="password">
-            <el-input :type="passwordVisible ? 'text' : 'password'" v-model="loginForm.password" :placeholder="t('passwordPlaceholder')">
-              <template #suffix>
-                <el-button text @click="togglePasswordVisibility">
-                  <el-icon>
-                    <component :is="passwordVisible ? TurnOff : View" />
-                  </el-icon>
-                </el-button>
-              </template>
-            </el-input>
-          </el-form-item>
+          <el-form :model="loginForm" ref="loginFormRef" label-position="top" :rules="loginRules">
+            <el-form-item :label="t('email')" prop="email">
+              <el-input v-model="loginForm.email" :placeholder="t('emailPlaceholder')"></el-input>
+            </el-form-item>
 
-          <el-form-item>
-            <el-checkbox v-model="rememberMe">{{ t('rememberMe') }}</el-checkbox>
-          </el-form-item>
+            <el-form-item :label="t('password')" prop="password">
+              <el-input :type="passwordVisible ? 'text' : 'password'" v-model="loginForm.password" :placeholder="t('passwordPlaceholder')">
+                <template #suffix>
+                  <el-button text @click="togglePasswordVisibility">
+                    <el-icon>
+                      <component :is="passwordVisible ? TurnOff : View" />
+                    </el-icon>
+                  </el-button>
+                </template>
+              </el-input>
+            </el-form-item>
 
-          <el-form-item>
-            <el-button type="primary" @click="handleLogin" class="log-in-btn" :loading="isLoggingIn" :disabled="isLoggingIn">
-              {{ isLoggingIn ? t('loggingIn') : t('login') }}
-            </el-button>
-          </el-form-item>
-        </el-form>
+            <el-form-item>
+              <el-checkbox v-model="rememberMe">{{ t('rememberMe') }}</el-checkbox>
+            </el-form-item>
+
+            <el-form-item>
+              <el-button type="primary" @click="handleLogin" class="log-in-btn" :loading="isLoggingIn" :disabled="isLoggingIn">
+                {{ isLoggingIn ? t('loggingIn') : t('login') }}
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+
+        <!-- Register Form -->
+        <div v-else class="form-wrapper">
+          <div class="login-header">
+            <h1 class="login-title">{{ t('createAccount') || 'Create Account' }}</h1>
+            <p class="login-subtitle">{{ t('registerSubtitle') || 'Sign up to join our community' }}</p>
+          </div>
+
+          <el-alert v-if="showError" :title="errorMessage" type="error" :closeable="true" @close="showError = false"
+            show-icon class="error-alert" />
+
+          <el-form :model="registerForm" ref="registerFormRef" label-position="top" :rules="registerRules">
+            <el-form-item :label="t('name') || 'Name'" prop="name">
+              <el-input v-model="registerForm.name" :placeholder="t('namePlaceholder') || 'e.g., Chan Tai Man'"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="t('age') || 'Age'" prop="age">
+              <el-input-number v-model="registerForm.age" :min="0" :max="150" controls-position="right" style="width: 100%"></el-input-number>
+            </el-form-item>
+
+            <el-form-item :label="t('hkid') || 'HKID'" prop="hkid">
+              <el-input v-model="registerForm.hkid" :placeholder="t('hkidPlaceholder') || 'e.g., S112233(4)'"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="t('address1') || 'Address Line 1'" prop="address1">
+              <el-input v-model="registerForm.address1" :placeholder="t('addressPlaceholder') || ''"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="t('address2') || 'Address Line 2'" prop="address2">
+              <el-input v-model="registerForm.address2" :placeholder="t('addressPlaceholder') || ''"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="t('address3') || 'Address Line 3 (Optional)'" prop="address3">
+              <el-input v-model="registerForm.address3" :placeholder="t('addressPlaceholder') || ''"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="t('email')" prop="email">
+              <el-input v-model="registerForm.email" :placeholder="t('emailPlaceholder')"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="t('password')" prop="password">
+              <el-input :type="registerPasswordVisible ? 'text' : 'password'" v-model="registerForm.password" :placeholder="t('passwordPlaceholder')">
+                <template #suffix>
+                  <el-button text @click="toggleRegisterPasswordVisibility">
+                    <el-icon>
+                      <component :is="registerPasswordVisible ? TurnOff : View" />
+                    </el-icon>
+                  </el-button>
+                </template>
+              </el-input>
+            </el-form-item>
+
+            <el-form-item :label="t('status') || 'Status (Optional)'" prop="status">
+              <el-select v-model="registerForm.status" :placeholder="t('selectStatus') || 'Select status'" clearable>
+                <el-option label="Student" value="Student" />
+                <el-option label="Worker" value="Worker" />
+                <el-option label="Freelancer" value="Freelancer" />
+                <el-option label="Retired" value="Retired" />
+                <el-option label="Other" value="Other" />
+              </el-select>
+            </el-form-item>
+
+            <el-form-item>
+              <el-button type="primary" @click="handleRegister" class="log-in-btn" :loading="isRegistering" :disabled="isRegistering">
+                {{ isRegistering ? t('registering') || 'Registering...' : t('register') || 'Register' }}
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
       </el-card>
     </div>
   </div>
@@ -98,18 +188,20 @@
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
 import { navigateTo } from '#app'
-import type { FormInstance, FormRules } from 'element-plus'
-import type { loginParams } from '../api/types/common'
+import type { FormInstance } from 'element-plus'
+import type { loginParams, registerParams } from '../api/types/common'
 import { useI18n } from 'vue-i18n'
-import { getUser, login } from '~/api/auth'
+import { getUser, login, register } from '~/api/auth'
 import { ArrowDown, Moon, Sunny, View, TurnOff } from '@element-plus/icons-vue'
 import { Storage } from '~/utils/storage'
-
+import { ElMessage } from 'element-plus'
 
 const { t, locale, setLocale } = useI18n()
 const isDarkMode = ref(false)
+const isLoginMode = ref(true)
 
 const passwordVisible = ref(false)
+const registerPasswordVisible = ref(false)
 const rememberMe = ref(false)
 const cardRef = ref<HTMLElement | null>(null)
 
@@ -127,12 +219,26 @@ const loginForm = reactive<loginParams>({
   password: ''
 })
 
+const registerForm = reactive<registerParams>({
+  name: '',
+  age: 0,
+  hkid: '',
+  address1: '',
+  address2: '',
+  address3: '',
+  email: '',
+  password: '',
+  status: ''
+})
+
 const loginFormRef = ref<FormInstance>()
+const registerFormRef = ref<FormInstance>()
 const showError = ref(false)
 const errorMessage = ref('')
 const isLoggingIn = ref(false)
+const isRegistering = ref(false)
 
-const rules = computed(() => ({
+const loginRules = computed(() => ({
   email: [
     { required: true, message: t('emailPlaceholder'), trigger: 'blur' },
   ],
@@ -144,37 +250,45 @@ const rules = computed(() => ({
   ]
 }))
 
-const handleEmailInput = () => {
-  if (showError.value) {
-    showError.value = false
-    errorMessage.value = ''
-  }
-}
-
-const handlePasswordInput = () => {
-  if (showError.value) {
-    showError.value = false
-    errorMessage.value = ''
-  }
-}
+const registerRules = computed(() => ({
+  name: [
+    { required: true, message: t('nameRequired') || 'Name is required', trigger: 'blur' },
+  ],
+  age: [
+    { required: true, message: t('ageRequired') || 'Age is required', trigger: 'blur' },
+  ],
+  hkid: [
+    { required: true, message: t('hkidRequired') || 'HKID is required', trigger: 'blur' },
+  ],
+  address1: [
+    { required: true, message: t('address1Required') || 'Address line 1 is required', trigger: 'blur' },
+  ],
+  address2: [
+    { required: true, message: t('address2Required') || 'Address line 2 is required', trigger: 'blur' },
+  ],
+  email: [
+    { required: true, message: t('emailRequired') || 'Email is required', trigger: 'blur' },
+    { type: 'email', message: t('emailInvalid') || 'Invalid email', trigger: 'blur' },
+  ],
+  password: [
+    { required: true, message: t('passwordRequired') || 'Password is required', trigger: 'blur' },
+    { min: 6, message: t('passwordMinLength') || 'Password must be at least 6 characters', trigger: 'blur' },
+  ],
+}))
 
 const handleLogin = async () => {
   if (isLoggingIn.value) {
     return
   }
 
-  console.log('Login button clicked')
   if (!loginFormRef.value) {
-    console.log('Form ref not available')
     return
   }
 
   isLoggingIn.value = true
   try {
-    console.log('Validating form...')
     await loginFormRef.value.validate()
-    console.log('Form validation passed')
-    const [error, data, options] = await login(loginForm)
+    const [error, data] = await login(loginForm)
     if (!error && data) {
       const token = typeof data.data === 'string' ? data.data : ''
       const isValidJwt = token.split('.').length === 3
@@ -185,7 +299,6 @@ const handleLogin = async () => {
         return
       }
       Storage.set("token", token)
-      // Persist remembered email if requested
       if (rememberMe.value) {
         localStorage.setItem('rememberEmail', 'true')
         localStorage.setItem('rememberEmailValue', loginForm.email)
@@ -207,7 +320,6 @@ const handleLogin = async () => {
       }
     }
   } catch (error) {
-    console.log(error)
     showError.value = true
     errorMessage.value = t('logingFailed')
   } finally {
@@ -215,15 +327,65 @@ const handleLogin = async () => {
   }
 }
 
+const handleRegister = async () => {
+  if (isRegistering.value) {
+    return
+  }
+
+  if (!registerFormRef.value) {
+    return
+  }
+
+  isRegistering.value = true
+  try {
+    await registerFormRef.value.validate()
+    const [error, data] = await register(registerForm)
+    if (!error && data) {
+      showError.value = false
+      // After successful registration, switch to login mode
+      isLoginMode.value = true
+      // Clear form
+      registerForm.name = ''
+      registerForm.age = 0
+      registerForm.hkid = ''
+      registerForm.address1 = ''
+      registerForm.address2 = ''
+      registerForm.address3 = ''
+      registerForm.email = ''
+      registerForm.password = ''
+      registerForm.status = ''
+      ElMessage.success(t('registrationSuccess') || 'Registration successful! Please log in.')
+    } else if (error) {
+      showError.value = true
+      const serverMessage = error.response?.data?.message || error.response?.data || ''
+      if (serverMessage) {
+        errorMessage.value = String(serverMessage)
+      } else if (error.response?.status) {
+        errorMessage.value = `${t('registrationFailed')} (${error.response.status})`
+      } else {
+        errorMessage.value = t('registrationFailed') || 'Registration failed'
+      }
+    }
+  } catch (error) {
+    showError.value = true
+    errorMessage.value = t('registrationFailed') || 'Registration failed'
+  } finally {
+    isRegistering.value = false
+  }
+}
+
 const handleLanguageChange = () => {
   const newLocale = locale.value === 'en' ? 'zh' : 'en'
   setLocale(newLocale)
-  // Save language preference to localStorage
   localStorage.setItem('userLanguage', newLocale)
 }
 
 const togglePasswordVisibility = () => {
   passwordVisible.value = !passwordVisible.value
+}
+
+const toggleRegisterPasswordVisibility = () => {
+  registerPasswordVisible.value = !registerPasswordVisible.value
 }
 
 const toggleTheme = () => {
@@ -239,28 +401,24 @@ const applyTheme = () => {
   }
 }
 
-// Load saved language preference on mount
 onMounted(() => {
   const savedLanguage = localStorage.getItem('userLanguage')
   if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'zh')) {
     setLocale(savedLanguage)
   }
   
-  // Load remembered email if any
   const savedRemember = localStorage.getItem('rememberEmail')
   if (savedRemember === 'true') {
     rememberMe.value = true
     loginForm.email = localStorage.getItem('rememberEmailValue') || ''
   }
 
-  // Load saved theme preference
   const savedTheme = localStorage.getItem('loginDarkMode')
   if (savedTheme === 'true') {
     isDarkMode.value = true
     applyTheme()
   }
 
-  // 3D tilt effect for card
   const handlePointer = (e: PointerEvent) => {
     if (!cardRef.value) return
     const rect = cardRef.value.getBoundingClientRect()
@@ -391,6 +549,7 @@ onMounted(() => {
   line-height: 0.98;
   text-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
   animation: floatIn 900ms ease both;
+  margin-top: -8px;
 }
 
 .brand-description {
@@ -424,6 +583,8 @@ onMounted(() => {
   justify-content: center;
   padding: 56px;
   background: transparent;
+  overflow-y: auto;
+  max-height: 100vh;
 }
 
 .login-container.dark-mode .brand-side {
@@ -496,6 +657,8 @@ onMounted(() => {
   box-shadow: 0 24px 54px rgba(16, 24, 40, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;
   transition: transform 220ms ease, box-shadow 220ms ease;
   overflow: hidden;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .tech-bg {
@@ -553,13 +716,70 @@ onMounted(() => {
   overflow: visible;
 }
 
+.mode-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  justify-content: center;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  color: #5b6785;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s ease;
+  font-size: 16px;
+}
+
+.tab-button.active {
+  color: #1a2238;
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6d68ff, #00ccff);
+}
+
+.login-container.dark-mode .tab-button {
+  color: #8a96b8;
+}
+
+.login-container.dark-mode .tab-button.active {
+  color: #edf2ff;
+}
+
+.form-wrapper {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .login-header {
   text-align: center;
   margin-bottom: 34px;
 }
 
 .login-title {
-  font-size: clamp(40px, 4.2vw, 56px);
+  font-size: clamp(32px, 3.5vw, 48px);
   font-weight: 700;
   margin: 0 0 10px 0;
   color: #1a2238;
@@ -574,7 +794,7 @@ onMounted(() => {
 }
 
 .login-subtitle {
-  font-size: 18px;
+  font-size: 16px;
   color: #5b6785;
   margin: 0;
   font-weight: 500;
@@ -679,6 +899,30 @@ onMounted(() => {
 
 .login-container.dark-mode :deep(.el-alert__title) {
   color: #ffd3d3;
+}
+
+.login-container :deep(.el-select__wrapper) {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 0 1px rgba(171, 183, 214, 0.45), 0 8px 18px rgba(42, 58, 103, 0.08) !important;
+  transition: box-shadow 0.28s ease, transform 0.28s ease;
+}
+
+.login-container.dark-mode :deep(.el-select__wrapper) {
+  background-color: rgba(43, 55, 84, 0.72) !important;
+  box-shadow: 0 0 0 1px rgba(130, 145, 189, 0.28), 0 10px 20px rgba(0, 0, 0, 0.28) !important;
+}
+
+.login-container :deep(.el-input-number__wrapper) {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 0 1px rgba(171, 183, 214, 0.45), 0 8px 18px rgba(42, 58, 103, 0.08) !important;
+  transition: box-shadow 0.28s ease, transform 0.28s ease;
+}
+
+.login-container.dark-mode :deep(.el-input-number__wrapper) {
+  background-color: rgba(43, 55, 84, 0.72) !important;
+  box-shadow: 0 0 0 1px rgba(130, 145, 189, 0.28), 0 10px 20px rgba(0, 0, 0, 0.28) !important;
 }
 
 @media (max-width: 1200px) {

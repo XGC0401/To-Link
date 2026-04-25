@@ -3,6 +3,18 @@ export interface loginParams {
     password: string;
 }
 
+export interface registerParams {
+    name: string;
+    age: number;
+    hkid: string;
+    address1: string;
+    address2: string;
+    address3?: string;
+    email: string;
+    password: string;
+    status?: string;
+}
+
 export interface BasicResponse<T> {
     code: string;
     success: boolean;
