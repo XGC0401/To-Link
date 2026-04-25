@@ -641,6 +641,35 @@ const loadCountryDialOptions = async () => {
   }
 }
 
+const normalizeDetectedCountryCode = (reverseData: any, rawCountryCode: string): string => {
+  const normalizedCode = (rawCountryCode || '').toUpperCase()
+  if (!normalizedCode) {
+    return ''
+  }
+
+  const address = reverseData?.address || {}
+  const locationHint = [
+    reverseData?.display_name,
+    address.country,
+    address.state,
+    address.region,
+    address.city,
+    address.town,
+    address.county,
+    address.state_district,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+
+  // Nominatim may return CN for Hong Kong coordinates.
+  if (normalizedCode === 'CN' && /(hong\s*kong|香港)/i.test(locationHint)) {
+    return 'HK'
+  }
+
+  return normalizedCode
+}
+
 const detectNearestCountry = async () => {
   if (!navigator.geolocation) {
     return
@@ -656,7 +685,8 @@ const detectNearestCountry = async () => {
       }
 
       const reverseData = await reverseRes.json()
-      const countryCode = reverseData?.address?.country_code?.toUpperCase?.() || ''
+      const rawCountryCode = reverseData?.address?.country_code?.toUpperCase?.() || ''
+      const countryCode = normalizeDetectedCountryCode(reverseData, rawCountryCode)
       if (!countryCode) {
         return
       }
