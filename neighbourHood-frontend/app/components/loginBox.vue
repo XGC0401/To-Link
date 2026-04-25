@@ -30,7 +30,8 @@
         </svg>
       </div>
 
-      <el-card ref="cardRef" class="login-card">
+      <div ref="cardRef">
+      <el-card class="login-card">
         <div class="theme-switcher-left">
           <el-switch
             v-model="isDarkMode"
@@ -248,6 +249,7 @@
           </el-form>
         </div>
       </el-card>
+      </div>
     </div>
   </div>
 </template>
@@ -777,16 +779,16 @@ onMounted(() => {
   min-height: 100%;
   overflow: hidden;
   font-family: "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
-  background: radial-gradient(1200px 650px at 10% -10%, rgba(122, 92, 255, 0.16), transparent 58%),
-    radial-gradient(1000px 620px at 95% 110%, rgba(0, 204, 255, 0.14), transparent 58%),
-    linear-gradient(145deg, #eff3ff 0%, #f8f9ff 45%, #eef4ff 100%);
+  background: radial-gradient(1200px 650px at 10% -10%, rgba(255, 111, 0, 0.18), transparent 58%),
+    radial-gradient(1000px 620px at 95% 110%, rgba(240, 101, 0, 0.14), transparent 58%),
+    linear-gradient(145deg, #fff5eb 0%, #fff9f3 45%, #ffeedd 100%);
   transition: background-color 0.35s ease, background 0.35s ease;
 }
 
 .login-container.dark-mode {
-  background: radial-gradient(1200px 700px at 5% -5%, rgba(126, 87, 194, 0.2), transparent 60%),
-    radial-gradient(1000px 620px at 95% 110%, rgba(0, 183, 255, 0.16), transparent 58%),
-    linear-gradient(145deg, #0e111a 0%, #111827 44%, #0b1324 100%);
+  background: radial-gradient(1200px 700px at 5% -5%, rgba(255, 111, 0, 0.2), transparent 60%),
+    radial-gradient(1000px 620px at 95% 110%, rgba(240, 101, 0, 0.16), transparent 58%),
+    linear-gradient(145deg, #1b130a 0%, #23170b 44%, #17100a 100%);
 }
 
 .login-container::before,
@@ -803,7 +805,7 @@ onMounted(() => {
   border-radius: 50%;
   top: -320px;
   left: -180px;
-  background: radial-gradient(circle, rgba(110, 89, 255, 0.22) 0%, rgba(110, 89, 255, 0) 66%);
+  background: radial-gradient(circle, rgba(255, 111, 0, 0.22) 0%, rgba(255, 111, 0, 0) 66%);
 }
 
 .login-container::after {
@@ -812,7 +814,7 @@ onMounted(() => {
   border-radius: 50%;
   right: -220px;
   bottom: -300px;
-  background: radial-gradient(circle, rgba(0, 195, 255, 0.2) 0%, rgba(0, 195, 255, 0) 65%);
+  background: radial-gradient(circle, rgba(240, 101, 0, 0.2) 0%, rgba(240, 101, 0, 0) 65%);
 }
 
 .brand-side {
@@ -820,7 +822,7 @@ onMounted(() => {
   z-index: 1;
   flex: 1;
   min-height: 100%;
-  background: linear-gradient(135deg, #182748 0%, #233d7a 38%, #335db0 65%, #3897c6 100%);
+  background: linear-gradient(135deg, #7c2d12 0%, #c2410c 36%, #ff6f00 64%, #f06500 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -864,7 +866,7 @@ onMounted(() => {
   justify-content: flex-start;
   align-items: flex-start;
   min-height: 100%;
-  padding-top: 220px;
+  padding-top: 300px;
 }
 
 .brand-title {
@@ -908,12 +910,12 @@ onMounted(() => {
   justify-content: center;
   padding: 56px;
   background: transparent;
-  overflow-y: auto;
+  overflow-y: hidden;
   max-height: 100vh;
 }
 
 .login-container.dark-mode .brand-side {
-  background: linear-gradient(140deg, #0d1328 0%, #1a2c5f 40%, #203d75 68%, #20557f 100%);
+  background: linear-gradient(140deg, #3b1708 0%, #7c2d12 40%, #b45309 68%, #f06500 100%);
 }
 
 .theme-switcher-left {
@@ -924,7 +926,7 @@ onMounted(() => {
 }
 
 .theme-switcher-left :deep(.el-switch) {
-  --el-switch-on-color: #6d68ff;
+  --el-switch-on-color: #ff6f00;
   --el-switch-off-color: rgba(184, 191, 214, 0.85);
   height: 34px;
 }
@@ -1072,7 +1074,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #6d68ff, #00ccff);
+  background: linear-gradient(90deg, #ff6f00, #f06500);
 }
 
 .login-container.dark-mode .tab-button {
@@ -1190,17 +1192,17 @@ onMounted(() => {
   font-size: 16px !important;
   font-weight: 700 !important;
   letter-spacing: 0.35px;
-  background: linear-gradient(95deg, #5558ff 0%, #4a78ff 40%, #4cb8ff 100%) !important;
+  background: linear-gradient(95deg, #ff6f00 0%, #f06500 100%) !important;
   color: #fff !important;
   border: none !important;
-  box-shadow: 0 14px 28px rgba(73, 102, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 14px 28px rgba(255, 111, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
 }
 
 .log-in-btn:hover {
   filter: brightness(1.04);
   transform: translateY(-2px);
-  box-shadow: 0 18px 32px rgba(73, 102, 235, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  box-shadow: 0 18px 32px rgba(255, 111, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .log-in-btn:active {

@@ -103,6 +103,7 @@
                   :placeholder="getSelectPlaceholder(item.key, item.placeholder)"
                   :disabled="isSelectDisabled(item.key)"
                   :loading="getSelectLoading(item.key)"
+                  popper-class="profile-location-dropdown"
                   :filterable="item.key === 'country' || item.key === 'nation' || item.key === 'area'"
                   :allow-create="item.key === 'nation' || item.key === 'area'"
                   :default-first-option="item.key === 'nation' || item.key === 'area'"
@@ -115,7 +116,12 @@
                     :key="option.value"
                     :label="option.label"
                     :value="option.value"
-                  />
+                  >
+                    <div class="profile-location-option">
+                      <span class="profile-location-option__label">{{ option.label }}</span>
+                      <span v-if="option.meta" class="profile-location-option__meta">{{ option.meta }}</span>
+                    </div>
+                  </el-option>
                 </el-select>
                 <el-input
                   v-else
@@ -265,7 +271,7 @@ type AddressFieldKey = 'country' | 'nation' | 'area' | 'street' | 'building' | '
 type AddressVisibility = 'none' | 'friends' | 'specific' | 'all'
 
 type AddressFieldType = 'input' | 'select'
-type LocationOption = { value: string; label: string }
+type LocationOption = { value: string; label: string; meta?: string }
 
 const addressFieldKeys: AddressFieldKey[] = ['country', 'nation', 'area', 'street', 'building', 'floor', 'room']
 
@@ -334,7 +340,8 @@ const selectedNation = computed(() => {
 
 const countryOptions = computed<LocationOption[]>(() => allCountries.value.map((country) => ({
   value: country.name,
-  label: country.name
+  label: country.name,
+  meta: country.iso2 || undefined
 })))
 
 const nationOptions = computed<LocationOption[]>(() => statesOfSelectedCountry.value.map((state) => ({
@@ -846,6 +853,45 @@ const handleCancel = () => {
   font-size: 16px;
 }
 
+.profile-location-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.profile-location-option__label {
+  color: #1f2b53;
+}
+
+.profile-location-option__meta {
+  color: #7a89b8;
+  background: rgba(126, 164, 255, 0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+:global(.profile-location-dropdown) {
+  border-radius: 12px !important;
+  border: 1px solid rgba(129, 140, 248, 0.22) !important;
+  box-shadow: 0 12px 30px rgba(38, 51, 102, 0.16) !important;
+}
+
+:global(.profile-location-dropdown .el-select-dropdown__item) {
+  border-radius: 8px;
+  margin: 3px 6px;
+}
+
+:global(.profile-location-dropdown .el-select-dropdown__item.is-hovering) {
+  background: rgba(126, 164, 255, 0.09) !important;
+}
+
+:global(.profile-location-dropdown .el-select-dropdown__item.selected) {
+  background: rgba(126, 164, 255, 0.15) !important;
+}
+
 .privacy-button {
   width: 40px;
   height: 40px;
@@ -962,6 +1008,24 @@ const handleCancel = () => {
 :global(.dark) .address-hint,
 :global(.dark) .availability-hint {
   color: #b8c3ed;
+}
+
+:global(.dark) .profile-location-option__label {
+  color: #dbe5ff;
+}
+
+:global(.dark) .profile-location-option__meta {
+  color: #aac2ff;
+  background: rgba(126, 164, 255, 0.2);
+}
+
+:global(.dark) .profile-location-dropdown {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+:global(.dark) .profile-location-dropdown .el-select-dropdown__item {
+  color: #d1d5db !important;
 }
 
 :global(.dark) .profile-form :deep(.el-input__wrapper),

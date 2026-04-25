@@ -129,12 +129,18 @@ export default defineEventHandler(async (event) => {
         const first = geocodeData.results?.[0]
         if (first?.name) {
             city = first.name
+        } else if (first?.admin1) {
+            city = first.admin1
         }
         if (first?.country) {
             country = first.country
         }
     } catch {
         // keep best available hint
+    }
+
+    if (!country && resolved.countryHint) {
+        country = resolved.countryHint
     }
 
     const dailyTimes = weatherData.daily?.time || []

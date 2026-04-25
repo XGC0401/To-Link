@@ -5,8 +5,15 @@
         <div class="history-panel">
           <div class="history-header">
             <h4>{{ $t('chatHistory') }}</h4>
-            <el-button type="primary" text size="small" class="history-new-chat" @click="startNewChat">
-              + {{ $t('newChat') }}
+            <el-button
+              type="primary"
+              text
+              size="small"
+              class="history-new-chat"
+              @click="startNewChat"
+              :disabled="chatSessions.length >= MAX_CHAT_SESSIONS"
+            >
+              + {{ newChatButtonLabel }}
             </el-button>
           </div>
 
@@ -154,6 +161,7 @@ interface ChatSession {
 
 const CHAT_STORAGE_KEY = 'ai-chat-sessions-v1'
 const DEFAULT_BUILDING_ID = 'default'
+const MAX_CHAT_SESSIONS = 10
 
 const { t, locale } = useI18n()
 const language = computed(() => locale.value as 'en' | 'zh')
@@ -171,6 +179,11 @@ const exampleQuestions = computed(() => [
   t('exampleQ3'),
   t('exampleQ4')
 ])
+
+const newChatButtonLabel = computed(() => {
+  const nextIndex = Math.min(chatSessions.value.length + 1, MAX_CHAT_SESSIONS)
+  return `${t('newChat')} ${nextIndex}/${MAX_CHAT_SESSIONS}`
+})
 
 interface N8nAssistantResponse {
   reply?: unknown
@@ -317,6 +330,11 @@ const syncActiveSession = () => {
 }
 
 const startNewChat = () => {
+  if (chatSessions.value.length >= MAX_CHAT_SESSIONS) {
+    ElMessage.warning(t('chatLimitReached', { max: MAX_CHAT_SESSIONS }))
+    return
+  }
+
   const session = createSession()
   activeSessionId.value = session.id
   messages.value = []

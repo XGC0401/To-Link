@@ -244,6 +244,17 @@ type ClientIpLocation = {
   country_name?: string
 }
 
+type ReverseLocationResult = {
+  address?: {
+    city?: string
+    town?: string
+    village?: string
+    county?: string
+    state?: string
+    country?: string
+  }
+}
+
 const weather = ref({
   condition: t('weatherUnknown'),
   temperature: '--°',
@@ -253,6 +264,26 @@ const weather = ref({
   city: t('weatherCity'),
   days: [] as WeatherDay[]
 })
+
+const resolveLocationHintByCoords = async (lat: number, lon: number) => {
+  try {
+    const reverse = await $fetch<ReverseLocationResult>('https://nominatim.openstreetmap.org/reverse', {
+      query: {
+        format: 'jsonv2',
+        lat,
+        lon
+      },
+      timeout: 3000
+    })
+
+    const address = reverse.address || {}
+    const city = address.city || address.town || address.village || address.county || address.state || ''
+    const country = address.country || ''
+    return [city, country].filter(Boolean).join(', ')
+  } catch {
+    return ''
+  }
+}
 
 const resolvedWeatherLocation = ref<{
   lat: number
@@ -334,17 +365,9 @@ const loadWeather = async (lat?: number, lon?: number, locationHint?: string) =>
     const dayRange = today
       ? `${Math.round(today.maxTemperature)}°/${Math.round(today.minTemperature)}°`
       : '--°/--°'
-    const coordinateLabel =
-      typeof response.coordinates?.latitude === 'number' && typeof response.coordinates?.longitude === 'number'
-        ? `${response.coordinates.latitude.toFixed(3)}, ${response.coordinates.longitude.toFixed(3)}`
-        : (typeof lat === 'number' && typeof lon === 'number'
-          ? `${lat.toFixed(3)}, ${lon.toFixed(3)}`
-          : '')
-
     const locationLabel =
       [response.city, response.country].filter(Boolean).join(', ')
       || locationHint
-      || coordinateLabel
       || t('weatherLocationUnknown')
 
     if (typeof lat === 'number' && typeof lon === 'number') {
@@ -519,11 +542,13 @@ onMounted(async () => {
   if (typeof navigator !== 'undefined' && navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        const locationHint = await resolveLocationHintByCoords(position.coords.latitude, position.coords.longitude)
         resolvedWeatherLocation.value = {
           lat: position.coords.latitude,
-          lon: position.coords.longitude
+          lon: position.coords.longitude,
+          hint: locationHint || undefined
         }
-        await loadWeather(position.coords.latitude, position.coords.longitude)
+        await loadWeather(position.coords.latitude, position.coords.longitude, locationHint || undefined)
       },
       async () => {
         await loadWeatherByClientIp()

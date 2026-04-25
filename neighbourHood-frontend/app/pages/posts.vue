@@ -20,6 +20,10 @@
             </el-select>
           </div>
           <div class="posts-header-right">
+            <div class="header-toggle">
+              <el-switch v-model="showOnlyMyPosts" size="large" />
+              <span class="header-toggle-label">{{ $t('showHideYourPosts') }}</span>
+            </div>
             <el-button type="primary" @click="goToCreatePost">
               {{ $t('createNewPost') }}
             </el-button>
@@ -61,6 +65,10 @@
             </el-select>
           </div>
           <div class="rewards-info">
+            <div class="header-toggle">
+              <el-switch v-model="showOnlyMyRequests" size="large" />
+              <span class="header-toggle-label">{{ $t('showHideYourRequests') }}</span>
+            </div>
             <el-button type="primary" @click="showCreateQuestDialog = true">
               {{ $t('createQuestRequest') }}
             </el-button>
@@ -143,6 +151,8 @@ const sortBy = ref('latest')
 const questSortBy = ref('latest')
 const activeTab = ref('posts')
 const isLoadingPosts = ref(false)
+const showOnlyMyPosts = ref(false)
+const showOnlyMyRequests = ref(false)
 
 // Current user info (simulated - would come from auth in real app)
 const currentUser = ref({
@@ -303,7 +313,8 @@ const filteredPosts = computed(() => {
   let filtered = posts.value.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       post.content.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchesSearch
+    const matchesMine = !showOnlyMyPosts.value || isMyPost(post)
+    return matchesSearch && matchesMine
   })
 
   // Sort posts based on selected sort option
@@ -334,7 +345,8 @@ const filteredQuests = computed(() => {
     const matchesSearch = quest.title.toLowerCase().includes(questSearchQuery.value.toLowerCase()) ||
       quest.detail.toLowerCase().includes(questSearchQuery.value.toLowerCase()) ||
       quest.tags.some(tag => tag.toLowerCase().includes(questSearchQuery.value.toLowerCase()))
-    return matchesSearch
+    const matchesMine = !showOnlyMyRequests.value || String(quest.authorId) === String(currentUser.value.id)
+    return matchesSearch && matchesMine
   })
 
   // Sort quests based on selected sort option
@@ -912,6 +924,24 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 12px;
+}
+
+.header-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+}
+
+.header-toggle-label {
+  font-size: 13px;
+  color: #33416f;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .posts-toolbar {
@@ -1138,6 +1168,15 @@ onMounted(async () => {
   border-color: rgba(129, 140, 248, 0.34);
 }
 
+:global(.dark) .header-toggle {
+  background: rgba(25, 31, 58, 0.86);
+  border-color: rgba(129, 140, 248, 0.34);
+}
+
+:global(.dark) .header-toggle-label {
+  color: #dbe5ff;
+}
+
 :global(.dark) .posts-list :deep(.post-card),
 :global(.dark) .posts-list :deep(.el-card),
 :global(.dark) .quests-list :deep(.quest-card),
@@ -1236,6 +1275,15 @@ onMounted(async () => {
   .quests-header-left {
     flex-wrap: wrap;
   }
+
+  .posts-header-right {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .rewards-info {
+    flex-wrap: wrap;
+  }
 }
 
 /* Marketplace-inspired override */
@@ -1294,6 +1342,15 @@ onMounted(async () => {
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
+}
+
+.header-toggle {
+  background: #f8fafc !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.header-toggle-label {
+  color: #334155 !important;
 }
 
 .posts-list :deep(.el-card),
@@ -1355,6 +1412,15 @@ onMounted(async () => {
   background: #111827 !important;
   border-color: #1f2937 !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+}
+
+:global(.dark) .header-toggle {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+:global(.dark) .header-toggle-label {
+  color: #d1d5db !important;
 }
 
 :global(.dark) .post-page-shell :deep(.el-input__wrapper),

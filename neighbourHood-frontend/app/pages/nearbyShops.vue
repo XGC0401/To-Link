@@ -336,7 +336,7 @@ const initMap = (lat: number, lng: number) => {
   if (!mapContainer.value || map) return
 
   // Initialize the map
-  map = L.map('map').setView([lat, lng], 16)
+  map = L.map('map').setView([lat, lng], 19)
 
   // Add OpenStreetMap tile layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -348,8 +348,8 @@ const initMap = (lat: number, lng: number) => {
   const userIcon = L.divIcon({
     className: 'user-marker',
     html: '<div class="user-marker-icon">📍</div>',
-    iconSize: [40, 40],
-    iconAnchor: [20, 20]
+    iconSize: [56, 56],
+    iconAnchor: [28, 28]
   })
   L.marker([lat, lng], { icon: userIcon }).addTo(map)
     .bindPopup(t('youAreHere'))
@@ -413,7 +413,7 @@ watch(language, () => {
 
 const centerOnUser = () => {
   if (map && userLocation.value) {
-    map.setView([userLocation.value.lat, userLocation.value.lng], 16)
+    map.setView([userLocation.value.lat, userLocation.value.lng], 19)
   }
 }
 
@@ -650,7 +650,7 @@ html.dark :deep(.el-empty__description) {
 }
 
 .user-marker-icon {
-  font-size: 32px;
+  font-size: 44px;
   text-align: center;
   animation: bounce 2s infinite;
 }

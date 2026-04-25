@@ -60,6 +60,8 @@
           <el-button 
             type="primary" 
             size="large"
+            class="accept-quest-button"
+            :class="{ 'accept-quest-button--disabled': !canAccept }"
             :disabled="!canAccept"
             @click="$emit('showIntroductionDialog', quest)"
           >
@@ -164,5 +166,13 @@ defineEmits<{
 .detail-footer {
   display: flex;
   justify-content: center;
+}
+
+.accept-quest-button--disabled {
+  background: #8b949e !important;
+  border-color: #727b84 !important;
+  color: #ecf0f4 !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
 }
 </style>

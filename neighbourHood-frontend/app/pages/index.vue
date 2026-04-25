@@ -37,8 +37,9 @@
 
 <style scoped>
 .entry-page {
-    min-height: 100vh;
+    height: 100vh;
     background: #0f172a;
+    overflow: hidden;
 }
 
 .cover-screen {
@@ -69,7 +70,7 @@
     justify-content: center;
     background:
         radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.18), transparent 38%),
-        radial-gradient(circle at 82% 78%, rgba(96, 165, 250, 0.2), transparent 42%),
+        radial-gradient(circle at 82% 78%, rgba(240, 101, 0, 0.2), transparent 42%),
         linear-gradient(145deg, rgba(15, 23, 42, 0.42), rgba(15, 23, 42, 0.62));
     overflow: hidden;
 }
@@ -86,7 +87,7 @@
     height: 260px;
     left: 8%;
     top: 18%;
-    background: radial-gradient(circle at 35% 35%, rgba(167, 139, 250, 0.55), rgba(167, 139, 250, 0));
+    background: radial-gradient(circle at 35% 35%, rgba(255, 111, 0, 0.55), rgba(255, 111, 0, 0));
 }
 
 .decor-right {
@@ -94,7 +95,7 @@
     height: 320px;
     right: 8%;
     bottom: 14%;
-    background: radial-gradient(circle at 40% 35%, rgba(56, 189, 248, 0.5), rgba(56, 189, 248, 0));
+    background: radial-gradient(circle at 40% 35%, rgba(240, 101, 0, 0.5), rgba(240, 101, 0, 0));
 }
 
 .cover-content {
@@ -143,8 +144,8 @@
     gap: 10px;
     padding: 12px 22px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.42);
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.16));
+    border: 1px solid rgba(255, 111, 0, 0.5);
+    background: linear-gradient(145deg, rgba(255, 111, 0, 0.66), rgba(240, 101, 0, 0.52));
     color: #fff;
     font-size: 17px;
     font-weight: 700;
@@ -154,7 +155,7 @@
 }
 
 .cover-enter-button:hover {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.2));
+    background: linear-gradient(145deg, rgba(255, 111, 0, 0.8), rgba(240, 101, 0, 0.66));
     transform: translateY(-2px);
     box-shadow: 0 14px 28px rgba(15, 23, 42, 0.42);
 }
@@ -178,8 +179,9 @@
 }
 
 .login-wrapper {
-    height: 100vh;
-    min-height: 100vh;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
 }
 
 @media (max-width: 768px) {
