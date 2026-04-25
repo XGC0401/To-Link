@@ -156,11 +156,15 @@
                 <template #prepend>
                   <el-select v-model="selectedCountryDialCode" class="country-code-select" filterable>
                     <el-option
-                      v-for="country in sortedCountryDialOptions"
-                      :key="`${country.countryCode}-${country.dialCode}`"
-                      :label="formatCountryOptionLabel(country)"
-                      :value="country.dialCode"
-                    />
+                      v-for="option in countryDialDropdownOptions"
+                      :key="option.key"
+                      :label="option.selectedLabel"
+                      :value="option.value"
+                      :disabled="option.disabled"
+                      :class="option.className"
+                    >
+                      <span>{{ option.dropdownLabel }}</span>
+                    </el-option>
                   </el-select>
                 </template>
               </el-input>
@@ -184,11 +188,11 @@
 
             <el-form-item :label="t('status') || 'Status (Optional)'" prop="status">
               <el-select v-model="registerForm.status" :placeholder="t('selectStatus') || 'Select status'" clearable>
-                <el-option label="Student" value="Student" />
-                <el-option label="Worker" value="Worker" />
-                <el-option label="Freelancer" value="Freelancer" />
-                <el-option label="Retired" value="Retired" />
-                <el-option label="Other" value="Other" />
+                <el-option :label="t('statusStudent') || 'Student'" value="Student" />
+                <el-option :label="t('statusWorker') || 'Worker'" value="Worker" />
+                <el-option :label="t('statusFreelancer') || 'Freelancer'" value="Freelancer" />
+                <el-option :label="t('statusRetired') || 'Retired'" value="Retired" />
+                <el-option :label="t('statusOther') || 'Other'" value="Other" />
               </el-select>
             </el-form-item>
 
@@ -219,6 +223,15 @@ interface CountryDialOption {
   countryName: string
   countryCode: string
   dialCode: string
+}
+
+interface CountryDialDropdownOption {
+  key: string
+  selectedLabel: string
+  dropdownLabel: string
+  value: string
+  disabled: boolean
+  className?: string
 }
 
 const { t, locale, setLocale } = useI18n()
@@ -266,20 +279,91 @@ const isRegistering = ref(false)
 const selectedCountryDialCode = ref('+852')
 const countryDialOptions = ref<CountryDialOption[]>([])
 const detectedCountryCode = ref('')
+const nearestCity = ref('')
 
-const sortedCountryDialOptions = computed(() => {
-  const options = countryDialOptions.value
+const getDisplayLocale = () => (locale.value === 'zh' ? 'zh-Hant' : 'en')
+
+const getLocalizedCountryName = (countryCode: string, fallbackName: string) => {
+  try {
+    const displayNames = new Intl.DisplayNames([getDisplayLocale()], { type: 'region' })
+    return displayNames.of(countryCode) || fallbackName
+  } catch {
+    return fallbackName
+  }
+}
+
+const localizedCountryDialOptions = computed(() => {
+  return [...countryDialOptions.value].sort((a, b) => {
+    const nameA = getLocalizedCountryName(a.countryCode, a.countryName)
+    const nameB = getLocalizedCountryName(b.countryCode, b.countryName)
+    return nameA.localeCompare(nameB)
+  })
+})
+
+const nearestCountryOption = computed(() => {
   if (!detectedCountryCode.value) {
-    return options
+    return null
+  }
+  return localizedCountryDialOptions.value.find((item) => item.countryCode === detectedCountryCode.value) || null
+})
+
+const countryDialDropdownOptions = computed<CountryDialDropdownOption[]>(() => {
+  const allOptions = localizedCountryDialOptions.value
+  const nearest = nearestCountryOption.value
+
+  const mapCountryOption = (country: CountryDialOption): CountryDialDropdownOption => {
+    const localizedName = getLocalizedCountryName(country.countryCode, country.countryName)
+    return {
+      key: `${country.countryCode}-${country.dialCode}`,
+      selectedLabel: country.dialCode,
+      dropdownLabel: `${localizedName} (${country.dialCode})`,
+      value: country.dialCode,
+      disabled: false,
+    }
   }
 
-  const nearest = options.find((item) => item.countryCode === detectedCountryCode.value)
   if (!nearest) {
-    return options
+    return allOptions.map(mapCountryOption)
   }
 
-  const rest = options.filter((item) => item.countryCode !== detectedCountryCode.value)
-  return [nearest, ...rest]
+  const nearestLocalizedName = getLocalizedCountryName(nearest.countryCode, nearest.countryName)
+  const nearestCityLabel = nearestCity.value || (t('unknownLocation') || 'Unknown')
+  const rest = allOptions.filter((item) => item.countryCode !== nearest.countryCode)
+
+  return [
+    {
+      key: 'nearest-header',
+      selectedLabel: t('nearestCountrySection') || 'Nearest',
+      dropdownLabel: t('nearestCountrySection') || 'Nearest',
+      value: '__nearest_header',
+      disabled: true,
+      className: 'country-meta-option',
+    },
+    {
+      key: `nearest-${nearest.countryCode}-${nearest.dialCode}`,
+      selectedLabel: nearest.dialCode,
+      dropdownLabel: `${nearestLocalizedName} (${nearest.dialCode})`,
+      value: nearest.dialCode,
+      disabled: false,
+    },
+    {
+      key: 'nearest-city',
+      selectedLabel: `${t('nearestCity') || 'Nearest city'}: ${nearestCityLabel}`,
+      dropdownLabel: `${t('nearestCity') || 'Nearest city'}: ${nearestCityLabel}`,
+      value: '__nearest_city',
+      disabled: true,
+      className: 'country-meta-option',
+    },
+    {
+      key: 'country-separator',
+      selectedLabel: '----------------',
+      dropdownLabel: '----------------',
+      value: '__country_separator',
+      disabled: true,
+      className: 'country-divider-option',
+    },
+    ...rest.map(mapCountryOption),
+  ]
 })
 
 const loginRules = computed(() => ({
@@ -457,13 +541,6 @@ const applyTheme = () => {
   }
 }
 
-const formatCountryOptionLabel = (country: CountryDialOption) => {
-  if (country.countryCode === detectedCountryCode.value) {
-    return `${t('nearestCountry') || 'Nearest'} - ${country.countryName} (${country.dialCode})`
-  }
-  return `${country.countryName} (${country.dialCode})`
-}
-
 const fallbackCountryDialOptions: CountryDialOption[] = [
   { countryName: 'China', countryCode: 'CN', dialCode: '+86' },
   { countryName: 'Hong Kong', countryCode: 'HK', dialCode: '+852' },
@@ -509,7 +586,6 @@ const loadCountryDialOptions = async () => {
     }
 
     countryDialOptions.value = Array.from(uniqueByCountry.values())
-      .sort((a, b) => a.countryName.localeCompare(b.countryName))
 
     if (!countryDialOptions.value.some((item) => item.dialCode === selectedCountryDialCode.value)) {
       selectedCountryDialCode.value = countryDialOptions.value[0]?.dialCode || '+852'
@@ -538,6 +614,9 @@ const detectNearestCountry = async () => {
       if (!countryCode) {
         return
       }
+
+      const address = reverseData?.address || {}
+      nearestCity.value = address.city || address.town || address.village || address.county || address.state || ''
 
       detectedCountryCode.value = countryCode
       const nearest = countryDialOptions.value.find((item) => item.countryCode === countryCode)
@@ -696,7 +775,7 @@ onMounted(() => {
   justify-content: flex-start;
   align-items: flex-start;
   min-height: 100%;
-  padding-top: 80px;
+  padding-top: 120px;
 }
 
 .brand-title {
@@ -1096,6 +1175,26 @@ onMounted(() => {
 .login-container.dark-mode :deep(.country-code-select .el-select__wrapper) {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+.login-container :deep(.country-meta-option) {
+  color: #6f7b99 !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.login-container :deep(.country-divider-option) {
+  color: #9aa5c3 !important;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.login-container.dark-mode :deep(.country-meta-option) {
+  color: #9fb0d8 !important;
+}
+
+.login-container.dark-mode :deep(.country-divider-option) {
+  color: #7f8db0 !important;
 }
 
 .login-container :deep(.el-input-number__wrapper) {
