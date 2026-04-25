@@ -270,6 +270,7 @@ const resolveLocationHintByCoords = async (lat: number, lon: number) => {
     const reverse = await $fetch<ReverseLocationResult>('https://nominatim.openstreetmap.org/reverse', {
       query: {
         format: 'jsonv2',
+        'accept-language': locale.value === 'zh' ? 'zh-HK,zh-TW,zh-Hant' : 'en',
         lat,
         lon
       },
@@ -365,9 +366,11 @@ const loadWeather = async (lat?: number, lon?: number, locationHint?: string) =>
     const dayRange = today
       ? `${Math.round(today.maxTemperature)}°/${Math.round(today.minTemperature)}°`
       : '--°/--°'
+    const apiLocationLabel = [response.city, response.country].filter(Boolean).join(', ')
+    const preferLocalizedHint = locale.value === 'zh' && !!locationHint
     const locationLabel =
-      [response.city, response.country].filter(Boolean).join(', ')
-      || locationHint
+      (preferLocalizedHint ? locationHint : apiLocationLabel)
+      || (preferLocalizedHint ? apiLocationLabel : locationHint)
       || t('weatherLocationUnknown')
 
     if (typeof lat === 'number' && typeof lon === 'number') {
@@ -407,9 +410,14 @@ const loadWeatherByClientIp = async () => {
 
     const latitude = ipLocation.latitude
     const longitude = ipLocation.longitude
-    const hint = [ipLocation.city, ipLocation.country_name].filter(Boolean).join(', ')
+    let hint = [ipLocation.city, ipLocation.country_name].filter(Boolean).join(', ')
 
     if (typeof latitude === 'number' && typeof longitude === 'number') {
+      if (locale.value === 'zh') {
+        const localizedHint = await resolveLocationHintByCoords(latitude, longitude)
+        hint = localizedHint || hint
+      }
+
       resolvedWeatherLocation.value = {
         lat: latitude,
         lon: longitude,

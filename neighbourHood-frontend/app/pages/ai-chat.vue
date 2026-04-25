@@ -181,8 +181,8 @@ const exampleQuestions = computed(() => [
 ])
 
 const newChatButtonLabel = computed(() => {
-  const nextIndex = Math.min(chatSessions.value.length + 1, MAX_CHAT_SESSIONS)
-  return `${t('newChat')} ${nextIndex}/${MAX_CHAT_SESSIONS}`
+  const currentCount = Math.min(chatSessions.value.length, MAX_CHAT_SESSIONS)
+  return `${t('newChat')} ${currentCount}/${MAX_CHAT_SESSIONS}`
 })
 
 interface N8nAssistantResponse {

@@ -747,9 +747,9 @@ onMounted(() => {
     const cy = rect.top + rect.height / 2
     const dx = e.clientX - cx
     const dy = e.clientY - cy
-    const rx = (dy / rect.height) * -6
-    const ry = (dx / rect.width) * 8
-    cardRef.value.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(8px)`
+    const rx = (dy / rect.height) * -2.2
+    const ry = (dx / rect.width) * 3.2
+    cardRef.value.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(4px)`
   }
 
   const handlePointerLeave = () => {
@@ -866,7 +866,7 @@ onMounted(() => {
   justify-content: flex-start;
   align-items: flex-start;
   min-height: 100%;
-  padding-top: 300px;
+  padding-top: 380px;
 }
 
 .brand-title {
@@ -1532,6 +1532,7 @@ onMounted(() => {
   .brand-content {
     max-width: 560px;
     text-align: center;
+    padding-top: 120px;
   }
 
   .brand-description {
@@ -1553,6 +1554,10 @@ onMounted(() => {
   .form-side {
     padding: 18px;
     min-height: 70vh;
+  }
+
+  .brand-content {
+    padding-top: 70px;
   }
 
   .theme-switcher-left {

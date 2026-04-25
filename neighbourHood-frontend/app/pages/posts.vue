@@ -313,7 +313,7 @@ const filteredPosts = computed(() => {
   let filtered = posts.value.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       post.content.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchesMine = !showOnlyMyPosts.value || isMyPost(post)
+    const matchesMine = showOnlyMyPosts.value ? isMyPost(post) : !isMyPost(post)
     return matchesSearch && matchesMine
   })
 
@@ -345,7 +345,8 @@ const filteredQuests = computed(() => {
     const matchesSearch = quest.title.toLowerCase().includes(questSearchQuery.value.toLowerCase()) ||
       quest.detail.toLowerCase().includes(questSearchQuery.value.toLowerCase()) ||
       quest.tags.some(tag => tag.toLowerCase().includes(questSearchQuery.value.toLowerCase()))
-    const matchesMine = !showOnlyMyRequests.value || String(quest.authorId) === String(currentUser.value.id)
+    const isMine = String(quest.authorId) === String(currentUser.value.id)
+    const matchesMine = showOnlyMyRequests.value ? isMine : !isMine
     return matchesSearch && matchesMine
   })
 

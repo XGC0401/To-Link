@@ -255,10 +255,51 @@ import { Storage } from '~/utils/storage'
 
 type CscType = typeof import('countries-states-cities').default
 const locationData = ref<CscType | null>(null)
+const countryDialCodeByName = ref<Record<string, string>>({})
+
+const buildDialCode = (iddRoot?: string, suffixes?: string[]) => {
+  if (!iddRoot || !suffixes?.length) {
+    return ''
+  }
+  return `${iddRoot}${suffixes[0]}`
+}
+
+const loadCountryDialCodeMap = async () => {
+  try {
+    const countries = await $fetch<Array<{
+      name?: { common?: string; official?: string }
+      idd?: { root?: string; suffixes?: string[] }
+      altSpellings?: string[]
+    }>>('https://restcountries.com/v3.1/all?fields=name,idd,altSpellings')
+
+    const map: Record<string, string> = {}
+    countries.forEach((country) => {
+      const dial = buildDialCode(country.idd?.root, country.idd?.suffixes)
+      if (!dial) {
+        return
+      }
+
+      const keys = [
+        country.name?.common,
+        country.name?.official,
+        ...(country.altSpellings || [])
+      ].filter((value): value is string => !!value)
+
+      keys.forEach((key) => {
+        map[key] = dial
+      })
+    })
+
+    countryDialCodeByName.value = map
+  } catch {
+    countryDialCodeByName.value = {}
+  }
+}
 
 onMounted(async () => {
   const cscModule = await import('countries-states-cities')
   locationData.value = ((cscModule as unknown as { default?: CscType }).default ?? cscModule) as CscType
+  await loadCountryDialCodeMap()
 })
 
 const router = useRouter()
@@ -341,7 +382,7 @@ const selectedNation = computed(() => {
 const countryOptions = computed<LocationOption[]>(() => allCountries.value.map((country) => ({
   value: country.name,
   label: country.name,
-  meta: country.iso2 || undefined
+  meta: countryDialCodeByName.value[country.name] || country.iso2 || undefined
 })))
 
 const nationOptions = computed<LocationOption[]>(() => statesOfSelectedCountry.value.map((state) => ({
