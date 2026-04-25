@@ -172,21 +172,21 @@
                     <div class="cc-scroll">
                       <template v-if="nearestCountryOption && !ccSearch">
                         <div class="cc-group-label cc-group-label--nearest">
-                          📍 {{ t('nearestCountrySection') || 'Nearest' }}{{ nearestCity ? ` · ${nearestCity}` : '' }}
+                          📍 {{ t('nearestLocationSection') || t('nearestCountrySection') || 'Nearest location' }}{{ nearestCity ? ` · ${nearestCity}` : '' }}
                         </div>
                         <div
                           class="cc-item"
                           :class="{ 'cc-item--active': selectedCountryDialCode === nearestCountryOption.dialCode }"
                           @click="selectDialCode(nearestCountryOption.dialCode)"
                         >
-                          <span class="cc-item-name">{{ getLocalizedCountryName(nearestCountryOption.countryCode, nearestCountryOption.countryName) }}</span>
+                          <span class="cc-item-name">{{ nearestCountryOption.countryName }}</span>
                           <span class="cc-item-code">{{ nearestCountryOption.dialCode }}</span>
                         </div>
                         <div class="cc-divider" />
                       </template>
 
                       <template v-for="group in filteredCountryGroups" :key="group.letter">
-                        <div class="cc-group-label">{{ group.letter }}</div>
+                        <div class="cc-group-label">{{ `${group.letter} ---------` }}</div>
                         <div
                           v-for="c in group.countries"
                           :key="c.countryCode"
@@ -194,7 +194,7 @@
                           :class="{ 'cc-item--active': selectedCountryDialCode === c.dialCode }"
                           @click="selectDialCode(c.dialCode)"
                         >
-                          <span class="cc-item-name">{{ getLocalizedCountryName(c.countryCode, c.countryName) }}</span>
+                          <span class="cc-item-name">{{ c.countryName }}</span>
                           <span class="cc-item-code">{{ c.dialCode }}</span>
                         </div>
                       </template>
@@ -351,18 +351,12 @@ const nearestCountryOption = computed(() => {
 })
 
 const countryGroupedByLetter = computed<CountryGroup[]>(() => {
-  const allOptions = localizedCountryDialOptions.value
-  const nearest = nearestCountryOption.value
-  
-  let countriesForGrouping = allOptions
-  if (nearest) {
-    countriesForGrouping = allOptions.filter((item) => item.countryCode !== nearest.countryCode)
-  }
+  const countriesForGrouping = localizedCountryDialOptions.value
 
   const grouped = new Map<string, CountryDialOption[]>()
   for (const country of countriesForGrouping) {
-    const localizedName = getLocalizedCountryName(country.countryCode, country.countryName)
-    const letter = localizedName.charAt(0).toUpperCase()
+    const englishName = country.countryName || ''
+    const letter = englishName.charAt(0).toUpperCase()
     if (!grouped.has(letter)) {
       grouped.set(letter, [])
     }
@@ -375,8 +369,8 @@ const countryGroupedByLetter = computed<CountryGroup[]>(() => {
     result.push({
       letter,
       countries: grouped.get(letter)!.sort((a, b) => {
-        const nameA = getLocalizedCountryName(a.countryCode, a.countryName)
-        const nameB = getLocalizedCountryName(b.countryCode, b.countryName)
+        const nameA = a.countryName
+        const nameB = b.countryName
         return nameA.localeCompare(nameB)
       }),
     })
@@ -391,8 +385,9 @@ const filteredCountryGroups = computed<CountryGroup[]>(() => {
   const result: CountryGroup[] = []
   for (const group of countryGroupedByLetter.value) {
     const filtered = group.countries.filter(c => {
-      const name = getLocalizedCountryName(c.countryCode, c.countryName).toLowerCase()
-      return name.includes(search) || c.dialCode.includes(search) || c.countryCode.toLowerCase().includes(search)
+      const englishName = c.countryName.toLowerCase()
+      const localizedName = getLocalizedCountryName(c.countryCode, c.countryName).toLowerCase()
+      return englishName.includes(search) || localizedName.includes(search) || c.dialCode.includes(search) || c.countryCode.toLowerCase().includes(search)
     })
     if (filtered.length > 0) result.push({ letter: group.letter, countries: filtered })
   }
@@ -828,7 +823,7 @@ onMounted(() => {
   justify-content: flex-start;
   align-items: flex-start;
   min-height: 100%;
-  padding-top: 150px;
+  padding-top: 220px;
 }
 
 .brand-title {

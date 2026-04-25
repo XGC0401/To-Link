@@ -244,11 +244,16 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Upload, View, InfoFilled } from '@element-plus/icons-vue'
-import csc from 'countries-states-cities'
 import { updateEmail } from '~/api/auth'
 import { Storage } from '~/utils/storage'
 
-const locationData = ((csc as unknown as { default?: typeof csc }).default ?? csc) as typeof csc
+type CscType = typeof import('countries-states-cities').default
+const locationData = ref<CscType | null>(null)
+
+onMounted(async () => {
+  const cscModule = await import('countries-states-cities')
+  locationData.value = ((cscModule as unknown as { default?: CscType }).default ?? cscModule) as CscType
+})
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -304,7 +309,7 @@ const daysOfWeek = computed(() => [
   { value: 'sunday', label: t('sunday') }
 ])
 
-const allCountries = computed(() => locationData.getAllCountries())
+const allCountries = computed(() => locationData.value?.getAllCountries() ?? [])
 
 const selectedCountry = computed(() => {
   if (!profileForm.address.country) {
@@ -317,7 +322,7 @@ const statesOfSelectedCountry = computed(() => {
   if (!selectedCountry.value) {
     return []
   }
-  return locationData.getStatesOfCountry(selectedCountry.value.id)
+  return locationData.value?.getStatesOfCountry(selectedCountry.value.id) ?? []
 })
 
 const selectedNation = computed(() => {
@@ -341,7 +346,7 @@ const areaOptions = computed<LocationOption[]>(() => {
   if (!selectedNation.value) {
     return []
   }
-  return locationData.getCitiesOfState(selectedNation.value.id).map((city) => ({
+  return (locationData.value?.getCitiesOfState(selectedNation.value.id) ?? []).map((city) => ({
     value: city.name,
     label: city.name
   }))
