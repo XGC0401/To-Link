@@ -5,7 +5,7 @@ export interface loginParams {
 
 export interface registerParams {
     name: string;
-    age: number;
+    age: string | number;
     hkid: string;
     address1: string;
     address2: string;

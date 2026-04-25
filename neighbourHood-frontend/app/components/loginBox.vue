@@ -128,7 +128,7 @@
             </el-form-item>
 
             <el-form-item :label="t('age') || 'Age'" prop="age">
-              <el-input v-model.number="registerForm.age" type="number" :min="0" :max="150" :placeholder="t('agePlaceholder') || 'e.g., 18'"></el-input>
+              <el-input v-model="registerForm.age" :placeholder="t('agePlaceholder') || 'e.g., 18'"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('hkid') || 'HKID'" prop="hkid">
@@ -156,20 +156,11 @@
                 <template #prepend>
                   <el-select v-model="selectedCountryDialCode" class="country-code-select" filterable>
                     <!-- Nearest section -->
-                    <el-optgroup v-if="nearestCountryOption" :label="t('nearestCountrySection') || 'Nearest'" class="country-group-nearest">
+                    <el-optgroup v-if="nearestCountryOption" :label="`${t('nearestCountrySection') || 'Nearest'} - ${nearestCity || (t('unknownLocation') || 'Unknown')}`" class="country-group-nearest">
                       <el-option
                         :key="`nearest-${nearestCountryOption.countryCode}`"
-                        :label="nearestCountryOption.dialCode"
+                        :label="`${getLocalizedCountryName(nearestCountryOption.countryCode, nearestCountryOption.countryName)} (${nearestCountryOption.dialCode})`"
                         :value="nearestCountryOption.dialCode"
-                      >
-                        <span>{{ getLocalizedCountryName(nearestCountryOption.countryCode, nearestCountryOption.countryName) }} ({{ nearestCountryOption.dialCode }})</span>
-                      </el-option>
-                      <el-option
-                        key="nearest-city-info"
-                        :label="`${t('nearestCity') || 'Nearest city'}: ${nearestCity || (t('unknownLocation') || 'Unknown')}`"
-                        :value="'__nearest_city_info'"
-                        disabled
-                        class="country-meta-option"
                       />
                     </el-optgroup>
 
@@ -182,7 +173,7 @@
                     >
                       <el-option
                         :key="`separator-${group.letter}`"
-                        :label="'──────────────'"
+                        :label="`${group.letter} -------`"
                         :value="`__separator_${group.letter}`"
                         disabled
                         class="country-divider-option"
@@ -286,7 +277,7 @@ const loginForm = reactive<loginParams>({
 
 const registerForm = reactive<registerParams>({
   name: '',
-  age: 0,
+  age: '',
   hkid: '',
   address1: '',
   address2: '',
@@ -487,7 +478,7 @@ const handleRegister = async () => {
       isLoginMode.value = true
       // Clear form
       registerForm.name = ''
-      registerForm.age = 0
+      registerForm.age = ''
       registerForm.hkid = ''
       registerForm.address1 = ''
       registerForm.address2 = ''
@@ -778,7 +769,7 @@ onMounted(() => {
   justify-content: flex-start;
   align-items: flex-start;
   min-height: 100%;
-  padding-top: 85px;
+  padding-top: 150px;
 }
 
 .brand-title {
@@ -1153,14 +1144,16 @@ onMounted(() => {
 }
 
 .country-code-select {
-  width: 165px;
+  width: 190px;
 }
 
 .login-container :deep(.el-input-group__prepend) {
-  background: rgba(246, 249, 255, 0.95) !important;
-  border: 1px solid rgba(171, 183, 214, 0.45) !important;
-  border-right: none !important;
-  padding: 0 8px !important;
+  background: linear-gradient(180deg, rgba(251, 253, 255, 0.98) 0%, rgba(242, 247, 255, 0.95) 100%) !important;
+  border: 1px solid rgba(171, 183, 214, 0.52) !important;
+  border-right: 1px solid rgba(171, 183, 214, 0.45) !important;
+  border-radius: 12px 0 0 12px !important;
+  padding: 0 10px !important;
+  transition: border-color 0.25s ease, background 0.25s ease;
 }
 
 .login-container :deep(.country-code-select .el-select__wrapper) {
@@ -1168,16 +1161,52 @@ onMounted(() => {
   box-shadow: none !important;
   border: none !important;
   min-height: 44px;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
 }
 
 .login-container.dark-mode :deep(.el-input-group__prepend) {
-  background: rgba(36, 49, 79, 0.9) !important;
+  background: linear-gradient(180deg, rgba(47, 61, 94, 0.94) 0%, rgba(33, 45, 75, 0.92) 100%) !important;
   border-color: rgba(130, 145, 189, 0.28) !important;
 }
 
 .login-container.dark-mode :deep(.country-code-select .el-select__wrapper) {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+.login-container :deep(.country-code-select .el-select__selected-item),
+.login-container :deep(.country-code-select .el-select__placeholder) {
+  font-weight: 600;
+  color: #3a4a72 !important;
+}
+
+.login-container.dark-mode :deep(.country-code-select .el-select__selected-item),
+.login-container.dark-mode :deep(.country-code-select .el-select__placeholder) {
+  color: #dde7ff !important;
+}
+
+.login-container :deep(.country-code-select .el-select__caret) {
+  color: #6d7da7 !important;
+  font-size: 13px;
+}
+
+.login-container.dark-mode :deep(.country-code-select .el-select__caret) {
+  color: #9eb0dc !important;
+}
+
+.login-container :deep(.el-input-group__prepend:hover) {
+  border-color: rgba(86, 122, 229, 0.48) !important;
+}
+
+.login-container :deep(.el-input-group:focus-within .el-input-group__prepend) {
+  border-color: rgba(86, 122, 229, 0.7) !important;
+  background: linear-gradient(180deg, rgba(252, 254, 255, 0.99) 0%, rgba(241, 247, 255, 0.98) 100%) !important;
+}
+
+.login-container.dark-mode :deep(.el-input-group:focus-within .el-input-group__prepend) {
+  border-color: rgba(126, 164, 255, 0.55) !important;
+  background: linear-gradient(180deg, rgba(55, 72, 109, 0.98) 0%, rgba(39, 52, 84, 0.95) 100%) !important;
 }
 
 .login-container :deep(.country-meta-option) {
