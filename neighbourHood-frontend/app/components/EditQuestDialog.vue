@@ -37,12 +37,49 @@
           <el-button 
             v-for="tag in availableTags" 
             :key="tag"
-            :type="formData.tags.includes(tag) ? 'primary' : 'default'"
+            :type="isTagSelected(tag) ? 'primary' : 'default'"
             @click="toggleTag(tag)"
           >
             {{ tag }}
           </el-button>
         </div>
+
+        <div v-if="showCustomTagInput" class="custom-tag-section">
+          <el-input
+            v-model="customTagInput"
+            :placeholder="$t('addTags')"
+            @keyup.enter.prevent="addCustomTag"
+          >
+            <template #append>
+              <el-button :icon="Check" @click="addCustomTag" />
+            </template>
+          </el-input>
+        </div>
+
+        <div v-if="customTags.length > 0" class="selected-custom-tags">
+          <el-tag
+            v-for="tag in customTags"
+            :key="tag"
+            closable
+            round
+            @close="removeCustomTag(tag)"
+          >
+            {{ tag }}
+          </el-tag>
+        </div>
+      </el-form-item>
+
+      <el-form-item :label="$t('imagesOptional')">
+        <el-upload
+          v-model:file-list="fileList"
+          list-type="picture-card"
+          :limit="5"
+          :auto-upload="false"
+          accept="image/*"
+          :on-preview="handlePictureCardPreview"
+        >
+          <el-icon><Plus /></el-icon>
+        </el-upload>
       </el-form-item>
 
       <el-form-item :label="$t('paymentMethod')">
@@ -90,19 +127,23 @@
       </el-button>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="imagePreviewVisible" width="560px">
+    <img style="width: 100%;" :src="previewImageUrl" :alt="$t('imagePreview')" />
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive, computed } from 'vue'
+import { ref, watch, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules, type UploadProps, type UploadUserFile } from 'element-plus'
+import { Check, Plus } from '@element-plus/icons-vue'
 
-const { t, locale } = useI18n()
-const language = computed(() => locale.value as 'en' | 'zh')
+const { t } = useI18n()
 
 interface Quest {
   id: number
-  authorId: number
+  authorId: number | string
   author: string
   avatar: string
   title: string
@@ -111,6 +152,7 @@ interface Quest {
   paymentMethod: 'face-to-face' | 'online'
   rewardPoints: number
   time: string
+  photos?: string[]
   acceptedBy: string | null
 }
 
@@ -122,7 +164,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'save', data: { id: number, title: string, detail: string, tags: string[], paymentMethod: string, rewardPoints: number }): void
+  (e: 'save', data: { id: number, title: string, detail: string, tags: string[], paymentMethod: string, rewardPoints: number, photos: string[] }): void
 }>()
 
 const questFormRef = ref<FormInstance>()
@@ -135,6 +177,23 @@ const formData = reactive({
   paymentMethod: 'face-to-face' as 'face-to-face' | 'online',
   rewardPoints: 50
 })
+
+const customTagInput = ref('')
+const customTags = ref<string[]>([])
+const showCustomTagInput = ref(false)
+const fileList = ref<UploadUserFile[]>([])
+const imagePreviewVisible = ref(false)
+const previewImageUrl = ref('')
+
+const isOtherTag = (tag: string) => tag === t('other')
+
+const isTagSelected = (tag: string) => {
+  if (isOtherTag(tag)) {
+    return showCustomTagInput.value
+  }
+
+  return formData.tags.includes(tag)
+}
 
 const questRules = reactive<FormRules>({
   title: [
@@ -156,21 +215,73 @@ const questRules = reactive<FormRules>({
 // Load quest data when dialog opens
 watch(() => props.modelValue, (newVal) => {
   if (newVal && props.quest) {
+    const normalizedAvailableTags = props.availableTags.filter((tag) => !isOtherTag(tag))
+    const presetTags = props.quest.tags.filter((tag) => normalizedAvailableTags.includes(tag))
+    const extraTags = props.quest.tags.filter((tag) => !normalizedAvailableTags.includes(tag))
+
     formData.title = props.quest.title
     formData.detail = props.quest.detail
-    formData.tags = [...props.quest.tags]
+    formData.tags = [...presetTags]
     formData.paymentMethod = props.quest.paymentMethod
     formData.rewardPoints = props.quest.rewardPoints
+
+    customTags.value = [...extraTags]
+    showCustomTagInput.value = customTags.value.length > 0
+    customTagInput.value = ''
+
+    fileList.value = (props.quest.photos || []).map((photo, index) => ({
+      name: `photo-${index + 1}`,
+      url: photo
+    }))
   }
 })
 
 function toggleTag(tag: string) {
+  if (isOtherTag(tag)) {
+    showCustomTagInput.value = !showCustomTagInput.value
+    return
+  }
+
   const index = formData.tags.indexOf(tag)
   if (index > -1) {
     formData.tags.splice(index, 1)
   } else {
     formData.tags.push(tag)
   }
+}
+
+function addCustomTag() {
+  const value = customTagInput.value.trim()
+  if (!value) {
+    return
+  }
+
+  if (!value.startsWith('#')) {
+    ElMessage.warning(t('tagMustStartWithHash'))
+    return
+  }
+
+  if (/\s/.test(value)) {
+    ElMessage.warning(t('tagNoSpaces'))
+    return
+  }
+
+  if (customTags.value.includes(value)) {
+    ElMessage.warning(t('tagAlreadyExists'))
+    return
+  }
+
+  customTags.value.push(value)
+  customTagInput.value = ''
+}
+
+function removeCustomTag(tag: string) {
+  customTags.value = customTags.value.filter((item) => item !== tag)
+}
+
+const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
+  previewImageUrl.value = uploadFile.url || ''
+  imagePreviewVisible.value = true
 }
 
 async function handleSave() {
@@ -184,9 +295,22 @@ async function handleSave() {
         id: props.quest!.id,
         title: formData.title,
         detail: formData.detail,
-        tags: formData.tags,
+        tags: [...formData.tags, ...customTags.value],
         paymentMethod: formData.paymentMethod,
-        rewardPoints: formData.rewardPoints
+        rewardPoints: formData.rewardPoints,
+        photos: fileList.value
+          .map((file) => {
+            if (file.url) {
+              return file.url
+            }
+
+            if (file.raw) {
+              return URL.createObjectURL(file.raw)
+            }
+
+            return ''
+          })
+          .filter(Boolean)
       })
       
       saving.value = false
@@ -201,6 +325,18 @@ async function handleSave() {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.custom-tag-section {
+  margin-top: 10px;
+  max-width: 420px;
+}
+
+.selected-custom-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .reward-points-input {

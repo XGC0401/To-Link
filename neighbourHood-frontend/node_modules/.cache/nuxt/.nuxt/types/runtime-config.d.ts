@@ -21,6 +21,8 @@ import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRu
   interface SharedPublicRuntimeConfig {
    n8nEnabled: boolean,
 
+   apiBaseUrl: string,
+
    i18n: {
       baseUrl: string,
 

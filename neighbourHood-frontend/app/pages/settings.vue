@@ -211,12 +211,12 @@
               </el-form-item>
 
               <el-form-item :label="$t('showOnlineStatus')">
-                <el-switch
-                  v-model="settingsForm.showOnlineStatus"
-                  :active-text="$t('visible')"
-                  :inactive-text="$t('hidden')"
-                  size="large"
-                />
+                <el-radio-group v-model="settingsForm.onlineStatus" size="large">
+                  <el-radio-button label="online">{{ $t('online') }}</el-radio-button>
+                  <el-radio-button label="busy">{{ $t('busy') }}</el-radio-button>
+                  <el-radio-button label="offline">{{ $t('offline') }}</el-radio-button>
+                  <el-radio-button label="hidden">{{ $t('hidden') }}</el-radio-button>
+                </el-radio-group>
               </el-form-item>
 
               <el-form-item :label="$t('allowMessages')">
@@ -267,7 +267,7 @@ const settingsForm = reactive({
   timeFormat: '12h',
   dateFormat: 'MM/DD/YYYY',
   profileVisibility: 'public',
-  showOnlineStatus: true,
+  onlineStatus: 'online',
   allowMessages: 'everyone'
 })
 
@@ -348,6 +348,9 @@ onMounted(() => {
   const savedSettings = localStorage.getItem('userSettings')
   if (savedSettings) {
     const parsed = JSON.parse(savedSettings)
+    if (!parsed.onlineStatus && typeof parsed.showOnlineStatus === 'boolean') {
+      parsed.onlineStatus = parsed.showOnlineStatus ? 'online' : 'hidden'
+    }
     Object.assign(settingsForm, parsed)
   }
   
@@ -519,6 +522,19 @@ const handleCancel = () => {
 .settings-form :deep(.el-radio-button__inner) {
   border-radius: 12px;
   box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.2) inset, 0 10px 18px rgba(67, 80, 154, 0.1);
+}
+
+.settings-form :deep(.el-radio-group .el-radio-button__inner) {
+  background: #ffffff !important;
+  color: #2d3a6a !important;
+  border-color: #c9d2ff !important;
+}
+
+.settings-form :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
 .color-picker-wrapper {

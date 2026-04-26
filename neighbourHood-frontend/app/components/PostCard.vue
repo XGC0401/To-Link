@@ -40,7 +40,6 @@
     <div class="post-content">
       <div class="post-information">
         <p class="post-title">{{ truncateText(post.title, 50) }}</p>
-        <p class="post-range">{{ $t('timeSelect') }}: {{ formatDateTime(post.startTime) }} - {{ formatDateTime(post.endTime) }}</p>
       </div>
       <p class="post-text">
         {{ truncateText(post.content, 100) }}
@@ -53,6 +52,9 @@
           style="width: 100px; height: 100px" />
       </div>
       <el-tag class="tag" size="large">{{ tagValue }}</el-tag>
+      <div v-if="Array.isArray(post.tags) && post.tags.length > 0" class="post-tags">
+        <el-tag v-for="tag in post.tags" :key="tag" class="post-chip" size="small">{{ tag }}</el-tag>
+      </div>
     </div>
 
     <template #footer>
@@ -118,11 +120,11 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 function formatDateTime(dateTime: Date | undefined): string {
-  if (!dateTime) return 'null'
+  if (!dateTime) return ''
   try {
     return new Date(dateTime).toLocaleString('en-US')
   } catch {
-    return 'null'
+    return ''
   }
 }
 
@@ -138,11 +140,19 @@ function formatDateTime(dateTime: Date | undefined): string {
 // }
 
 const tagValue = computed(() => {
+  if (props.post.request_type === 4 && props.post.custom_category) {
+    return props.post.custom_category
+  }
+
   switch (props.post.request_type) {
     case 0: return $t('shopping')
     case 1: return $t('repair')
     case 2: return $t('care')
     case 3: return $t('daily')
+    case 5: return $t('eventOrganizing')
+    case 6: return $t('studySupport')
+    case 7: return $t('petSupport')
+    case 8: return $t('sportsAndWellness')
     case 4: return $t('other')
     default: return $t('other')
   }
@@ -226,6 +236,17 @@ const tagValue = computed(() => {
 .post-title {
   overflow: hidden;
   white-space: nowrap;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.post-chip {
+  border-radius: 999px;
 }
 
 .post-content p {

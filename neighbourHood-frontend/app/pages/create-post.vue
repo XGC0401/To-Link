@@ -9,12 +9,6 @@
         </template>
 
         <el-form ref="postFormRef" :model="postForm" :rules="postRules" label-position="top" class="post-form">
-          <el-form-item :label="$t('timeSelect')" prop="time">
-            <el-date-picker v-model="postForm.time" is-range :range-separator="$t('To')"
-              :start-placeholder="t('startTime')" type="datetimerange" :end-placeholder="t('endTime')"
-              value-format="YYYY-MM-DD HH:mm:ss" :disabled-date="disabledDate" />
-          </el-form-item>
-
           <el-form-item :label="$t('title')" prop="title">
             <el-input v-model="postForm.title" :placeholder="$t('enterTitle')" maxlength="100" show-word-limit
               size="large" />
@@ -26,8 +20,51 @@
               <el-option :label="$t('repair')" :value="1" />
               <el-option :label="$t('care')" :value="2" />
               <el-option :label="$t('daily')" :value="3" />
+              <el-option :label="$t('eventOrganizing')" :value="5" />
+              <el-option :label="$t('studySupport')" :value="6" />
+              <el-option :label="$t('petSupport')" :value="7" />
+              <el-option :label="$t('sportsAndWellness')" :value="8" />
               <el-option :label="$t('other')" :value="4" />
             </el-select>
+          </el-form-item>
+
+          <el-form-item v-if="postForm.request_type === 4" :label="$t('customCategory')" prop="custom_category">
+            <el-input
+              v-model="postForm.custom_category"
+              :placeholder="$t('customCategoryPlaceholder')"
+              maxlength="40"
+              show-word-limit
+              size="large"
+            />
+          </el-form-item>
+
+          <el-form-item :label="$t('tagsOptional')">
+            <div class="post-tags-editor">
+              <div class="tag-input-row">
+                <el-input
+                  v-model="tagInput"
+                  :placeholder="$t('addTags')"
+                  @keyup.enter.prevent="addTag"
+                >
+                  <template #append>
+                    <el-button :icon="Check" @click="addTag" />
+                  </template>
+                </el-input>
+              </div>
+
+              <div v-if="postForm.tags.length > 0" class="selected-tags">
+                <el-tag
+                  v-for="tag in postForm.tags"
+                  :key="tag"
+                  round
+                  closable
+                  @close="removeTag(tag)"
+                >
+                  {{ tag }}
+                </el-tag>
+              </div>
+              <p v-else class="tag-hint">{{ $t('tagHint') }}</p>
+            </div>
           </el-form-item>
 
 
@@ -66,16 +103,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, type FormInstance, type FormRules, type UploadFile, type UploadProps, type UploadUserFile } from 'element-plus'
 import {
   Plus,
-  Calendar,
-  Notification,
+  Check,
 } from '@element-plus/icons-vue'
-import type { Post, PostRequest } from '~/api/types/post'
+import type { Post } from '~/api/types/post'
 import { publishPost } from '~/api/post'
 
 const router = useRouter()
@@ -85,20 +121,18 @@ const postFormRef = ref<FormInstance>()
 const dialogVisible = ref(false)
 const dialogImageUrl = ref('')
 const fileList = ref<UploadFile[]>([])
-const time = ref<[Date, Date]>([
-  new Date(),
-  new Date(),
-])
+const tagInput = ref('')
 
 const postForm = reactive({
   title: '',
   content: '',
   request_type: 0,
+  custom_category: '',
+  tags: [] as string[],
   paymentMethod: 0,
   is_important: false,
   redeemPoints: 0,
   type: 0,
-  time: null as [string, string] | null,
 })
 
 
@@ -124,11 +158,22 @@ const postRules = reactive<FormRules>({
       trigger: 'change'
     }
   ],
-  time: [
+  custom_category: [
     {
-      required: true,
-      message: t('enterContent'),
-      trigger: 'change'
+      validator: (_rule, value, callback) => {
+        if (postForm.request_type !== 4) {
+          callback()
+          return
+        }
+
+        if (!value || !String(value).trim()) {
+          callback(new Error(t('pleaseEnterCustomCategory')))
+          return
+        }
+
+        callback()
+      },
+      trigger: 'blur'
     }
   ],
   content: [
@@ -146,10 +191,34 @@ const postRules = reactive<FormRules>({
   ]
 })
 
-const disabledDate = (time: { getTime: () => number }) => {
-  const now = new Date();
-  return time.getTime() < new Date(new Date().setHours(0, 0, 0, 0)).getTime();
-};
+const addTag = () => {
+  const value = tagInput.value.trim()
+  if (!value) {
+    return
+  }
+
+  if (!value.startsWith('#')) {
+    ElMessage.warning(t('tagMustStartWithHash'))
+    return
+  }
+
+  if (/\s/.test(value)) {
+    ElMessage.warning(t('tagNoSpaces'))
+    return
+  }
+
+  if (postForm.tags.includes(value)) {
+    ElMessage.warning(t('tagAlreadyExists'))
+    return
+  }
+
+  postForm.tags.push(value)
+  tagInput.value = ''
+}
+
+const removeTag = (tag: string) => {
+  postForm.tags = postForm.tags.filter((item) => item !== tag)
+}
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url!
@@ -181,14 +250,11 @@ const createPost = async () => {
     formData.append("type", postForm.type.toString());
     formData.append("content", postForm.content);
     formData.append("request_type", postForm.request_type.toString());
+    if (postForm.request_type === 4 && postForm.custom_category.trim()) {
+      formData.append("custom_category", postForm.custom_category.trim());
+    }
     formData.append("is_important", postForm.is_important.toString());
     formData.append("redeemPoints", (postForm.redeemPoints ?? 0).toString());
-    if (postForm.time && postForm.time[0]) {
-      formData.append("startTime", postForm.time[0]);
-      if (postForm.time[1]) {
-        formData.append("endTime", postForm.time[1]);
-      }
-    }
 
     formData.append("payment_method", (postForm.paymentMethod ? postForm.paymentMethod.toString() : "0"));
 
@@ -219,13 +285,13 @@ const createPost = async () => {
       title: postForm.title,
       content: postForm.content,
       request_type: postForm.request_type,
+      custom_category: postForm.request_type === 4 ? postForm.custom_category.trim() : undefined,
+      tags: [...postForm.tags],
       share_count: 0,
       is_important: postForm.is_important,
       redeemPoints: postForm.redeemPoints ?? 0,
       paymentMethod: postForm.paymentMethod,
-      createTime: new Date(),
-      startTime: postForm.time?.[0] ? new Date(postForm.time[0]) : undefined,
-      endTime: postForm.time?.[1] ? new Date(postForm.time[1]) : undefined
+      createTime: new Date()
     }
 
     localStorage.setItem('userPosts', JSON.stringify([optimisticPost, ...localPosts]))
@@ -318,6 +384,24 @@ const handleCancel = () => {
   margin-top: 8px;
   font-size: 16px;
   color: #999;
+}
+
+.post-tags-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.tag-input-row {
+  width: 100%;
+  max-width: 520px;
+}
+
+.selected-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* Dark mode support */

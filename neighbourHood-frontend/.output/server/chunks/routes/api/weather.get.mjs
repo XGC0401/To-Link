@@ -94,11 +94,16 @@ const weather_get = defineEventHandler(async (event) => {
     const first = (_d = geocodeData.results) == null ? void 0 : _d[0];
     if (first == null ? void 0 : first.name) {
       city = first.name;
+    } else if (first == null ? void 0 : first.admin1) {
+      city = first.admin1;
     }
     if (first == null ? void 0 : first.country) {
       country = first.country;
     }
   } catch {
+  }
+  if (!country && resolved.countryHint) {
+    country = resolved.countryHint;
   }
   const dailyTimes = ((_e = weatherData.daily) == null ? void 0 : _e.time) || [];
   const dailyCodes = ((_f = weatherData.daily) == null ? void 0 : _f.weather_code) || [];

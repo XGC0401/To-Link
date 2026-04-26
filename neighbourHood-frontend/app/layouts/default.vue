@@ -93,9 +93,34 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <el-badge :value="notifications" class="notification-badge">
-            <el-button text :icon="Bell" />
-          </el-badge>
+          <el-dropdown trigger="click" class="notification-dropdown" @visible-change="handleNotificationVisible">
+            <el-badge :value="notifications" :hidden="notifications === 0" class="notification-badge">
+              <el-button text :icon="Bell" />
+            </el-badge>
+            <template #dropdown>
+              <el-dropdown-menu class="notification-menu">
+                <div class="notification-menu-header">
+                  <span>{{ $t('notifications') }}</span>
+                  <el-button text size="small" @click="markAllNotificationsRead">{{ $t('markAllRead') }}</el-button>
+                </div>
+                <el-dropdown-item v-if="notificationItems.length === 0" disabled>
+                  {{ $t('noNotifications') }}
+                </el-dropdown-item>
+                <el-dropdown-item
+                  v-for="item in notificationItems.slice(0, 8)"
+                  :key="item.id"
+                  class="notification-item"
+                  :class="{ 'notification-item-unread': !item.read }"
+                >
+                  <div class="notification-item-content">
+                    <p class="notification-item-title">{{ item.title }}</p>
+                    <p class="notification-item-message">{{ item.message }}</p>
+                    <p class="notification-item-time">{{ formatNotificationTime(item.time) }}</p>
+                  </div>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <el-dropdown @command="handleEmergencyCommand">
             <el-button type="danger" circle size="large" class="emergency-btn">
               <span class="emergency-icon">!</span>
@@ -221,13 +246,26 @@ const route = useRoute()
 const { locale, t, setLocale } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
 const searchQuery = ref('')
-const notifications = ref(3)
 const activeMenuPath = ref(route.path)
 const userProfile = ref<any>(null)
 const userSettings = ref<any>(null)
 const showFeedbackDialog = ref(false)
 const feedbackTitle = ref('')
 const feedbackType = ref<'app' | 'community'>('app')
+
+interface AppNotification {
+  id: string
+  title: string
+  message: string
+  time: string
+  read: boolean
+}
+
+const notificationItems = ref<AppNotification[]>([])
+
+const notifications = computed(() => {
+  return notificationItems.value.filter((item) => !item.read).length
+})
 
 // Computed property for user avatar
 const userAvatar = computed(() => {
@@ -327,11 +365,74 @@ const loadUserLanguage = () => {
   }
 }
 
+const persistNotifications = () => {
+  localStorage.setItem('appNotifications', JSON.stringify(notificationItems.value))
+}
+
+const loadNotifications = () => {
+  const raw = localStorage.getItem('appNotifications')
+  if (!raw) {
+    notificationItems.value = []
+    return
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) {
+      notificationItems.value = parsed
+    }
+  } catch {
+    notificationItems.value = []
+  }
+}
+
+const addNotification = (title: string, message: string) => {
+  const item: AppNotification = {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+    title,
+    message,
+    time: new Date().toISOString(),
+    read: false
+  }
+
+  notificationItems.value = [item, ...notificationItems.value].slice(0, 50)
+  persistNotifications()
+}
+
+const markAllNotificationsRead = () => {
+  notificationItems.value = notificationItems.value.map((item) => ({
+    ...item,
+    read: true
+  }))
+  persistNotifications()
+}
+
+const handleNotificationVisible = (visible: boolean) => {
+  if (visible) {
+    markAllNotificationsRead()
+  }
+}
+
+const formatNotificationTime = (time: string) => {
+  const date = new Date(time)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+
+  return date.toLocaleString(locale.value === 'zh' ? 'zh-HK' : 'en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
 // Load profile on mount
 onMounted(() => {
   loadUserLanguage()
   loadUserProfile()
   loadUserSettings()
+  loadNotifications()
   
   // Listen for storage changes (when profile is updated in another tab or by profile page)
   window.addEventListener('storage', () => {
@@ -418,6 +519,11 @@ const handleFeedbackSubmit = (data: any) => {
     timestamp: new Date().toISOString()
   })
   localStorage.setItem('feedbacks', JSON.stringify(feedbacks))
+
+  addNotification(
+    feedbackType.value === 'app' ? t('appFeedback') : t('communityFeedback'),
+    t('feedbackSubmitted')
+  )
 }
 
 // Handle emergency dropdown commands
@@ -465,6 +571,8 @@ const handleEmergencyCommand = (command: string) => {
     conv.lastMessageTime = timeStr
 
     localStorage.setItem('chatConversations', JSON.stringify(conversations))
+
+    addNotification(t('notice'), text)
 
     ElMessage.success(t('emergencySent'))
     // Optionally navigate to chat page
@@ -534,6 +642,56 @@ const handleEmergencyCommand = (command: string) => {
 
 .notification-badge {
   cursor: pointer;
+}
+
+.notification-menu {
+  min-width: 320px;
+  max-width: 360px;
+}
+
+.notification-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eceff5;
+  font-weight: 600;
+}
+
+.notification-item {
+  white-space: normal;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.notification-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.notification-item-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #25305c;
+}
+
+.notification-item-message {
+  margin: 0;
+  font-size: 13px;
+  color: #5f6c97;
+  line-height: 1.4;
+}
+
+.notification-item-time {
+  margin: 0;
+  font-size: 12px;
+  color: #8b94b4;
+}
+
+.notification-item-unread {
+  background: rgba(64, 158, 255, 0.08);
 }
 
 .emergency-btn {
@@ -849,6 +1007,26 @@ const handleEmergencyCommand = (command: string) => {
 
 .dark .app-title {
   color: #e5e5e5 !important;
+}
+
+.dark .notification-menu-header {
+  border-bottom-color: #3f4660;
+}
+
+.dark .notification-item-title {
+  color: #e6ebff;
+}
+
+.dark .notification-item-message {
+  color: #b7c1e8;
+}
+
+.dark .notification-item-time {
+  color: #8f9ac8;
+}
+
+.dark .notification-item-unread {
+  background: rgba(64, 158, 255, 0.18);
 }
 
 .dark .app-sidebar {

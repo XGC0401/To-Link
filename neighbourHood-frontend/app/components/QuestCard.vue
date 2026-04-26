@@ -46,8 +46,19 @@
       </p>
       
       <div class="quest-tags">
-        <el-tag v-for="tag in quest.tags.slice(0, 3)" :key="tag" class="tag-item">#{{ tag }}</el-tag>
+        <el-tag v-for="tag in quest.tags.slice(0, 3)" :key="tag" class="tag-item">{{ formatTag(tag) }}</el-tag>
         <el-tag v-if="quest.tags.length > 3" class="tag-item">+{{ quest.tags.length - 3 }}</el-tag>
+      </div>
+
+      <div v-if="quest.photos?.length" class="quest-photos">
+        <el-image
+          v-for="(photo, index) in quest.photos.slice(0, 3)"
+          :key="`${quest.id}-photo-${index}`"
+          :src="photo"
+          fit="cover"
+          class="quest-photo-item"
+          :preview-src-list="quest.photos"
+        />
       </div>
 
       <div class="quest-payment">
@@ -109,6 +120,7 @@ interface Quest {
   paymentMethod: 'face-to-face' | 'online'
   rewardPoints: number
   time: string
+  photos?: string[]
   acceptedBy: string | null
   status?: 'open' | 'hold' | 'accepted'
 }
@@ -153,6 +165,10 @@ function truncateText(text: string, maxLength: number): string {
     return text
   }
   return text.substring(0, maxLength)
+}
+
+function formatTag(tag: string): string {
+  return tag.startsWith('#') ? tag : `#${tag}`
 }
 
 function handleCardClick() {
@@ -283,6 +299,19 @@ function handleCardClick() {
 
 .quest-status {
   margin-top: 12px;
+}
+
+.quest-photos {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.quest-photo-item {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
 }
 
 .quest-footer {

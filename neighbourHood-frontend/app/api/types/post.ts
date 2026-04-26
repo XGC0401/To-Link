@@ -5,6 +5,8 @@ export interface Post {
   title: string
   content: string
   request_type: number
+  custom_category?: string
+  tags?: string[]
   // likeUsers?: Array<PostUser>
   share_count: number
   acceptUser?: PostUser | null
@@ -22,10 +24,11 @@ export interface PostRequest {
   title: string
   content: string
   request_type: number
+  custom_category?: string
+  tags?: string[]
   paymentMethod?: number
   is_important: boolean
   redeemPoints: number
-  time: Date[]
 }
 
 export interface postPhoto {

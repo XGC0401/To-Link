@@ -98,7 +98,7 @@
               <p>{{ post.content }}</p>
               <div class="post-tags">
                 <el-tag v-if="isMyPost(post)" type="info" class="post-tag">{{ $t('yourPost') }}</el-tag>
-                <el-tag class="post-tag">{{ getCategoryLabel(post.request_type) }}</el-tag>
+                <el-tag class="post-tag">{{ getCategoryLabel(post) }}</el-tag>
                 <el-tag v-if="post.is_important" type="danger" class="post-tag">{{ $t('important') }}</el-tag>
                 <el-tag v-if="post.redeemPoints" type="warning" class="post-tag">
                   {{ post.redeemPoints }} {{ $t('points') }}
@@ -111,6 +111,10 @@
                 <el-space>
                   <el-button text :icon="Star">{{ 0 }}</el-button>
                   <el-button text :icon="ChatDotRound">{{ 0 }}</el-button>
+                </el-space>
+                <el-space v-if="isMyPost(post)">
+                  <el-button text type="primary" :icon="Edit" @click="editPost(post)">{{ $t('edit') }}</el-button>
+                  <el-button text type="danger" :icon="Delete" @click="deletePost(post)">{{ $t('delete') }}</el-button>
                 </el-space>
               </div>
             </template>
@@ -204,6 +208,8 @@
       </div>
     </div>
     </div>
+
+    <EditPostDialog v-model="showEditPostDialog" :post="selectedEditPost" @save="saveEditedPost" />
   </NuxtLayout>
 </template>
 
@@ -211,9 +217,10 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Edit,
+  Delete,
   Star,
   ChatDotRound,
   Loading
@@ -221,6 +228,7 @@ import {
 import { getPost } from '~/api/post'
 import { getUser } from '~/api/auth'
 import type { Post } from '~/api/types/post'
+import EditPostDialog from '~/components/EditPostDialog.vue'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -229,6 +237,8 @@ const questRequests = ref<any[]>([])
 const isLoadingPosts = ref(false)
 const currentUserEmail = ref<string>('')
 const currentUserId = ref<string>('')
+const showEditPostDialog = ref(false)
+const selectedEditPost = ref<Post | null>(null)
 
 type WeatherDay = {
   date: string
@@ -511,15 +521,23 @@ const formatDate = (date: Date | undefined) => {
 }
 
 // Get category label
-const getCategoryLabel = (requestType: number) => {
+const getCategoryLabel = (post: Post) => {
+  if (post.request_type === 4 && post.custom_category) {
+    return post.custom_category
+  }
+
   const categories: Record<number, string> = {
     0: t('shopping'),
     1: t('repair'),
     2: t('care'),
     3: t('daily'),
+    5: t('eventOrganizing'),
+    6: t('studySupport'),
+    7: t('petSupport'),
+    8: t('sportsAndWellness'),
     4: t('other')
   }
-  return categories[requestType] || t('other')
+  return categories[post.request_type] || t('other')
 }
 
 const persistQuestRequests = () => {
@@ -631,6 +649,59 @@ onUnmounted(() => {
 
 const goToCreatePost = () => {
   router.push('/create-post')
+}
+
+const editPost = (post: Post) => {
+  selectedEditPost.value = post
+  showEditPostDialog.value = true
+}
+
+const saveEditedPost = (data: { id: number, title: string, content: string, category: string }) => {
+  const index = allPosts.value.findIndex((post) => post.id === data.id)
+  if (index > -1) {
+    allPosts.value[index] = {
+      ...allPosts.value[index],
+      title: data.title,
+      content: data.content,
+      custom_category: data.category || allPosts.value[index].custom_category
+    }
+  }
+
+  const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]')
+  const userPostIndex = userPosts.findIndex((post: Post) => post.id === data.id)
+  if (userPostIndex > -1) {
+    userPosts[userPostIndex] = {
+      ...userPosts[userPostIndex],
+      title: data.title,
+      content: data.content,
+      custom_category: data.category || userPosts[userPostIndex].custom_category
+    }
+    localStorage.setItem('userPosts', JSON.stringify(userPosts))
+  }
+
+  ElMessage.success(t('postUpdatedSuccess'))
+}
+
+const deletePost = (post: Post) => {
+  ElMessageBox.confirm(
+    t('confirmDeletePostMessage'),
+    t('deletePostTitle'),
+    {
+      confirmButtonText: t('delete'),
+      cancelButtonText: t('cancel'),
+      type: 'warning'
+    }
+  ).then(() => {
+    allPosts.value = allPosts.value.filter((item) => item.id !== post.id)
+
+    const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]')
+      .filter((item: Post) => item.id !== post.id)
+    localStorage.setItem('userPosts', JSON.stringify(userPosts))
+
+    ElMessage.success(t('postDeletedSuccess'))
+  }).catch(() => {
+    // no-op
+  })
 }
 </script>
 

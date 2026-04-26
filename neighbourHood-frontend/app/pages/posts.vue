@@ -241,17 +241,18 @@ const questFormDraft = ref({
   rewardPoints: 50
 })
 
-const availableTags = [
-  'Physical Help',
-  'Moving',
-  'Pet Care',
-  'Tech',
-  'Design',
-  'Tutoring',
-  'Errands',
-  'Gardening',
-  'Cleaning'
-]
+const availableTags = computed(() => [
+  t('tagPhysicalHelp'),
+  t('tagMoving'),
+  t('tagPetCare'),
+  t('tagTech'),
+  t('tagDesign'),
+  t('tagTutoring'),
+  t('tagErrands'),
+  t('tagGardening'),
+  t('tagCleaning'),
+  t('other')
+])
 
 // Post Detail Dialog
 const showPostDetailDialog = ref(false)
@@ -409,6 +410,7 @@ function createQuest(questData: any) {
     tags: [...questData.tags],
     paymentMethod: questData.paymentMethod,
     rewardPoints: questData.rewardPoints,
+    photos: Array.isArray(questData.photos) ? questData.photos : [],
     time: 'Just now',
     acceptedBy: null,
     acceptedById: null,
@@ -658,7 +660,7 @@ function editQuest(quest: any) {
   showEditQuestDialog.value = true
 }
 
-function saveEditedQuest(data: { id: number, title: string, detail: string, tags: string[], paymentMethod: string, rewardPoints: number }) {
+function saveEditedQuest(data: { id: number, title: string, detail: string, tags: string[], paymentMethod: string, rewardPoints: number, photos: string[] }) {
   const questIndex = questRequests.value.findIndex(q => q.id === data.id)
   if (questIndex > -1) {
     questRequests.value[questIndex] = {
@@ -667,7 +669,8 @@ function saveEditedQuest(data: { id: number, title: string, detail: string, tags
       detail: data.detail,
       tags: data.tags,
       paymentMethod: data.paymentMethod,
-      rewardPoints: data.rewardPoints
+      rewardPoints: data.rewardPoints,
+      photos: data.photos
     }
 
     // Update localStorage
@@ -680,7 +683,8 @@ function saveEditedQuest(data: { id: number, title: string, detail: string, tags
         detail: data.detail,
         tags: data.tags,
         paymentMethod: data.paymentMethod,
-        rewardPoints: data.rewardPoints
+        rewardPoints: data.rewardPoints,
+        photos: data.photos
       }
       localStorage.setItem('userQuests', JSON.stringify(userQuests))
     }

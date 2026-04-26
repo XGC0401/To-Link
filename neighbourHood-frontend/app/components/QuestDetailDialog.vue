@@ -25,7 +25,21 @@
 
         <h4 style="margin-top: 20px;">{{ $t('tags') }}</h4>
         <div class="quest-tags" style="margin-top: 8px;">
-          <el-tag v-for="tag in quest.tags" :key="tag" class="tag-item">#{{ tag }}</el-tag>
+          <el-tag v-for="tag in quest.tags" :key="tag" class="tag-item">{{ formatTag(tag) }}</el-tag>
+        </div>
+
+        <div v-if="quest.photos?.length" style="margin-top: 20px;">
+          <h4>{{ $t('imagesOptional') }}</h4>
+          <div class="quest-photos" style="margin-top: 8px;">
+            <el-image
+              v-for="(photo, index) in quest.photos"
+              :key="`${quest.id}-photo-${index}`"
+              :src="photo"
+              fit="cover"
+              class="quest-photo-item"
+              :preview-src-list="quest.photos"
+            />
+          </div>
         </div>
 
         <h4 style="margin-top: 20px;">{{ $t('paymentMethod') }}</h4>
@@ -85,8 +99,13 @@ interface Quest {
   paymentMethod: 'face-to-face' | 'online'
   rewardPoints: number
   time: string
+  photos?: string[]
   acceptedBy: string | null
   status?: 'open' | 'hold' | 'accepted'
+}
+
+const formatTag = (tag: string) => {
+  return tag.startsWith('#') ? tag : `#${tag}`
 }
 
 defineProps<{
@@ -157,6 +176,18 @@ defineEmits<{
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.quest-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quest-photo-item {
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
 }
 
 .tag-item {
