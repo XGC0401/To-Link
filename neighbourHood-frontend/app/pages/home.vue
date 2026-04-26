@@ -237,6 +237,8 @@ const questRequests = ref<any[]>([])
 const isLoadingPosts = ref(false)
 const currentUserEmail = ref<string>('')
 const currentUserId = ref<string>('')
+const currentUserName = ref<string>('')
+const myPostIds = ref<number[]>([])
 const showEditPostDialog = ref(false)
 const selectedEditPost = ref<Post | null>(null)
 
@@ -511,7 +513,25 @@ const acceptedQuests = computed(() => {
 
 // Check if post belongs to current user
 const isMyPost = (post: Post) => {
-  return currentUserEmail.value && post.user?.email === currentUserEmail.value
+  if (myPostIds.value.includes(post.id)) {
+    return true
+  }
+
+  const userEmail = post.user?.email ? String(post.user.email).toLowerCase() : ''
+  const mineEmail = currentUserEmail.value ? String(currentUserEmail.value).toLowerCase() : ''
+  if (userEmail && mineEmail && userEmail === mineEmail) {
+    return true
+  }
+
+  const userUuid = post.user?.uuid ? String(post.user.uuid) : ''
+  const mineUuid = currentUserId.value ? String(currentUserId.value) : ''
+  if (userUuid && mineUuid && userUuid === mineUuid) {
+    return true
+  }
+
+  const userName = post.user?.username ? String(post.user.username).toLowerCase() : ''
+  const mineName = currentUserName.value ? String(currentUserName.value).toLowerCase() : ''
+  return Boolean(userName && mineName && userName === mineName)
 }
 
 // Format date helper
@@ -565,6 +585,26 @@ const approveApplicant = (questId: number, applicantId: string) => {
 
 // Load posts from API and accepted quests from localStorage
 onMounted(async () => {
+  const savedProfileRaw = localStorage.getItem('userProfile')
+  if (savedProfileRaw) {
+    try {
+      const savedProfile = JSON.parse(savedProfileRaw)
+      currentUserEmail.value = String(savedProfile?.email || '')
+      currentUserId.value = String(savedProfile?.uuid || savedProfile?.email || '')
+      currentUserName.value = String(savedProfile?.name || savedProfile?.username || '')
+    } catch {
+      // no-op
+    }
+  }
+
+  const userPostsRaw = localStorage.getItem('userPosts')
+  const userPosts = userPostsRaw ? JSON.parse(userPostsRaw) : []
+  if (Array.isArray(userPosts) && userPosts.length > 0) {
+    myPostIds.value = userPosts
+      .map((post: Post) => post.id)
+      .filter((id: unknown): id is number => typeof id === 'number')
+  }
+
   if (typeof navigator !== 'undefined' && navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -598,6 +638,7 @@ onMounted(async () => {
     if (!userError && userData) {
       currentUserEmail.value = userData.email as string
       currentUserId.value = String((userData as any).uuid || userData.email)
+      currentUserName.value = String((userData as any).username || '')
       console.log('Current user loaded:', currentUserEmail.value)
     }
   } catch (err) {
@@ -620,8 +661,6 @@ onMounted(async () => {
   // Fetch recent posts from API
   isLoadingPosts.value = true
   try {
-    const userPostsRaw = localStorage.getItem('userPosts')
-    const userPosts = userPostsRaw ? JSON.parse(userPostsRaw) : []
     if (Array.isArray(userPosts) && userPosts.length > 0) {
       allPosts.value = mergePosts(userPosts, allPosts.value)
     }
@@ -677,6 +716,9 @@ const saveEditedPost = (data: { id: number, title: string, content: string, cate
       custom_category: data.category || userPosts[userPostIndex].custom_category
     }
     localStorage.setItem('userPosts', JSON.stringify(userPosts))
+    myPostIds.value = userPosts
+      .map((post: Post) => post.id)
+      .filter((id: unknown): id is number => typeof id === 'number')
   }
 
   ElMessage.success(t('postUpdatedSuccess'))
@@ -697,6 +739,9 @@ const deletePost = (post: Post) => {
     const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]')
       .filter((item: Post) => item.id !== post.id)
     localStorage.setItem('userPosts', JSON.stringify(userPosts))
+    myPostIds.value = userPosts
+      .map((item: Post) => item.id)
+      .filter((id: unknown): id is number => typeof id === 'number')
 
     ElMessage.success(t('postDeletedSuccess'))
   }).catch(() => {
