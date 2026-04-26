@@ -459,19 +459,53 @@ const refreshWeatherCard = async () => {
 }
 
 const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
-  const postMap = new Map<number, Post>()
+  const normalize = (value: unknown) => String(value || '').trim().toLowerCase()
+  const buildSignature = (post: Post) => {
+    const tags = Array.isArray(post.tags) ? [...post.tags].map(normalize).sort().join('|') : ''
+    return [
+      normalize(post.title),
+      normalize(post.content),
+      String(post.request_type ?? ''),
+      normalize(post.custom_category),
+      tags,
+      String(post.redeemPoints ?? ''),
+      String(post.is_important ?? false)
+    ].join('::')
+  }
 
-  ;[...localPosts, ...remotePosts].forEach((post) => {
+  const postMap = new Map<number, Post>()
+  const remoteSignatures = new Set<string>()
+
+  remotePosts.forEach((post) => {
     if (!post || typeof post.id !== 'number') {
       return
     }
 
-    const existing = postMap.get(post.id)
-    postMap.set(post.id, {
-      ...existing,
-      ...post,
-      user: post.user || existing?.user
-    })
+    remoteSignatures.add(buildSignature(post))
+    postMap.set(post.id, post)
+  })
+
+  localPosts.forEach((post) => {
+    if (!post || typeof post.id !== 'number') {
+      return
+    }
+
+    if (postMap.has(post.id)) {
+      const existing = postMap.get(post.id)
+      postMap.set(post.id, {
+        ...post,
+        ...existing,
+        user: existing?.user || post.user
+      })
+      return
+    }
+
+    const signature = buildSignature(post)
+    if (remoteSignatures.has(signature)) {
+      return
+    }
+
+    postMap.set(post.id, post)
   })
 
   return Array.from(postMap.values()).sort((a, b) => {

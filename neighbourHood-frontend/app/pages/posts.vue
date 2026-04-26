@@ -166,6 +166,63 @@ const currentUserRewardPoints = computed(() => currentUser.value.rewardPoints)
 
 const posts = ref<Post[]>([]);
 
+const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
+  const normalize = (value: unknown) => String(value || '').trim().toLowerCase()
+  const buildSignature = (post: Post) => {
+    const tags = Array.isArray(post.tags) ? [...post.tags].map(normalize).sort().join('|') : ''
+    return [
+      normalize(post.title),
+      normalize(post.content),
+      String(post.request_type ?? ''),
+      normalize(post.custom_category),
+      tags,
+      String(post.redeemPoints ?? ''),
+      String(post.is_important ?? false)
+    ].join('::')
+  }
+
+  const postMap = new Map<number, Post>()
+  const remoteSignatures = new Set<string>()
+
+  remotePosts.forEach((post) => {
+    if (!post || typeof post.id !== 'number') {
+      return
+    }
+
+    remoteSignatures.add(buildSignature(post))
+    postMap.set(post.id, post)
+  })
+
+  localPosts.forEach((post) => {
+    if (!post || typeof post.id !== 'number') {
+      return
+    }
+
+    if (postMap.has(post.id)) {
+      const existing = postMap.get(post.id)
+      postMap.set(post.id, {
+        ...post,
+        ...existing,
+        user: existing?.user || post.user
+      })
+      return
+    }
+
+    const signature = buildSignature(post)
+    if (remoteSignatures.has(signature)) {
+      return
+    }
+
+    postMap.set(post.id, post)
+  })
+
+  return Array.from(postMap.values()).sort((a, b) => {
+    const left = a.createTime ? new Date(a.createTime).getTime() : a.id
+    const right = b.createTime ? new Date(b.createTime).getTime() : b.id
+    return right - left
+  })
+}
+
 // Quest Requests
 const questRequests = ref([
   {
@@ -743,18 +800,18 @@ onMounted(async () => {
   // Load cached posts immediately for instant display
   const cachedPosts = localStorage.getItem('cachedPosts')
   const userPosts = localStorage.getItem('userPosts')
+  const userPostsParsed = userPosts ? JSON.parse(userPosts) : []
   
   if (cachedPosts) {
     try {
       const parsed = JSON.parse(cachedPosts)
-      const userPostsParsed = userPosts ? JSON.parse(userPosts) : []
-      posts.value = [...userPostsParsed, ...parsed]
+      posts.value = mergePosts(userPostsParsed, parsed)
     } catch (e) {
       console.error('Error parsing cached posts', e)
     }
   } else if (userPosts) {
     try {
-      posts.value = JSON.parse(userPosts)
+      posts.value = mergePosts(userPostsParsed, [])
     } catch (e) {
       console.error('Error parsing user posts', e)
     }
@@ -789,8 +846,7 @@ onMounted(async () => {
       localStorage.setItem('cachedPosts', JSON.stringify(data.data))
       
       // Update posts with fresh data
-      const userPostsParsed = userPosts ? JSON.parse(userPosts) : []
-      posts.value = [...userPostsParsed, ...data.data]
+      posts.value = mergePosts(userPostsParsed, data.data)
     } else {
       console.error('wrong data format', data);
       if (posts.value.length === 0) {
