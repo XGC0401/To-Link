@@ -483,6 +483,16 @@ const handleLogin = async () => {
       await navigateTo('/home')
     } else if (error) {
       showError.value = true
+      if (error.code === 'ECONNABORTED') {
+        errorMessage.value = `[NETWORK_TIMEOUT] ${t('serverWakingUp')}`
+        return
+      }
+
+      if (!error.response) {
+        errorMessage.value = `[NETWORK] ${t('networkUnavailable')}`
+        return
+      }
+
       const errorCode = error.response?.data?.code || 'UNKNOWN'
       const serverMessage = error.response?.data?.message || error.response?.data || ''
       if (serverMessage) {
@@ -495,7 +505,12 @@ const handleLogin = async () => {
     }
   } catch (error) {
     showError.value = true
-    errorMessage.value = `[UNKNOWN] ${t('logingFailed')}`
+    const currentError = error as { code?: string }
+    if (currentError?.code === 'ECONNABORTED') {
+      errorMessage.value = `[NETWORK_TIMEOUT] ${t('serverWakingUp')}`
+    } else {
+      errorMessage.value = `[UNKNOWN] ${t('logingFailed')}`
+    }
   } finally {
     isLoggingIn.value = false
   }

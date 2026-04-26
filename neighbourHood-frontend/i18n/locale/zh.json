@@ -242,6 +242,8 @@
   "registrationSuccess": "註冊成功！請登入。",
   "registrationFailed": "註冊失敗",
   "invalidCredentials": "電郵或密碼錯誤",
+  "serverWakingUp": "伺服器正在啟動中，請等 30-60 秒後再試。",
+  "networkUnavailable": "目前無法連線到伺服器，請檢查網絡後重試。",
   "logingFailed": "登入失敗，請重試。",
   "profileSettings": "個人資料設定",
   "profilePicture": "個人頭像",

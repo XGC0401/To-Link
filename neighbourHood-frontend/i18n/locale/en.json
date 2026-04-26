@@ -243,6 +243,8 @@
   "registrationSuccess": "Registration successful! Please log in.",
   "registrationFailed": "Registration failed",
   "invalidCredentials": "Invalid email or password",
+  "serverWakingUp": "Server is waking up. Please wait 30-60 seconds and try again.",
+  "networkUnavailable": "Cannot reach server right now. Please check network and try again.",
   "logingFailed": "Login failed. Please try again.",
   "profileSettings": "Profile Settings",
   "profilePicture": "Profile Picture",
