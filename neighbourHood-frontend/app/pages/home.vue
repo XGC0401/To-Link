@@ -239,6 +239,7 @@ const currentUserEmail = ref<string>('')
 const currentUserId = ref<string>('')
 const currentUserName = ref<string>('')
 const myPostIds = ref<number[]>([])
+const deletedPostIds = ref<number[]>([])
 const showEditPostDialog = ref(false)
 const selectedEditPost = ref<Post | null>(null)
 
@@ -459,6 +460,7 @@ const refreshWeatherCard = async () => {
 }
 
 const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
+  const blacklist = new Set(deletedPostIds.value)
   const normalize = (value: unknown) => String(value || '').trim().toLowerCase()
   const buildSignature = (post: Post) => {
     const tags = Array.isArray(post.tags) ? [...post.tags].map(normalize).sort().join('|') : ''
@@ -480,6 +482,9 @@ const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
     if (!post || typeof post.id !== 'number') {
       return
     }
+    if (blacklist.has(post.id)) {
+      return
+    }
 
     remoteSignatures.add(buildSignature(post))
     postMap.set(post.id, post)
@@ -487,6 +492,9 @@ const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
 
   localPosts.forEach((post) => {
     if (!post || typeof post.id !== 'number') {
+      return
+    }
+    if (blacklist.has(post.id)) {
       return
     }
 
@@ -547,6 +555,10 @@ const acceptedQuests = computed(() => {
 
 // Check if post belongs to current user
 const isMyPost = (post: Post) => {
+  if (typeof post.id === 'number' && deletedPostIds.value.includes(post.id)) {
+    return false
+  }
+
   if (myPostIds.value.includes(post.id)) {
     return true
   }
@@ -637,6 +649,18 @@ onMounted(async () => {
     myPostIds.value = userPosts
       .map((post: Post) => post.id)
       .filter((id: unknown): id is number => typeof id === 'number')
+  }
+
+  const deletedIdsRaw = localStorage.getItem('deletedPostIds')
+  if (deletedIdsRaw) {
+    try {
+      const parsed = JSON.parse(deletedIdsRaw)
+      if (Array.isArray(parsed)) {
+        deletedPostIds.value = parsed.filter((id: unknown): id is number => typeof id === 'number')
+      }
+    } catch {
+      // no-op
+    }
   }
 
   if (typeof navigator !== 'undefined' && navigator.geolocation) {
@@ -776,6 +800,11 @@ const deletePost = (post: Post) => {
     myPostIds.value = userPosts
       .map((item: Post) => item.id)
       .filter((id: unknown): id is number => typeof id === 'number')
+
+    if (typeof post.id === 'number') {
+      deletedPostIds.value = [...new Set([...deletedPostIds.value, post.id])]
+      localStorage.setItem('deletedPostIds', JSON.stringify(deletedPostIds.value))
+    }
 
     ElMessage.success(t('postDeletedSuccess'))
   }).catch(() => {
