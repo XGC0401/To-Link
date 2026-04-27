@@ -110,12 +110,13 @@
                   v-for="item in notificationItems.slice(0, 8)"
                   :key="item.id"
                   class="notification-item"
-                  :class="{ 'notification-item-unread': !item.read }"
+                  :class="{ 'notification-item-unread': !item.read, 'notification-item-clickable': item.type === 'chat' || item.type === 'post_removed' }"
+                  @click="handleNotificationClick(item)"
                 >
                   <div class="notification-item-content">
                     <p class="notification-item-title">{{ item.title }}</p>
                     <p class="notification-item-message">{{ item.message }}</p>
-                    <p class="notification-item-time">{{ formatNotificationTime(item.time) }}</p>
+                    <p class="notification-item-time">{{ formatRelativeTime(item.time) }}</p>
                   </div>
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -207,11 +208,88 @@
       :feedback-type="feedbackType"
       @submit="handleFeedbackSubmit"
     />
+
+    <!-- Post Removal Detail Dialog -->
+    <el-dialog
+      v-model="showRemovalDetailDialog"
+      :title="$t('postRemovalDetailTitle')"
+      width="520px"
+      :close-on-click-modal="false"
+    >
+      <div v-if="activeRemovalNotification" class="removal-detail-body">
+        <el-descriptions :column="1" border>
+          <el-descriptions-item :label="$t('postTitle')">
+            {{ activeRemovalNotification.meta?.postTitle || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item :label="$t('postCreateDate')">
+            {{ formatRemovalDate(activeRemovalNotification.meta?.postCreateTime) }}
+          </el-descriptions-item>
+          <el-descriptions-item :label="$t('postRemovalDate')">
+            {{ formatRemovalDate(activeRemovalNotification.meta?.removalTime) }}
+          </el-descriptions-item>
+          <el-descriptions-item :label="$t('removalReason')">
+            {{ $t('deleteTag_' + activeRemovalNotification.meta?.removalTag) }}
+          </el-descriptions-item>
+          <el-descriptions-item :label="$t('removalDescription')">
+            {{ activeRemovalNotification.meta?.removalDescription || '-' }}
+          </el-descriptions-item>
+        </el-descriptions>
+        <div v-if="activeRemovalNotification.meta?.postContent" class="removal-post-content">
+          <p class="removal-section-label">{{ $t('postDescription') }}</p>
+          <p class="removal-post-text">{{ activeRemovalNotification.meta.postContent }}</p>
+        </div>
+        <div
+          v-if="activeRemovalNotification.meta?.postPhotos && activeRemovalNotification.meta.postPhotos.length > 0"
+          class="removal-photos"
+        >
+          <p class="removal-section-label">{{ $t('postPhotos') }}</p>
+          <div class="removal-photos-grid">
+            <el-image
+              v-for="(photo, idx) in activeRemovalNotification.meta.postPhotos"
+              :key="idx"
+              :src="photo.url || photo"
+              fit="cover"
+              class="removal-photo-item"
+              :preview-src-list="activeRemovalNotification.meta.postPhotos.map((p: any) => p.url || p)"
+            />
+          </div>
+        </div>
+
+        <!-- False Removal Report -->
+        <el-divider />
+        <div v-if="!showFalseReportForm" class="false-report-trigger">
+          <el-button type="warning" plain @click="showFalseReportForm = true">
+            {{ $t('falseRemovalReportButton') }}
+          </el-button>
+        </div>
+        <div v-else class="false-report-form">
+          <p class="removal-section-label">{{ $t('falseRemovalReportLabel') }}</p>
+          <el-input
+            v-model="falseReportReason"
+            type="textarea"
+            :rows="4"
+            :placeholder="$t('falseRemovalReportPlaceholder')"
+            :maxlength="500"
+            show-word-limit
+          />
+          <div class="false-report-actions">
+            <el-button @click="showFalseReportForm = false">{{ $t('cancel') }}</el-button>
+            <el-button
+              type="primary"
+              :disabled="falseReportReason.trim().length < 10"
+              @click="submitFalseReport"
+            >
+              {{ $t('submit') }}
+            </el-button>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { navigateTo } from '#app'
 import { useI18n } from 'vue-i18n'
@@ -259,6 +337,8 @@ interface AppNotification {
   message: string
   time: string
   read: boolean
+  type?: 'chat' | 'post_removed' | 'generic'
+  meta?: Record<string, any>
 }
 
 const notificationItems = ref<AppNotification[]>([])
@@ -386,13 +466,15 @@ const loadNotifications = () => {
   }
 }
 
-const addNotification = (title: string, message: string) => {
+const addNotification = (title: string, message: string, type?: AppNotification['type'], meta?: Record<string, any>) => {
   const item: AppNotification = {
     id: `${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
     title,
     message,
     time: new Date().toISOString(),
-    read: false
+    read: false,
+    type: type || 'generic',
+    meta
   }
 
   notificationItems.value = [item, ...notificationItems.value].slice(0, 50)
@@ -427,6 +509,94 @@ const formatNotificationTime = (time: string) => {
   })
 }
 
+const formatRelativeTime = (time: string) => {
+  const date = new Date(time)
+  if (Number.isNaN(date.getTime())) return ''
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000)
+  if (diff < 60) return t('justNow')
+  const mins = Math.floor(diff / 60)
+  if (mins < 60) return t('minutesAgo', { n: mins })
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return t('hoursAgo', { n: hours })
+  const days = Math.floor(hours / 24)
+  return t('daysAgo', { n: days })
+}
+
+const formatRemovalDate = (time?: string) => {
+  if (!time) return '-'
+  const date = new Date(time)
+  if (Number.isNaN(date.getTime())) return time
+  return date.toLocaleString(locale.value === 'zh' ? 'zh-HK' : 'en-US', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
+// Removal detail dialog state
+const showRemovalDetailDialog = ref(false)
+const activeRemovalNotification = ref<AppNotification | null>(null)
+const showFalseReportForm = ref(false)
+const falseReportReason = ref('')
+
+const submitFalseReport = () => {
+  if (!activeRemovalNotification.value) return
+  const reports = JSON.parse(localStorage.getItem('falseRemovalReports') || '[]')
+  reports.push({
+    id: `report-${Date.now()}`,
+    notificationId: activeRemovalNotification.value.id,
+    postId: activeRemovalNotification.value.meta?.postId,
+    postTitle: activeRemovalNotification.value.meta?.postTitle,
+    reason: falseReportReason.value.trim(),
+    submittedAt: new Date().toISOString()
+  })
+  localStorage.setItem('falseRemovalReports', JSON.stringify(reports))
+  ElMessage.success(t('falseRemovalReportSubmitted'))
+  showFalseReportForm.value = false
+  falseReportReason.value = ''
+  showRemovalDetailDialog.value = false
+}
+
+const handleNotificationClick = (item: AppNotification) => {
+  if (item.type === 'chat' && item.meta?.conversationId) {
+    router.push({ path: '/chat', query: { userId: String(item.meta.conversationId) } })
+  } else if (item.type === 'post_removed') {
+    activeRemovalNotification.value = item
+    showFalseReportForm.value = false
+    falseReportReason.value = ''
+    showRemovalDetailDialog.value = true
+  }
+}
+
+// Listen for notification events dispatched by other pages (chat, home)
+const handleAppNotificationEvent = (event: Event) => {
+  const detail = (event as CustomEvent).detail
+  if (!detail) return
+  if (detail.type === 'chat') {
+    addNotification(
+      t('chatNotificationTitle', { name: detail.senderName }),
+      detail.message,
+      'chat',
+      { conversationId: detail.conversationId, senderName: detail.senderName }
+    )
+  } else if (detail.type === 'post_removed') {
+    addNotification(
+      t('postRemovedNotificationTitle'),
+      t('postRemovedNotificationMessage', { tag: t('deleteTag_' + detail.removalTag) }),
+      'post_removed',
+      {
+        postId: detail.postId,
+        postTitle: detail.postTitle,
+        postContent: detail.postContent,
+        postPhotos: detail.postPhotos,
+        postCreateTime: detail.postCreateTime,
+        removalTime: detail.removalTime,
+        removalTag: detail.removalTag,
+        removalDescription: detail.removalDescription
+      }
+    )
+  }
+}
+
 // Load profile on mount
 onMounted(() => {
   loadUserLanguage()
@@ -440,6 +610,13 @@ onMounted(() => {
     loadUserSettings()
     loadUserLanguage()
   })
+
+  // Listen for in-page notification events from chat.vue and home.vue
+  window.addEventListener('app:notification', handleAppNotificationEvent)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('app:notification', handleAppNotificationEvent)
 })
 
 // Watch route changes and update active menu
@@ -692,6 +869,69 @@ const handleEmergencyCommand = (command: string) => {
 
 .notification-item-unread {
   background: rgba(64, 158, 255, 0.08);
+}
+
+.notification-item-clickable {
+  cursor: pointer;
+}
+
+.notification-item-clickable:hover .notification-item-title {
+  color: var(--el-color-primary);
+  text-decoration: underline;
+}
+
+.removal-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.removal-section-label {
+  margin: 0 0 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #5f6c97;
+}
+
+.removal-post-content {
+  margin-top: 4px;
+}
+
+.removal-post-text {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.removal-photos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.removal-photo-item {
+  width: 100px;
+  height: 100px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.false-report-trigger {
+  text-align: center;
+}
+
+.false-report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.false-report-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .emergency-btn {

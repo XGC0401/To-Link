@@ -634,6 +634,51 @@ const sendMessage = () => {
   nextTick(() => {
     scrollToBottom()
   })
+
+  // Simulate auto-reply after a short delay and fire a notification event
+  const replyConversationId = selectedConversation.value.id
+  const replyConversationName = selectedConversation.value.name
+  const replyAvatar = selectedConversation.value.avatar
+  setTimeout(() => {
+    const conv = conversations.value.find(c => c.id === replyConversationId)
+    if (!conv) return
+    const autoReplies = [
+      t('chatAutoReply1'),
+      t('chatAutoReply2'),
+      t('chatAutoReply3'),
+      t('chatAutoReply4')
+    ]
+    const replyText = autoReplies[Math.floor(Math.random() * autoReplies.length)]
+    const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    const replyMsg: Message = {
+      id: (conv.messages.length || 0) + 1,
+      text: replyText,
+      sender: 'other',
+      time: replyTime
+    }
+    conv.messages.push(replyMsg)
+    conv.lastMessage = replyText
+    conv.lastMessageTime = replyTime
+    if (selectedConversationId.value !== replyConversationId) {
+      conv.unread = (conv.unread || 0) + 1
+    }
+    nextTick(() => {
+      if (selectedConversationId.value === replyConversationId) {
+        scrollToBottom()
+      }
+    })
+    // Fire global notification event so default.vue can pick it up
+    window.dispatchEvent(new CustomEvent('app:notification', {
+      detail: {
+        type: 'chat',
+        senderName: replyConversationName,
+        senderAvatar: replyAvatar,
+        conversationId: replyConversationId,
+        message: replyText,
+        time: new Date().toISOString()
+      }
+    }))
+  }, 1500 + Math.random() * 1000)
 }
 
 // Handle attachment type selection

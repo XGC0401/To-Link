@@ -517,5 +517,57 @@
   "weatherSnow": "Snow",
   "weatherThunderstorm": "Thunderstorm",
   "weatherUnknown": "Weather",
-  "weatherLocationUnknown": "Location unavailable"
+  "weatherLocationUnknown": "Location unavailable",
+
+  "adminDeletePostTitle": "Delete Post (Admin)",
+  "adminDeleteTagLabel": "Removal Reason",
+  "adminDeleteTagPlaceholder": "Select a reason",
+  "adminDeleteDescLabel": "Additional Details",
+  "adminDeleteDescPlaceholder": "Please provide further explanation (min. 5 characters)",
+  "adminDeleteConfirmLabel": "Confirmation",
+  "adminDeleteConfirmHint": "Type \"post remove confirm\" to enable the delete button.",
+  "adminDeleteConfirmPlaceholder": "post remove confirm",
+  "adminDeleteConfirmButton": "Delete Post",
+
+  "deleteTagSpam": "Spam",
+  "deleteTagInappropriate": "Inappropriate Content",
+  "deleteTagMisinformation": "Misinformation",
+  "deleteTagHarassment": "Harassment or Bullying",
+  "deleteTagDuplicate": "Duplicate Post",
+  "deleteTagOther": "Other",
+
+  "deleteTag_spam": "Spam",
+  "deleteTag_inappropriate": "Inappropriate Content",
+  "deleteTag_misinformation": "Misinformation",
+  "deleteTag_harassment": "Harassment or Bullying",
+  "deleteTag_duplicate": "Duplicate Post",
+  "deleteTag_other": "Other",
+
+  "chatNotificationTitle": "New message from {name}",
+  "chatAutoReply1": "Got it, thanks!",
+  "chatAutoReply2": "Sure, I'll get back to you shortly.",
+  "chatAutoReply3": "That sounds good!",
+  "chatAutoReply4": "Thanks for the update!",
+
+  "postRemovedNotificationTitle": "Your post has been removed",
+  "postRemovedNotificationMessage": "Your post was removed due to: {tag}",
+
+  "postRemovalDetailTitle": "Post Removal Details",
+  "postTitle": "Post Title",
+  "postCreateDate": "Post Created",
+  "postRemovalDate": "Removed On",
+  "removalReason": "Reason",
+  "removalDescription": "Details",
+  "postDescription": "Post Description",
+  "postPhotos": "Photos",
+
+  "falseRemovalReportButton": "Report False Removal",
+  "falseRemovalReportLabel": "Describe why you believe this removal was incorrect",
+  "falseRemovalReportPlaceholder": "Please explain in detail why your post should not have been removed (min. 10 characters)...",
+  "falseRemovalReportSubmitted": "Your false removal report has been submitted.",
+
+  "justNow": "Just now",
+  "minutesAgo": "{n} min ago",
+  "hoursAgo": "{n} hr ago",
+  "daysAgo": "{n} days ago"
 }

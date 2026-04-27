@@ -211,6 +211,10 @@
     </div>
 
     <EditPostDialog v-model="showEditPostDialog" :post="selectedEditPost" @save="saveEditedPost" />
+    <AdminDeletePostDialog
+      v-model="showAdminDeleteDialog"
+      @confirm="handleAdminDeleteConfirm"
+    />
   </NuxtLayout>
 </template>
 
@@ -230,6 +234,7 @@ import { getPost } from '~/api/post'
 import { getUser } from '~/api/auth'
 import type { Post } from '~/api/types/post'
 import EditPostDialog from '~/components/EditPostDialog.vue'
+import AdminDeletePostDialog from '~/components/AdminDeletePostDialog.vue'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -242,6 +247,9 @@ const currentUserName = ref<string>('')
 const myPostIds = ref<number[]>([])
 const deletedPostIds = ref<number[]>([])
 const isAdmin = computed(() => currentUserEmail.value.toLowerCase() === 'admin@gmail.com')
+
+const showAdminDeleteDialog = ref(false)
+const pendingDeletePost = ref<Post | null>(null)
 const showEditPostDialog = ref(false)
 const selectedEditPost = ref<Post | null>(null)
 
@@ -784,7 +792,73 @@ const saveEditedPost = (data: { id: number, title: string, content: string, cate
   ElMessage.success(t('postUpdatedSuccess'))
 }
 
+const performDeletion = (post: Post) => {
+  allPosts.value = allPosts.value.filter((item) => item.id !== post.id)
+
+  const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]')
+    .filter((item: Post) => item.id !== post.id)
+  localStorage.setItem('userPosts', JSON.stringify(userPosts))
+  myPostIds.value = userPosts
+    .map((item: Post) => item.id)
+    .filter((id: unknown): id is number => typeof id === 'number')
+
+  if (typeof post.id === 'number') {
+    deletedPostIds.value = [...new Set([...deletedPostIds.value, post.id])]
+    localStorage.setItem('deletedPostIds', JSON.stringify(deletedPostIds.value))
+  }
+}
+
+const handleAdminDeleteConfirm = (payload: { tag: string; description: string }) => {
+  const post = pendingDeletePost.value
+  if (!post) return
+
+  performDeletion(post)
+
+  // Store removal notification for post owner
+  const removalNotifications = JSON.parse(localStorage.getItem('postRemovalNotifications') || '[]')
+  removalNotifications.push({
+    id: `removal-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+    postId: post.id,
+    postTitle: post.title || '',
+    postContent: post.content || '',
+    postPhotos: post.photos || [],
+    postCreateTime: post.createTime || post.createdAt || '',
+    removalTime: new Date().toISOString(),
+    removalTag: payload.tag,
+    removalDescription: payload.description,
+    postAuthorEmail: post.authorEmail || post.email || ''
+  })
+  localStorage.setItem('postRemovalNotifications', JSON.stringify(removalNotifications))
+
+  // Broadcast so default.vue notification panel picks it up
+  window.dispatchEvent(new CustomEvent('app:notification', {
+    detail: {
+      type: 'post_removed',
+      postId: post.id,
+      postTitle: post.title || '',
+      postContent: post.content || '',
+      postPhotos: post.photos || [],
+      postCreateTime: post.createTime || post.createdAt || '',
+      removalTime: new Date().toISOString(),
+      removalTag: payload.tag,
+      removalDescription: payload.description,
+      time: new Date().toISOString()
+    }
+  }))
+
+  pendingDeletePost.value = null
+  ElMessage.success(t('postDeletedSuccess'))
+}
+
 const deletePost = (post: Post) => {
+  // Admin deleting another user's post → open admin form dialog
+  if (isAdmin.value && !isMyPost(post)) {
+    pendingDeletePost.value = post
+    showAdminDeleteDialog.value = true
+    return
+  }
+
+  // Own post or admin's own post → simple confirm
   ElMessageBox.confirm(
     t('confirmDeletePostMessage'),
     t('deletePostTitle'),
@@ -794,20 +868,7 @@ const deletePost = (post: Post) => {
       type: 'warning'
     }
   ).then(() => {
-    allPosts.value = allPosts.value.filter((item) => item.id !== post.id)
-
-    const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]')
-      .filter((item: Post) => item.id !== post.id)
-    localStorage.setItem('userPosts', JSON.stringify(userPosts))
-    myPostIds.value = userPosts
-      .map((item: Post) => item.id)
-      .filter((id: unknown): id is number => typeof id === 'number')
-
-    if (typeof post.id === 'number') {
-      deletedPostIds.value = [...new Set([...deletedPostIds.value, post.id])]
-      localStorage.setItem('deletedPostIds', JSON.stringify(deletedPostIds.value))
-    }
-
+    performDeletion(post)
     ElMessage.success(t('postDeletedSuccess'))
   }).catch(() => {
     // no-op

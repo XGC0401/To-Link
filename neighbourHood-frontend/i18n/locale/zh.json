@@ -516,5 +516,57 @@
   "weatherSnow": "下雪",
   "weatherThunderstorm": "雷暴",
   "weatherUnknown": "天氣",
-  "weatherLocationUnknown": "無法取得位置"
+  "weatherLocationUnknown": "無法取得位置",
+
+  "adminDeletePostTitle": "刪除帖子（管理員）",
+  "adminDeleteTagLabel": "刪除原因",
+  "adminDeleteTagPlaceholder": "請選擇原因",
+  "adminDeleteDescLabel": "詳細說明",
+  "adminDeleteDescPlaceholder": "請提供進一步說明（最少 5 個字元）",
+  "adminDeleteConfirmLabel": "確認操作",
+  "adminDeleteConfirmHint": "請輸入「post remove confirm」以啟用刪除按鈕。",
+  "adminDeleteConfirmPlaceholder": "post remove confirm",
+  "adminDeleteConfirmButton": "確認刪除帖子",
+
+  "deleteTagSpam": "垃圾資訊",
+  "deleteTagInappropriate": "不當內容",
+  "deleteTagMisinformation": "虛假資訊",
+  "deleteTagHarassment": "騷擾或欺凌",
+  "deleteTagDuplicate": "重複帖子",
+  "deleteTagOther": "其他",
+
+  "deleteTag_spam": "垃圾資訊",
+  "deleteTag_inappropriate": "不當內容",
+  "deleteTag_misinformation": "虛假資訊",
+  "deleteTag_harassment": "騷擾或欺凌",
+  "deleteTag_duplicate": "重複帖子",
+  "deleteTag_other": "其他",
+
+  "chatNotificationTitle": "{name} 發送了新訊息",
+  "chatAutoReply1": "好的，謝謝！",
+  "chatAutoReply2": "收到，我稍後回覆你。",
+  "chatAutoReply3": "聽起來不錯！",
+  "chatAutoReply4": "感謝更新！",
+
+  "postRemovedNotificationTitle": "您的帖子已被刪除",
+  "postRemovedNotificationMessage": "您的帖子已因以下原因被刪除：{tag}",
+
+  "postRemovalDetailTitle": "帖子刪除詳情",
+  "postTitle": "帖子標題",
+  "postCreateDate": "帖子建立時間",
+  "postRemovalDate": "刪除時間",
+  "removalReason": "刪除原因",
+  "removalDescription": "詳細說明",
+  "postDescription": "帖子描述",
+  "postPhotos": "相片",
+
+  "falseRemovalReportButton": "申報錯誤刪除",
+  "falseRemovalReportLabel": "請說明為何您認為此次刪除有誤",
+  "falseRemovalReportPlaceholder": "請詳細說明您的帖子不應被刪除的原因（最少 10 個字元）...",
+  "falseRemovalReportSubmitted": "您的錯誤刪除申報已提交。",
+
+  "justNow": "剛剛",
+  "minutesAgo": "{n} 分鐘前",
+  "hoursAgo": "{n} 小時前",
+  "daysAgo": "{n} 天前"
 }
