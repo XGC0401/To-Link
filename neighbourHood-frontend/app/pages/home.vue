@@ -98,6 +98,7 @@
               <p>{{ post.content }}</p>
               <div class="post-tags">
                 <el-tag v-if="isMyPost(post)" type="info" class="post-tag">{{ $t('yourPost') }}</el-tag>
+                <el-tag v-if="isAdmin && !isMyPost(post)" type="danger" size="small" class="post-tag">{{ $t('admin') }}</el-tag>
                 <el-tag class="post-tag">{{ getCategoryLabel(post) }}</el-tag>
                 <el-tag v-if="post.is_important" type="danger" class="post-tag">{{ $t('important') }}</el-tag>
                 <el-tag v-if="post.redeemPoints" type="warning" class="post-tag">
@@ -112,8 +113,8 @@
                   <el-button text :icon="Star">{{ 0 }}</el-button>
                   <el-button text :icon="ChatDotRound">{{ 0 }}</el-button>
                 </el-space>
-                <el-space v-if="isMyPost(post)">
-                  <el-button text type="primary" :icon="Edit" @click="editPost(post)">{{ $t('edit') }}</el-button>
+                <el-space v-if="isMyPost(post) || isAdmin">
+                  <el-button v-if="isMyPost(post)" text type="primary" :icon="Edit" @click="editPost(post)">{{ $t('edit') }}</el-button>
                   <el-button text type="danger" :icon="Delete" @click="deletePost(post)">{{ $t('delete') }}</el-button>
                 </el-space>
               </div>
@@ -240,6 +241,7 @@ const currentUserId = ref<string>('')
 const currentUserName = ref<string>('')
 const myPostIds = ref<number[]>([])
 const deletedPostIds = ref<number[]>([])
+const isAdmin = computed(() => currentUserEmail.value.toLowerCase() === 'admin@gmail.com')
 const showEditPostDialog = ref(false)
 const selectedEditPost = ref<Post | null>(null)
 
