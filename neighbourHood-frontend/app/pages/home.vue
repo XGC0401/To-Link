@@ -246,7 +246,7 @@ const currentUserId = ref<string>('')
 const currentUserName = ref<string>('')
 const myPostIds = ref<number[]>([])
 const deletedPostIds = ref<number[]>([])
-const isAdmin = computed(() => currentUserEmail.value.toLowerCase() === 'admin@gmail.com')
+const isAdmin = computed(() => String(currentUserEmail.value || '').toLowerCase() === 'admin@gmail.com')
 
 const showAdminDeleteDialog = ref(false)
 const pendingDeletePost = ref<Post | null>(null)
@@ -704,8 +704,11 @@ onMounted(async () => {
   try {
     const [userError, userData] = await getUser()
     if (!userError && userData) {
-      currentUserEmail.value = userData.email as string
-      currentUserId.value = String((userData as any).uuid || userData.email)
+      const apiEmail = String((userData as any)?.email || '')
+      if (apiEmail) {
+        currentUserEmail.value = apiEmail
+      }
+      currentUserId.value = String((userData as any)?.uuid || apiEmail || currentUserId.value || '')
       currentUserName.value = String((userData as any).username || '')
       console.log('Current user loaded:', currentUserEmail.value)
     }
