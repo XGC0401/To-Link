@@ -353,8 +353,25 @@ const userAvatar = computed(() => {
 })
 
 const isAdminUser = computed(() => {
-  const email = String(userProfile.value?.email || '').toLowerCase()
-  return email === 'admin@gmail.com'
+  // Check loaded reactive profile first
+  const reactiveEmail = String(userProfile.value?.email || '').toLowerCase()
+  if (reactiveEmail === 'admin@gmail.com') return true
+
+  // Fallback: read directly from localStorage (covers cases where reactive ref isn't populated yet)
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem('userProfile')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        const storedEmail = String(parsed?.email || '').toLowerCase()
+        return storedEmail === 'admin@gmail.com'
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return false
 })
 
 const secretVersionClickCount = ref(0)

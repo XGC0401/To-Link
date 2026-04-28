@@ -479,6 +479,12 @@ const handleLogin = async () => {
         localStorage.removeItem('rememberEmail')
         localStorage.removeItem('rememberEmailValue')
       }
+
+      // Persist the login email immediately so admin checks work on first load
+      const existingProfileRaw = localStorage.getItem('userProfile')
+      const existingProfile = existingProfileRaw ? (() => { try { return JSON.parse(existingProfileRaw) } catch { return {} } })() : {}
+      localStorage.setItem('userProfile', JSON.stringify({ ...existingProfile, email: loginForm.email }))
+
       getUser()
       await navigateTo('/home')
     } else if (error) {
