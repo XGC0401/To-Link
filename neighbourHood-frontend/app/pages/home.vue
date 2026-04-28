@@ -825,6 +825,21 @@ const handleDeleteAllStorage = (e: StorageEvent) => {
   if (e.key === 'deletedAllPosts' && (e.newValue === '1' || e.newValue === 'true')) {
     deletedAllPosts.value = true
     allPosts.value = []
+    return
+  }
+
+  if (e.key === 'deletedPostIds') {
+    try {
+      const parsed = JSON.parse(e.newValue || '[]')
+      deletedPostIds.value = Array.isArray(parsed)
+        ? parsed.filter((id: unknown): id is number => typeof id === 'number')
+        : []
+    } catch {
+      deletedPostIds.value = []
+    }
+
+    const blacklist = new Set(deletedPostIds.value)
+    allPosts.value = allPosts.value.filter((post) => typeof post.id !== 'number' || !blacklist.has(post.id))
   }
 }
 

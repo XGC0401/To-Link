@@ -153,6 +153,7 @@ const activeTab = ref('posts')
 const isLoadingPosts = ref(false)
 const showOnlyMyPosts = ref(false)
 const showOnlyMyRequests = ref(false)
+const deletedPostIds = ref<number[]>([])
 
 // Current user info (simulated - would come from auth in real app)
 const currentUser = ref({
@@ -167,6 +168,7 @@ const currentUserRewardPoints = computed(() => currentUser.value.rewardPoints)
 const posts = ref<Post[]>([]);
 
 const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
+  const blacklist = new Set(deletedPostIds.value)
   const normalize = (value: unknown) => String(value || '').trim().toLowerCase()
   const buildSignature = (post: Post) => {
     const tags = Array.isArray(post.tags) ? [...post.tags].map(normalize).sort().join('|') : ''
@@ -188,6 +190,9 @@ const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
     if (!post || typeof post.id !== 'number') {
       return
     }
+    if (blacklist.has(post.id)) {
+      return
+    }
 
     remoteSignatures.add(buildSignature(post))
     postMap.set(post.id, post)
@@ -195,6 +200,9 @@ const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
 
   localPosts.forEach((post) => {
     if (!post || typeof post.id !== 'number') {
+      return
+    }
+    if (blacklist.has(post.id)) {
       return
     }
 
@@ -700,6 +708,10 @@ function deletePost(post: any) {
     const index = posts.value.findIndex(p => p.id === post.id)
     if (index > -1) {
       posts.value.splice(index, 1)
+      if (typeof post.id === 'number') {
+        deletedPostIds.value = [...new Set([...deletedPostIds.value, post.id])]
+        localStorage.setItem('deletedPostIds', JSON.stringify(deletedPostIds.value))
+      }
       // Update localStorage
       const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]')
       const userPostIndex = userPosts.findIndex((p: any) => p.id === post.id)
@@ -795,7 +807,7 @@ function reportQuest(quest: any) {
 }
 
 onMounted(async () => {
-  window.addEventListener('storage', handleDeleteAllStorage)
+  window.addEventListener('storage', handlePostStorage)
   try {
     const [userError, userData] = await getUser()
     if (!userError && userData) {
@@ -810,6 +822,18 @@ onMounted(async () => {
   // Respect the admin "delete all posts" flag
   const deletedAllPostsRaw = localStorage.getItem('deletedAllPosts')
   const deletedAllPosts = deletedAllPostsRaw === '1' || deletedAllPostsRaw === 'true'
+  const deletedIdsRaw = localStorage.getItem('deletedPostIds')
+
+  if (deletedIdsRaw) {
+    try {
+      const parsed = JSON.parse(deletedIdsRaw)
+      if (Array.isArray(parsed)) {
+        deletedPostIds.value = parsed.filter((id: unknown): id is number => typeof id === 'number')
+      }
+    } catch {
+      deletedPostIds.value = []
+    }
+  }
 
   if (deletedAllPosts) {
     posts.value = []
@@ -887,14 +911,30 @@ onMounted(async () => {
   }
 })
 
-const handleDeleteAllStorage = (e: StorageEvent) => {
+const handlePostStorage = (e: StorageEvent) => {
   if (e.key === 'deletedAllPosts' && (e.newValue === '1' || e.newValue === 'true')) {
     posts.value = []
+    return
+  }
+
+  if (e.key === 'deletedPostIds') {
+    try {
+      const parsed = JSON.parse(e.newValue || '[]')
+      deletedPostIds.value = Array.isArray(parsed)
+        ? parsed.filter((id: unknown): id is number => typeof id === 'number')
+        : []
+    } catch {
+      deletedPostIds.value = []
+    }
+
+    posts.value = posts.value.filter((post) =>
+      typeof post.id !== 'number' || !deletedPostIds.value.includes(post.id)
+    )
   }
 }
 
 onUnmounted(() => {
-  window.removeEventListener('storage', handleDeleteAllStorage)
+  window.removeEventListener('storage', handlePostStorage)
 })
 </script>
 
