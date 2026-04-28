@@ -295,6 +295,7 @@ const createPost = async () => {
     }
 
     localStorage.setItem('userPosts', JSON.stringify([optimisticPost, ...localPosts]))
+    localStorage.removeItem('deletedAllPosts')
 
     ElMessage.success(t('postSuccess'))
 

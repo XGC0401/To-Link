@@ -569,6 +569,7 @@
   "deleteAllPostsTitle": "刪除全部帖子",
   "confirmDeleteAllPostsMessage": "確定要刪除全部帖子嗎？此操作也會在重新整理後隱藏幽靈帖子。",
   "allPostsDeletedSuccess": "已成功刪除全部帖子。",
+  "hide": "隱藏",
   "secret": "秘密",
   "secretDeleteAllPostsWarning": "此操作無法復原，僅在緊急完整清除時使用。",
 

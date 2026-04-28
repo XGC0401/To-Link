@@ -570,6 +570,7 @@
   "deleteAllPostsTitle": "Delete All Posts",
   "confirmDeleteAllPostsMessage": "Are you sure you want to delete all posts? This will also hide ghost posts after reload.",
   "allPostsDeletedSuccess": "All posts deleted successfully.",
+  "hide": "Hide",
   "secret": "Secret",
   "secretDeleteAllPostsWarning": "This action is irreversible. Use only for complete emergency cleanup.",
 

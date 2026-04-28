@@ -237,15 +237,26 @@
             <el-form label-position="top" class="settings-form">
               <el-form-item :label="$t('deleteAllPostsTitle')">
                 <p class="secret-warning-text">{{ $t('secretDeleteAllPostsWarning') }}</p>
-                <el-button type="danger" size="large" @click="deleteAllPostsFromSecret">
-                  {{ $t('deleteAllPosts') }}
-                </el-button>
+                <div class="secret-actions">
+                  <el-button type="danger" size="large" @click="deleteAllPostsFromSecret">
+                    {{ $t('deleteAllPosts') }}
+                  </el-button>
+                  <el-button size="large" @click="hideSecretSetting">
+                    {{ $t('hide') }}
+                  </el-button>
+                </div>
               </el-form-item>
             </el-form>
           </el-tab-pane>
         </el-tabs>
 
       </el-card>
+const hideSecretSetting = () => {
+  localStorage.removeItem('adminSecretSettingUnlocked')
+  secretSettingUnlocked.value = false
+  activeTab.value = 'appearance'
+}
+
     </div>
     </div>
   </NuxtLayout>
@@ -294,6 +305,11 @@ const applyThemeColor = (color: string) => {
   document.documentElement.style.setProperty('--user-theme-color', color)
 }
 
+.secret-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 // Apply font size to document
 const applyFontSize = (size: number) => {
   document.documentElement.style.setProperty('--base-font-size', `${size}px`)
