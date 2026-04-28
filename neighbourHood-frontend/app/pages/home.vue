@@ -246,7 +246,28 @@ const currentUserId = ref<string>('')
 const currentUserName = ref<string>('')
 const myPostIds = ref<number[]>([])
 const deletedPostIds = ref<number[]>([])
-const isAdmin = computed(() => String(currentUserEmail.value || '').toLowerCase() === 'admin@gmail.com')
+const deletedAllPosts = ref(false)
+const isAdmin = computed(() => {
+  const liveEmail = String(currentUserEmail.value || '').toLowerCase()
+  if (liveEmail === 'admin@gmail.com') {
+    return true
+  }
+
+  if (typeof window !== 'undefined') {
+    const savedProfileRaw = localStorage.getItem('userProfile')
+    if (savedProfileRaw) {
+      try {
+        const savedProfile = JSON.parse(savedProfileRaw)
+        const savedEmail = String(savedProfile?.email || '').toLowerCase()
+        return savedEmail === 'admin@gmail.com'
+      } catch {
+        return false
+      }
+    }
+  }
+
+  return false
+})
 
 const showAdminDeleteDialog = ref(false)
 const pendingDeletePost = ref<Post | null>(null)
@@ -470,6 +491,10 @@ const refreshWeatherCard = async () => {
 }
 
 const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
+  if (deletedAllPosts.value) {
+    return []
+  }
+
   const blacklist = new Set(deletedPostIds.value)
   const normalize = (value: unknown) => String(value || '').trim().toLowerCase()
   const buildSignature = (post: Post) => {
@@ -673,6 +698,9 @@ onMounted(async () => {
     }
   }
 
+  const deletedAllPostsRaw = localStorage.getItem('deletedAllPosts')
+  deletedAllPosts.value = deletedAllPostsRaw === '1' || deletedAllPostsRaw === 'true'
+
   if (typeof navigator !== 'undefined' && navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -732,6 +760,11 @@ onMounted(async () => {
   // Fetch recent posts from API
   isLoadingPosts.value = true
   try {
+    if (deletedAllPosts.value) {
+      allPosts.value = []
+      return
+    }
+
     if (Array.isArray(userPosts) && userPosts.length > 0) {
       allPosts.value = mergePosts(userPosts, allPosts.value)
     }

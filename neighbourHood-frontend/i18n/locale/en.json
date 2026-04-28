@@ -566,6 +566,13 @@
   "falseRemovalReportPlaceholder": "Please explain in detail why your post should not have been removed (min. 10 characters)...",
   "falseRemovalReportSubmitted": "Your false removal report has been submitted.",
 
+  "deleteAllPosts": "Delete All Posts",
+  "deleteAllPostsTitle": "Delete All Posts",
+  "confirmDeleteAllPostsMessage": "Are you sure you want to delete all posts? This will also hide ghost posts after reload.",
+  "allPostsDeletedSuccess": "All posts deleted successfully.",
+  "secret": "Secret",
+  "secretDeleteAllPostsWarning": "This action is irreversible. Use only for complete emergency cleanup.",
+
   "justNow": "Just now",
   "minutesAgo": "{n} min ago",
   "hoursAgo": "{n} hr ago",

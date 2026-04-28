@@ -228,6 +228,21 @@
               </el-form-item>
             </el-form>
           </el-tab-pane>
+
+          <el-tab-pane
+            v-if="isAdminUser && secretSettingUnlocked"
+            :label="$t('secret')"
+            name="secret"
+          >
+            <el-form label-position="top" class="settings-form">
+              <el-form-item :label="$t('deleteAllPostsTitle')">
+                <p class="secret-warning-text">{{ $t('secretDeleteAllPostsWarning') }}</p>
+                <el-button type="danger" size="large" @click="deleteAllPostsFromSecret">
+                  {{ $t('deleteAllPosts') }}
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </el-tab-pane>
         </el-tabs>
 
       </el-card>
@@ -237,16 +252,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, nextTick } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Check } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const { t, locale, setLocale } = useI18n()
 const saving = ref(false)
 const activeTab = ref('appearance')
+const isAdminUser = ref(false)
+const secretSettingUnlocked = ref(false)
 
 const settingsForm = reactive({
   themeColor: '#409EFF',
@@ -360,6 +377,15 @@ onMounted(() => {
   applyCompactMode(settingsForm.compactMode)
   applyDarkMode(settingsForm.darkMode)
   settingsForm.language = locale.value as string
+
+  syncSecretSettingState()
+  window.addEventListener('app:secret-setting-unlocked', syncSecretSettingState)
+  window.addEventListener('storage', syncSecretSettingState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('app:secret-setting-unlocked', syncSecretSettingState)
+  window.removeEventListener('storage', syncSecretSettingState)
 })
 
 const handleLanguageChange = async (newLang: string) => {
@@ -417,6 +443,45 @@ const handleSave = async () => {
 
 const handleCancel = () => {
   router.back()
+}
+
+const syncSecretSettingState = () => {
+  const profileRaw = localStorage.getItem('userProfile')
+  let email = ''
+  if (profileRaw) {
+    try {
+      const parsed = JSON.parse(profileRaw)
+      email = String(parsed?.email || '').toLowerCase()
+    } catch {
+      email = ''
+    }
+  }
+
+  isAdminUser.value = email === 'admin@gmail.com'
+  secretSettingUnlocked.value = isAdminUser.value && localStorage.getItem('adminSecretSettingUnlocked') === '1'
+
+  if (!secretSettingUnlocked.value && activeTab.value === 'secret') {
+    activeTab.value = 'appearance'
+  }
+}
+
+const deleteAllPostsFromSecret = () => {
+  ElMessageBox.confirm(
+    t('confirmDeleteAllPostsMessage'),
+    t('deleteAllPostsTitle'),
+    {
+      confirmButtonText: t('delete'),
+      cancelButtonText: t('cancel'),
+      type: 'warning'
+    }
+  ).then(() => {
+    localStorage.setItem('deletedAllPosts', '1')
+    localStorage.setItem('userPosts', JSON.stringify([]))
+    localStorage.setItem('deletedPostIds', JSON.stringify([]))
+    ElMessage.success(t('allPostsDeletedSuccess'))
+  }).catch(() => {
+    // no-op
+  })
 }
 </script>
 
@@ -643,6 +708,12 @@ const handleCancel = () => {
 
 .sample-text.font-xlarge {
   font-size: 26px;
+}
+
+.secret-warning-text {
+  margin: 0 0 12px;
+  color: #7a2432;
+  font-size: 16px;
 }
 
 .notification-settings {

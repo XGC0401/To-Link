@@ -565,6 +565,13 @@
   "falseRemovalReportPlaceholder": "請詳細說明您的帖子不應被刪除的原因（最少 10 個字元）...",
   "falseRemovalReportSubmitted": "您的錯誤刪除申報已提交。",
 
+  "deleteAllPosts": "刪除全部帖子",
+  "deleteAllPostsTitle": "刪除全部帖子",
+  "confirmDeleteAllPostsMessage": "確定要刪除全部帖子嗎？此操作也會在重新整理後隱藏幽靈帖子。",
+  "allPostsDeletedSuccess": "已成功刪除全部帖子。",
+  "secret": "Secret",
+  "secretDeleteAllPostsWarning": "此操作無法復原，僅在緊急完整清除時使用。",
+
   "justNow": "剛剛",
   "minutesAgo": "{n} 分鐘前",
   "hoursAgo": "{n} 小時前",

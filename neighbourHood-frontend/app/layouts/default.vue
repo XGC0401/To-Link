@@ -352,6 +352,13 @@ const userAvatar = computed(() => {
   return userProfile.value?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg'
 })
 
+const isAdminUser = computed(() => {
+  const email = String(userProfile.value?.email || '').toLowerCase()
+  return email === 'admin@gmail.com'
+})
+
+const secretVersionClickCount = ref(0)
+
 // Apply font size to document
 const applyFontSize = (size: number | string) => {
   let fontSize: string
@@ -681,6 +688,16 @@ const handleOthersCommand = (command: string) => {
       ElMessage.info(t('termsOfServiceComingSoon'))
       break
     case 'version':
+      if (isAdminUser.value) {
+        secretVersionClickCount.value += 1
+        if (secretVersionClickCount.value >= 3) {
+          localStorage.setItem('adminSecretSettingUnlocked', '1')
+          window.dispatchEvent(new CustomEvent('app:secret-setting-unlocked'))
+          secretVersionClickCount.value = 0
+        }
+      } else {
+        secretVersionClickCount.value = 0
+      }
       ElMessage.info(t('versionMessage'))
       break
   }
