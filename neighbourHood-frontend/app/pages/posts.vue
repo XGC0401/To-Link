@@ -806,23 +806,31 @@ onMounted(async () => {
     console.error('Failed to load user:', err)
   }
 
-  // Load cached posts immediately for instant display
-  const cachedPosts = localStorage.getItem('cachedPosts')
-  const userPosts = localStorage.getItem('userPosts')
-  const userPostsParsed = userPosts ? JSON.parse(userPosts) : []
-  
-  if (cachedPosts) {
-    try {
-      const parsed = JSON.parse(cachedPosts)
-      posts.value = mergePosts(userPostsParsed, parsed)
-    } catch (e) {
-      console.error('Error parsing cached posts', e)
-    }
-  } else if (userPosts) {
-    try {
-      posts.value = mergePosts(userPostsParsed, [])
-    } catch (e) {
-      console.error('Error parsing user posts', e)
+  // Respect the admin "delete all posts" flag
+  const deletedAllPostsRaw = localStorage.getItem('deletedAllPosts')
+  const deletedAllPosts = deletedAllPostsRaw === '1' || deletedAllPostsRaw === 'true'
+
+  if (deletedAllPosts) {
+    posts.value = []
+  } else {
+    // Load cached posts immediately for instant display
+    const cachedPosts = localStorage.getItem('cachedPosts')
+    const userPosts = localStorage.getItem('userPosts')
+    const userPostsParsed = userPosts ? JSON.parse(userPosts) : []
+
+    if (cachedPosts) {
+      try {
+        const parsed = JSON.parse(cachedPosts)
+        posts.value = mergePosts(userPostsParsed, parsed)
+      } catch (e) {
+        console.error('Error parsing cached posts', e)
+      }
+    } else if (userPosts) {
+      try {
+        posts.value = mergePosts(userPostsParsed, [])
+      } catch (e) {
+        console.error('Error parsing user posts', e)
+      }
     }
   }
 
@@ -846,9 +854,14 @@ onMounted(async () => {
     persistQuestRequests()
   }
 
-  // Fetch fresh data in the background
+  // Fetch fresh data in the background (skip if delete-all flag is set)
   isLoadingPosts.value = true
   try {
+    if (deletedAllPosts) {
+      isLoadingPosts.value = false
+      return
+    }
+    const userPostsParsed = (() => { try { return JSON.parse(localStorage.getItem('userPosts') || '[]') } catch { return [] } })()
     const [error, data, options] = await getPost();
     if (!error && data && data.data && Array.isArray(data.data)) {
       // Cache the fresh data

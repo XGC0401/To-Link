@@ -486,6 +486,7 @@ const deleteAllPostsFromSecret = () => {
     localStorage.setItem('deletedAllPosts', '1')
     localStorage.setItem('userPosts', JSON.stringify([]))
     localStorage.setItem('deletedPostIds', JSON.stringify([]))
+    localStorage.removeItem('cachedPosts')
     ElMessage.success(t('allPostsDeletedSuccess'))
   }).catch(() => {
     // no-op
