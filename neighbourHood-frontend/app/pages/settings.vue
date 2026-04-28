@@ -304,12 +304,6 @@ const applyThemeColor = (color: string) => {
   document.documentElement.style.setProperty('--el-color-primary', color)
   document.documentElement.style.setProperty('--user-theme-color', color)
 }
-
-.secret-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
 // Apply font size to document
 const applyFontSize = (size: number) => {
   document.documentElement.style.setProperty('--base-font-size', `${size}px`)
@@ -739,6 +733,12 @@ const deleteAllPostsFromSecret = () => {
   margin: 0 0 12px;
   color: #7a2432;
   font-size: 16px;
+}
+
+.secret-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .notification-settings {
