@@ -7,5 +7,6 @@ import com.feature.neighbourHood_backend.model.entity.PhotoEntity;
 
 @Repository
 public interface PhotoRepository extends JpaRepository<PhotoEntity, Long> {
+	void deleteByPost_Id(Long postId);
 
 }

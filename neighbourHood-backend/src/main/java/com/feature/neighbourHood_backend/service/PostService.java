@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import com.feature.neighbourHood_backend.model.entity.PhotoEntity;
@@ -74,6 +73,15 @@ public class PostService {
                 postRepository.save(post.get());
             }
         }
+    }
+
+    public boolean deletePost(Long id) {
+        Optional<PostEntity> post = postRepository.findById(id);
+        if (post.isPresent()) {
+            postRepository.delete(post.get());
+            return true;
+        }
+        return false;
     }
 
     // public int likePost(Long postID, UUID userUuid){

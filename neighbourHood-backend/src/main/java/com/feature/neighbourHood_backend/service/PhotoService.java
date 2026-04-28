@@ -26,4 +26,8 @@ public class PhotoService {
         }
         return photos;
     }
+
+    public void deleteByPostId(Long postId) {
+        repository.deleteByPost_Id(postId);
+    }
 }

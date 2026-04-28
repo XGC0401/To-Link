@@ -98,3 +98,13 @@ export async function likePost(postID: number): Promise<APIResponse<BasicRespons
     return [error, error.response?.status];
   }
 }
+
+export async function deletePostById(postID: number): Promise<APIResponse<BasicResponse<Boolean>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().delete<BasicResponse<Boolean>>(`/post/${postID}`, getConfig())
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}

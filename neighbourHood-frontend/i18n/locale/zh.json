@@ -349,6 +349,7 @@
   "confirmDeletePostMessage": "您確定要刪除此文章嗎？",
   "deletePostTitle": "刪除文章",
   "postDeletedSuccess": "文章已成功刪除！",
+  "postDeleteFailed": "刪除文章失敗，請重試。",
   "reportComingSoon": "檢舉功能即將推出！",
   "questUpdatedSuccess": "任務已成功更新！",
   "confirmDeleteQuestMessage": "您確定要刪除此任務嗎？",

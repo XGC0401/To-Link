@@ -137,7 +137,7 @@ import EditPostDialog from '~/components/EditPostDialog.vue'
 import EditQuestDialog from '~/components/EditQuestDialog.vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { getPost } from '~/api/post'
+import { deletePostById, getPost } from '~/api/post'
 import { getUser } from '~/api/auth'
 import type { Post } from '~/api/types/post'
 
@@ -704,7 +704,15 @@ function deletePost(post: any) {
       cancelButtonText: t('cancel'),
       type: 'warning',
     }
-  ).then(() => {
+  ).then(async () => {
+    if (typeof post.id === 'number') {
+      const [deleteError] = await deletePostById(post.id)
+      if (deleteError) {
+        ElMessage.error(t('postDeleteFailed'))
+        return
+      }
+    }
+
     const index = posts.value.findIndex(p => p.id === post.id)
     if (index > -1) {
       posts.value.splice(index, 1)

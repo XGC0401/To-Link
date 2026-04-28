@@ -234,7 +234,7 @@ import {
   Loading,
   Refresh
 } from '@element-plus/icons-vue'
-import { getPost } from '~/api/post'
+import { deletePostById, getPost } from '~/api/post'
 import { getUser } from '~/api/auth'
 import type { Post } from '~/api/types/post'
 import EditPostDialog from '~/components/EditPostDialog.vue'
@@ -881,7 +881,15 @@ const saveEditedPost = (data: { id: number, title: string, content: string, cate
   ElMessage.success(t('postUpdatedSuccess'))
 }
 
-const performDeletion = (post: Post) => {
+const performDeletion = async (post: Post) => {
+  if (typeof post.id === 'number') {
+    const [deleteError] = await deletePostById(post.id)
+    if (deleteError) {
+      ElMessage.error(t('postDeleteFailed'))
+      return false
+    }
+  }
+
   allPosts.value = allPosts.value.filter((item) => item.id !== post.id)
 
   const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]')
@@ -895,13 +903,16 @@ const performDeletion = (post: Post) => {
     deletedPostIds.value = [...new Set([...deletedPostIds.value, post.id])]
     localStorage.setItem('deletedPostIds', JSON.stringify(deletedPostIds.value))
   }
+
+  return true
 }
 
-const handleAdminDeleteConfirm = (payload: { tag: string; description: string }) => {
+const handleAdminDeleteConfirm = async (payload: { tag: string; description: string }) => {
   const post = pendingDeletePost.value
   if (!post) return
 
-  performDeletion(post)
+  const deleted = await performDeletion(post)
+  if (!deleted) return
 
   // Store removal notification for post owner
   const removalNotifications = JSON.parse(localStorage.getItem('postRemovalNotifications') || '[]')
@@ -956,9 +967,11 @@ const deletePost = (post: Post) => {
       cancelButtonText: t('cancel'),
       type: 'warning'
     }
-  ).then(() => {
-    performDeletion(post)
-    ElMessage.success(t('postDeletedSuccess'))
+  ).then(async () => {
+    const deleted = await performDeletion(post)
+    if (deleted) {
+      ElMessage.success(t('postDeletedSuccess'))
+    }
   }).catch(() => {
     // no-op
   })

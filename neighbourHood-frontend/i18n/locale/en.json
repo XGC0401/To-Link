@@ -350,6 +350,7 @@
   "confirmDeletePostMessage": "Are you sure you want to delete this post?",
   "deletePostTitle": "Delete Post",
   "postDeletedSuccess": "Post deleted successfully!",
+  "postDeleteFailed": "Failed to delete post. Please try again.",
   "reportComingSoon": "Report feature coming soon!",
   "questUpdatedSuccess": "Quest updated successfully!",
   "confirmDeleteQuestMessage": "Are you sure you want to delete this quest?",

@@ -7,15 +7,14 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -97,6 +96,33 @@ public class PostController {
         } else {
             return ResponseEntity.status(404).body(new ApiResponse<>(false, "fail to find the post"));
         }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse> deletePost(@PathVariable("id") Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        PostEntity post = postService.findById(id);
+        if (post == null) {
+            return ResponseEntity.status(404).body(new ApiResponse<>(false, false, "post not found"));
+        }
+
+        boolean isOwner = post.getUser() != null && post.getUser().getUuid() != null
+                && post.getUser().getUuid().equals(userDetails.getUuid());
+        boolean isAdminRole = userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        boolean isAdminEmail = "admin@gmail.com".equalsIgnoreCase(userDetails.getEmail());
+
+        if (!isOwner && !isAdminRole && !isAdminEmail) {
+            return ResponseEntity.status(403).body(new ApiResponse<>(false, false, "permission denied"));
+        }
+
+        photoService.deleteByPostId(id);
+        boolean deleted = postService.deletePost(id);
+
+        if (!deleted) {
+            return ResponseEntity.status(500).body(new ApiResponse<>(false, false, "delete failed"));
+        }
+
+        return ResponseEntity.status(200).body(new ApiResponse<>(true, true, "post deleted"));
     }
 
     // @PostMapping("/like-post")
