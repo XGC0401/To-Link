@@ -814,6 +814,10 @@ const handleEmergencyCommand = (command: string) => {
 
     localStorage.setItem('chatConversations', JSON.stringify(conversations))
 
+    window.dispatchEvent(new CustomEvent('app:emergency-message-sent', {
+      detail: { conversationId: 100 }
+    }))
+
     addNotification(t('notice'), text)
 
     ElMessage.success(t('emergencySent'))

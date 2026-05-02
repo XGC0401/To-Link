@@ -568,6 +568,7 @@ onMounted(() => {
       createNewConversation(conversationId)
     }
   }
+  window.addEventListener('app:emergency-message-sent', handleEmergencyMessageSent)
 })
 
 const filteredConversations = computed(() => {
@@ -587,6 +588,7 @@ const selectConversation = (conversation: Conversation) => {
     scrollToBottom()
   })
 }
+
 
 const createNewConversation = (userId: number) => {
   // Friend data mapping (should match friends.vue)
@@ -816,6 +818,34 @@ const scrollToBottom = () => {
   }
 }
 
+const handleEmergencyMessageSent = (event: Event) => {
+  const detail = (event as CustomEvent).detail
+  if (detail?.conversationId !== 100) return
+
+  // 重新從 localStorage 讀取最新對話
+  const storedConversations = localStorage.getItem('chatConversations')
+  if (!storedConversations) return
+
+  const parsed = JSON.parse(storedConversations)
+  
+  // 更新本地的 conversations 資料
+  parsed.forEach((stored: Conversation) => {
+    const existing = conversations.value.find(c => c.id === stored.id)
+    if (existing) {
+      existing.messages = stored.messages
+      existing.lastMessage = stored.lastMessage
+      existing.lastMessageTime = stored.lastMessageTime
+    }
+  })
+
+  // 如果當前正在看 Community Group，直接滾到最底部看新訊息
+  if (selectedConversationId.value === 100) {
+    nextTick(() => {
+      scrollToBottom()
+    })
+  }
+}
+
 // Format file size
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return '0 Bytes'
@@ -899,6 +929,7 @@ watch(conversations, (newConversations) => {
 // Cleanup on unmount
 onBeforeUnmount(() => {
   cleanupMaps()
+  window.removeEventListener('app:emergency-message-sent', handleEmergencyMessageSent)
 })
 
 // Open quest detail dialog
