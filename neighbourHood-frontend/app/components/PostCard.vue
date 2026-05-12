@@ -75,12 +75,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Star, MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
 import type { Post } from '../api/types/post'
 import { likePost } from '~/api/post';
 
+const { t } = useI18n()
+
 const props = defineProps<{
   post: Post
+  language?: 'en' | 'zh'
   currentUserEmail?: string
   currentUserDisplayName?: string
 }>()
@@ -155,20 +159,20 @@ const tagValue = computed(() => {
   }
 
   switch (props.post.request_type) {
-    case 0: return $t('shopping')
-    case 1: return $t('repair')
-    case 2: return $t('care')
-    case 3: return $t('daily')
-    case 5: return $t('eventOrganizing')
-    case 6: return $t('studySupport')
-    case 7: return $t('petSupport')
-    case 8: return $t('sportsAndWellness')
-    case 9: return $t('lostItem')
-    case 10: return $t('foundItem')
-    case 11: return $t('secondHandSell')
-    case 12: return $t('secondHandWant')
-    case 4: return $t('other')
-    default: return $t('other')
+    case 0: return t('shopping')
+    case 1: return t('repair')
+    case 2: return t('care')
+    case 3: return t('daily')
+    case 5: return t('eventOrganizing')
+    case 6: return t('studySupport')
+    case 7: return t('petSupport')
+    case 8: return t('sportsAndWellness')
+    case 9: return t('lostItem')
+    case 10: return t('foundItem')
+    case 11: return t('secondHandSell')
+    case 12: return t('secondHandWant')
+    case 4: return t('other')
+    default: return t('other')
   }
 })
 </script>

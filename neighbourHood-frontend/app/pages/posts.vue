@@ -18,10 +18,9 @@
               <el-option :label="$t('mostComments')" value="mostComments" />
               <el-option :label="$t('leastComments')" value="leastComments" />
             </el-select>
-            <el-select v-model="postBoardType" :placeholder="$t('postBoardType')" style="width: 220px;">
+            <el-select v-model="postBoardType" :placeholder="$t('postBoardType')" style="width: 200px;">
               <el-option :label="$t('allPosts')" value="all" />
               <el-option :label="$t('generalRequests')" value="general" />
-              <el-option :label="$t('lostAndFind')" value="lostAndFind" />
               <el-option :label="$t('secondHandItem')" value="secondHand" />
             </el-select>
           </div>
@@ -59,6 +58,41 @@
           </svg>
           <span class="back-to-top-text">{{ $t('backToTop') }}</span>
         </button>
+      </el-tab-pane>
+
+      <!-- Lost & Find Tab -->
+      <el-tab-pane :label="$t('lostAndFind')" name="lostAndFind">
+        <div class="posts-header">
+          <div class="posts-header-left">
+            <el-input v-model="lostSearchQuery" :placeholder="$t('searchPosts')" clearable style="width: 300px;" />
+            <el-select v-model="lostSortBy" :placeholder="$t('sortBy')" style="width: 180px;">
+              <el-option :label="$t('latest')" value="latest" />
+              <el-option :label="$t('oldest')" value="oldest" />
+              <el-option :label="$t('mostLikes')" value="mostLikes" />
+              <el-option :label="$t('leastLikes')" value="leastLikes" />
+            </el-select>
+          </div>
+          <div class="posts-header-right">
+            <div class="header-toggle">
+              <el-switch v-model="showOnlyMyLostPosts" size="large" />
+              <span class="header-toggle-label">{{ $t('showHideYourPosts') }}</span>
+            </div>
+            <el-button type="primary" @click="goToCreatePost">
+              {{ $t('createNewPost') }}
+            </el-button>
+          </div>
+        </div>
+        <div v-if="isLoadingPosts && filteredLostPosts.length === 0" class="posts-loading">
+          <el-icon class="is-loading posts-loading-icon" :size="28"><Loading /></el-icon>
+          <p class="posts-loading-text">{{ $t('loadingPosts') }}</p>
+          <el-skeleton v-for="i in 4" :key="i" :rows="5" animated style="margin-bottom: 20px" />
+        </div>
+        <div v-else class="posts-list">
+          <PostCard v-for="post in filteredLostPosts" :key="post.id" :post="post" :language="language"
+            :current-user-email="currentUser.email" @show-detail="openPostDetail" @edit="editPost" @delete="deletePost"
+            @report="reportPost" @block="blockUserFromPost" />
+        </div>
+        <el-empty v-if="!isLoadingPosts && filteredLostPosts.length === 0" :description="$t('noPosts')" />
       </el-tab-pane>
 
       <!-- Quest Requests Tab -->
@@ -176,9 +210,12 @@ const { t, locale } = useI18n()
 const language = computed(() => locale.value as 'en' | 'zh')
 const searchQuery = ref('')
 const questSearchQuery = ref('')
+const lostSearchQuery = ref('')
+const lostSortBy = ref('latest')
+const showOnlyMyLostPosts = ref(false)
 const selectedCategory = ref('')
 const sortBy = ref('latest')
-const postBoardType = ref<'all' | 'general' | 'lostAndFind' | 'secondHand'>('all')
+const postBoardType = ref<'all' | 'general' | 'secondHand'>('all')
 const questSortBy = ref('latest')
 const activeTab = ref('posts')
 const isLoadingPosts = ref(false)
@@ -437,8 +474,8 @@ const filteredPosts = computed(() => {
     const matchesBoard =
       postBoardType.value === 'all' ||
       (postBoardType.value === 'general' && !isLostAndFind && !isSecondHand) ||
-      (postBoardType.value === 'lostAndFind' && isLostAndFind) ||
       (postBoardType.value === 'secondHand' && isSecondHand)
+    if (isLostAndFind) return false
 
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       post.content.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -458,15 +495,47 @@ const filteredPosts = computed(() => {
       case 'leastLikes':
         return (a.likes || 0) - (b.likes || 0)
       case 'mostComments':
-        return (b.shares || 0) - (a.shares || 0) // Using shares instead of comments
+        return (b.share_count || 0) - (a.share_count || 0)
       case 'leastComments':
-        return (a.shares || 0) - (b.shares || 0) // Using shares instead of comments
+        return (a.share_count || 0) - (b.share_count || 0)
       default:
         return 0
     }
   })
 
   return sorted
+})
+
+const filteredLostPosts = computed(() => {
+  if (!posts.value || !Array.isArray(posts.value)) return []
+
+  let filtered = posts.value.filter(post => {
+    const blocked = isBlockedByCandidates(blockedPeople.value, [
+      post.user?.uuid,
+      post.user?.email,
+      post.user?.username
+    ])
+    if (blocked) return false
+
+    const isLostAndFind = [9, 10].includes(post.request_type)
+    if (!isLostAndFind) return false
+
+    const matchesSearch =
+      post.title.toLowerCase().includes(lostSearchQuery.value.toLowerCase()) ||
+      post.content.toLowerCase().includes(lostSearchQuery.value.toLowerCase())
+    const matchesMine = !showOnlyMyLostPosts.value || isMyPost(post)
+    return matchesSearch && matchesMine
+  })
+
+  return [...filtered].sort((a, b) => {
+    switch (lostSortBy.value) {
+      case 'latest': return b.id - a.id
+      case 'oldest': return a.id - b.id
+      case 'mostLikes': return (b.likes || 0) - (a.likes || 0)
+      case 'leastLikes': return (a.likes || 0) - (b.likes || 0)
+      default: return 0
+    }
+  })
 })
 
 const filteredQuests = computed(() => {

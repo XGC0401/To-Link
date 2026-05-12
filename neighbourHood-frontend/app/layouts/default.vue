@@ -51,24 +51,25 @@
               <el-icon><ChatLineRound /></el-icon>
               <span>{{ $t('messages') }}</span>
             </el-button>
-            <el-button
-              text
-              class="top-nav-button"
-              :class="{ 'top-nav-active': activeMenuPath.includes('/friends') }"
-              @click="handleMenuClick('/friends')"
-            >
-              <el-icon><User /></el-icon>
-              <span>{{ $t('friends') }}</span>
-            </el-button>
-            <el-button
-              text
-              class="top-nav-button"
-              :class="{ 'top-nav-active': activeMenuPath.includes('/ai-chat') }"
-              @click="handleMenuClick('/ai-chat')"
-            >
-              <el-icon><Service /></el-icon>
-              <span>{{ $t('aiAssistant') }}</span>
-            </el-button>
+            <el-dropdown trigger="click" @command="handleMoreMenuCommand">
+              <el-button text class="top-nav-button" :class="{ 'top-nav-active': isMoreMenuActive }">
+                <el-icon><Service /></el-icon>
+                <span>{{ $t('more') }}</span>
+                <el-icon><ArrowDown /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="/friends">
+                    <el-icon><User /></el-icon>
+                    {{ $t('friends') }}
+                  </el-dropdown-item>
+                  <el-dropdown-item command="/ai-chat">
+                    <el-icon><Service /></el-icon>
+                    {{ $t('aiAssistant') }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </div>
         </div>
         <div class="header-right">
@@ -302,6 +303,7 @@ import {
   OfficeBuilding,
   User,
   Service,
+  ArrowDown,
   Plus,
   Search,
   Bell,
@@ -325,6 +327,9 @@ const { locale, t, setLocale } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
 const searchQuery = ref('')
 const activeMenuPath = ref(route.path)
+const isMoreMenuActive = computed(() => {
+  return ['/friends', '/ai-chat'].some(path => activeMenuPath.value.includes(path))
+})
 const userProfile = ref<any>(null)
 const userSettings = ref<any>(null)
 const showFeedbackDialog = ref(false)
@@ -668,6 +673,10 @@ const handleMenuClick = (path: string) => {
   navigateTo(path)
 }
 
+const handleMoreMenuCommand = (path: string) => {
+  handleMenuClick(path)
+}
+
 const goToHome = () => {
   router.push('/home')
 }
@@ -884,6 +893,7 @@ const handleEmergencyCommand = (command: string) => {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 0 0 auto;
 }
 
 .notification-badge {
@@ -1819,6 +1829,8 @@ const handleEmergencyCommand = (command: string) => {
   height: auto;
   padding-top: 10px;
   padding-bottom: 10px;
+  gap: 12px;
+  flex-wrap: nowrap;
 }
 
 .header-left {
@@ -1833,8 +1845,13 @@ const handleEmergencyCommand = (command: string) => {
 .top-nav {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
 }
 
 .top-nav-button {
@@ -1845,6 +1862,12 @@ const handleEmergencyCommand = (command: string) => {
   color: #4b5563 !important;
   padding: 8px 10px !important;
   height: auto !important;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.top-nav-button span {
+  white-space: nowrap;
 }
 
 .top-nav-button:hover {
@@ -1860,6 +1883,19 @@ const handleEmergencyCommand = (command: string) => {
 .top-nav-active .el-icon,
 .top-nav-button:hover .el-icon {
   color: #ff6f00 !important;
+}
+
+.top-nav::-webkit-scrollbar {
+  height: 6px;
+}
+
+.top-nav::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 999px;
+}
+
+.top-nav::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .main-content {

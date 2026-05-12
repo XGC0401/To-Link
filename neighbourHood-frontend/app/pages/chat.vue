@@ -287,7 +287,7 @@
         <el-input v-model="groupChatName" :placeholder="$t('groupChatNamePlaceholder')" />
       </el-form-item>
       <el-form-item :label="$t('groupMembers')">
-        <el-select v-model="selectedGroupMembers" multiple filterable style="width: 100%">
+        <el-select v-model="selectedGroupMembers" multiple filterable :placeholder="$t('selectGroupMembers')" style="width: 100%">
           <el-option
             v-for="option in availableGroupMembers"
             :key="option.id"
