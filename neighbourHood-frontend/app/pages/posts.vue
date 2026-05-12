@@ -118,6 +118,11 @@
             <el-tag type="success" size="large">
               {{ $t('yourRewardPoints') }}: {{ currentUserRewardPoints }}
             </el-tag>
+            <el-badge :value="backpackCount" :hidden="backpackCount === 0" class="backpack-badge">
+              <el-button plain @click="showBackpackDialog = true">
+                🎒 {{ $t('backpack') }}
+              </el-button>
+            </el-badge>
             <el-button type="warning" @click="showRedeemDialog = true">
               {{ $t('redeemRewards') }}
             </el-button>
@@ -131,6 +136,7 @@
             @show-introduction-dialog="openIntroductionDialog" @edit="editQuest" @delete="deleteQuest"
             @report="reportQuest" @block="blockUserFromQuest" />
         </div>
+        <el-empty v-if="filteredQuests.length === 0" :description="$t('noQuests')" />
       </el-tab-pane>
       </el-tabs>
     </div>
@@ -142,6 +148,9 @@
     <!-- Redeem Rewards Dialog -->
     <RedeemRewardsDialog v-model="showRedeemDialog" :language="language" :current-points="currentUserRewardPoints"
       :rewards-catalog="rewardsCatalog" @redeem="redeemReward" />
+
+    <!-- Backpack Dialog -->
+    <BackpackDialog v-model="showBackpackDialog" :items="redeemedRewards" @clear="clearBackpack" />
 
     <!-- Post Detail Dialog -->
     <PostDetailDialog v-model="showPostDetailDialog" :post="selectedPost" :language="language" />
@@ -186,6 +195,7 @@ import PostCard from '~/components/PostCard.vue'
 import QuestCard from '~/components/QuestCard.vue'
 import CreateQuestDialog from '~/components/CreateQuestDialog.vue'
 import RedeemRewardsDialog from '~/components/RedeemRewardsDialog.vue'
+import BackpackDialog from '~/components/BackpackDialog.vue'
 import PostDetailDialog from '~/components/PostDetailDialog.vue'
 import QuestDetailDialog from '~/components/QuestDetailDialog.vue'
 import SelfIntroductionDialog from '~/components/SelfIntroductionDialog.vue'
@@ -234,6 +244,7 @@ const currentUser = ref({
 })
 
 const currentUserRewardPoints = computed(() => currentUser.value.rewardPoints)
+const backpackCount = computed(() => redeemedRewards.value.length)
 
 const posts = ref<Post[]>([]);
 
@@ -412,6 +423,14 @@ const selectedEditQuest = ref<any>(null)
 
 // Redeem Rewards Dialog
 const showRedeemDialog = ref(false)
+const showBackpackDialog = ref(false)
+const redeemedRewards = ref<Array<{
+  id: string
+  name: string
+  description: string
+  points: number
+  redeemedAt: string
+}>>([])
 const rewardsCatalog = ref([
   {
     id: 1,
@@ -444,6 +463,50 @@ const rewardsCatalog = ref([
     points: 250
   }
 ])
+
+const loadRedeemedRewards = () => {
+  try {
+    const raw = localStorage.getItem('redeemedRewardsBackpack')
+    if (!raw) {
+      redeemedRewards.value = []
+      return
+    }
+    const parsed = JSON.parse(raw)
+    redeemedRewards.value = Array.isArray(parsed) ? parsed : []
+  } catch {
+    redeemedRewards.value = []
+  }
+}
+
+const saveRedeemedRewards = () => {
+  localStorage.setItem('redeemedRewardsBackpack', JSON.stringify(redeemedRewards.value))
+  window.dispatchEvent(new CustomEvent('app:backpack-updated'))
+}
+
+const clearBackpack = () => {
+  redeemedRewards.value = []
+  saveRedeemedRewards()
+  ElMessage.success(t('backpackCleared'))
+}
+
+const loadRewardPoints = () => {
+  const key = `rewardPoints:${String(currentUser.value.email || currentUser.value.id || 'guest')}`
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return
+    const parsed = Number(raw)
+    if (!Number.isNaN(parsed) && parsed >= 0) {
+      currentUser.value.rewardPoints = parsed
+    }
+  } catch {
+    // Ignore malformed local value
+  }
+}
+
+const saveRewardPoints = () => {
+  const key = `rewardPoints:${String(currentUser.value.email || currentUser.value.id || 'guest')}`
+  localStorage.setItem(key, String(currentUser.value.rewardPoints))
+}
 
 const isMyPost = (post: Post) => {
   const postEmail = post.user?.email ? String(post.user.email).toLowerCase() : ''
@@ -846,6 +909,19 @@ function redeemReward(reward: any) {
   }
 
   currentUser.value.rewardPoints -= reward.points
+  saveRewardPoints()
+
+  redeemedRewards.value = [
+    {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      name: String(reward.name || ''),
+      description: String(reward.description || ''),
+      points: Number(reward.points || 0),
+      redeemedAt: new Date().toISOString()
+    },
+    ...redeemedRewards.value
+  ].slice(0, 100)
+  saveRedeemedRewards()
 
   ElMessage.success(t('redeemSuccess', { name: reward.name }))
 
@@ -1006,7 +1082,9 @@ function reportQuest(quest: any) {
 
 onMounted(async () => {
   window.addEventListener('storage', handlePostStorage)
+  window.addEventListener('app:backpack-updated', loadRedeemedRewards)
   blockedPeople.value = loadBlacklist()
+  loadRedeemedRewards()
 
   const [blacklistError, blacklistResponse] = await getBlacklist()
   if (!blacklistError && blacklistResponse?.data && Array.isArray(blacklistResponse.data)) {
@@ -1031,6 +1109,8 @@ onMounted(async () => {
   } catch (err) {
     console.error('Failed to load user:', err)
   }
+
+  loadRewardPoints()
 
   // Respect the admin "delete all posts" flag
   const deletedAllPostsRaw = localStorage.getItem('deletedAllPosts')
@@ -1148,6 +1228,7 @@ const handlePostStorage = (e: StorageEvent) => {
 
 onUnmounted(() => {
   window.removeEventListener('storage', handlePostStorage)
+  window.removeEventListener('app:backpack-updated', loadRedeemedRewards)
 })
 </script>
 
@@ -1265,6 +1346,7 @@ onUnmounted(() => {
   gap: 12px;
   align-items: center;
   flex: 1;
+  flex-wrap: wrap;
 }
 
 .posts-header-right {
@@ -1272,6 +1354,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .header-toggle {
@@ -1300,8 +1383,8 @@ onUnmounted(() => {
 
 .posts-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: clamp(12px, 1.8vw, 20px);
 }
 
 .posts-list :deep(.post-card),
@@ -1398,6 +1481,29 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .posts-header,
+  .quests-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .posts-header-left,
+  .posts-header-right,
+  .quests-header-left,
+  .rewards-info {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .posts-header-left :deep(.el-input),
+  .posts-header-left :deep(.el-select),
+  .quests-header-left :deep(.el-input),
+  .quests-header-left :deep(.el-select) {
+    width: 100% !important;
+    min-width: 0;
+  }
+
   .posts-list {
     grid-template-columns: 1fr;
   }
@@ -1421,6 +1527,7 @@ onUnmounted(() => {
   gap: 12px;
   align-items: center;
   flex: 1;
+  flex-wrap: wrap;
 }
 
 .quests-toolbar {
@@ -1434,14 +1541,15 @@ onUnmounted(() => {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
   padding: 10px 12px;
   border-radius: 12px;
   background: linear-gradient(135deg, rgba(250, 250, 255, 0.88), rgba(235, 241, 255, 0.7));
   border: 1px solid rgba(129, 140, 248, 0.2);
 }
 
-.rewards-info :deep(.el-button) {
-  order: -1;
+.backpack-badge {
+  display: inline-flex;
 }
 
 .blocked-list {
@@ -1472,8 +1580,8 @@ onUnmounted(() => {
 
 .quests-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: clamp(12px, 1.8vw, 20px);
 }
 
 .quests-list :deep(.quest-card),
@@ -1544,6 +1652,18 @@ onUnmounted(() => {
 :global(.dark) .header-toggle {
   background: rgba(25, 31, 58, 0.86);
   border-color: rgba(129, 140, 248, 0.34);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .posts-list :deep(.post-card),
+  .posts-list :deep(.el-card),
+  .quests-list :deep(.quest-card),
+  .quests-list :deep(.el-card),
+  .back-to-top-button,
+  .back-to-top-button:hover {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 
 :global(.dark) .header-toggle-label {

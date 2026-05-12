@@ -7,20 +7,19 @@
           <h1 class="app-title" @click="goToHome" style="cursor: pointer;">🔗 {{ $t('appName') }}</h1>
           <div class="top-nav">
             <!-- Visible nav buttons -->
-            <div
+            <el-button
               v-for="(item, index) in visibleNavItems"
               :key="item.id"
-              class="top-nav-icon-wrapper"
-              :title="t(item.labelKey)"
+              text
+              class="top-nav-button"
+              :class="{ 'top-nav-active': activeMenuPath.includes(item.path) }"
+              @click="handleMenuClick(item.path)"
             >
-              <component
-                :is="item.icon"
-                class="top-nav-icon-button"
-                :class="{ 'top-nav-icon-active': activeMenuPath.includes(item.path) }"
-                @click="handleMenuClick(item.path)"
-                :data-item-id="item.id"
-              />
-            </div>
+              <el-icon>
+                <component :is="item.icon" />
+              </el-icon>
+              <span>{{ t(item.labelKey) }}</span>
+            </el-button>
 
             <!-- More dropdown button (shown only if there are hidden items) -->
             <el-dropdown
@@ -44,9 +43,36 @@
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
+
+            <!-- Hidden width sizer for accurate responsive calculation -->
+            <div class="top-nav-sizer" aria-hidden="true">
+              <el-button
+                v-for="item in navItems"
+                :key="`sizer-${item.id}`"
+                text
+                class="top-nav-button top-nav-button--sizer"
+              >
+                <el-icon>
+                  <component :is="item.icon" />
+                </el-icon>
+                <span>{{ t(item.labelKey) }}</span>
+              </el-button>
+              <span class="top-nav-more-dots">...</span>
+            </div>
           </div>
         </div>
         <div class="header-right">
+          <el-badge :value="backpackCount" :hidden="backpackCount === 0" class="backpack-header-badge">
+            <el-button
+              text
+              class="backpack-header-button"
+              @click="showBackpackDialog = true"
+              :title="$t('myBackpack')"
+              :aria-label="$t('myBackpack')"
+            >
+              <span class="backpack-emoji">🎒</span>
+            </el-button>
+          </el-badge>
           <el-dropdown @command="handleCommand">
             <span class="el-dropdown-link">
               <el-avatar :size="32" :src="userAvatar" />
@@ -184,6 +210,8 @@
       @submit="handleFeedbackSubmit"
     />
 
+    <BackpackDialog v-model="showBackpackDialog" :items="redeemedRewards" @clear="clearBackpack" />
+
     <!-- Post Removal Detail Dialog -->
     <el-dialog
       v-model="showRemovalDetailDialog"
@@ -270,6 +298,7 @@ import { navigateTo } from '#app'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import FeedbackDialog from '~/components/FeedbackDialog.vue'
+import BackpackDialog from '~/components/BackpackDialog.vue'
 import {
   HomeFilled,
   DocumentCopy,
@@ -326,61 +355,41 @@ const isMoreMenuActive = computed(() => {
   return hiddenNavItems.value.some(item => activeMenuPath.value.includes(item.path))
 })
 
-// Calculate visible items based on container width - using actual measurement
+// Calculate visible items based on actual rendered widths.
 const calculateVisibleItems = () => {
   if (typeof window === 'undefined') return
 
-  const topNav = document.querySelector('.top-nav')
+  const topNav = document.querySelector('.top-nav') as HTMLElement | null
   if (!topNav) return
 
-  const navRect = topNav.getBoundingClientRect()
-  const containerWidth = navRect.width
+  const sizerButtons = Array.from(topNav.querySelectorAll('.top-nav-sizer .top-nav-button--sizer')) as HTMLElement[]
+  const moreDots = topNav.querySelector('.top-nav-sizer .top-nav-more-dots') as HTMLElement | null
 
-  // If container is too small or not yet rendered, show at least 2 items
-  if (containerWidth < 100) return
+  if (sizerButtons.length !== navItems.length) return
 
-  // Get all rendered icon wrappers
-  const iconWrappers = Array.from(topNav.querySelectorAll('[data-item-id]')) as HTMLElement[]
-  if (iconWrappers.length === 0) return
+  const containerWidth = Math.floor(topNav.clientWidth)
+  const widths = sizerButtons.map((el) => Math.ceil(el.getBoundingClientRect().width))
+  const moreWidth = moreDots ? Math.ceil(moreDots.getBoundingClientRect().width) : 42
+  const gap = 6
 
-  // Calculate how many items can fit
-  let totalWidth = 0
-  let itemsThatFit = 0
-  const moreButtonWidth = 60 // Space for more button
-  const padding = 16 // Container padding
-  const gap = 6 // Gap between items
+  let visibleCount = 0
+  let used = 0
 
-  for (let i = 0; i < iconWrappers.length; i++) {
-    const iconElement = iconWrappers[i]
-    const parentWrapper = iconElement.parentElement
-    let buttonWidth = 0
-    
-    if (parentWrapper) {
-      buttonWidth = parentWrapper.getBoundingClientRect().width
-    } else {
-      buttonWidth = iconElement.getBoundingClientRect().width
-    }
-
-    // If a button hasn't rendered yet (width is 0), assume it's 36px
-    if (buttonWidth === 0) buttonWidth = 36
-
-    const estimatedWidth = totalWidth + buttonWidth + (itemsThatFit > 0 ? gap : 0) + moreButtonWidth + padding
-    
-    if (estimatedWidth <= containerWidth) {
-      totalWidth += buttonWidth + (itemsThatFit > 0 ? gap : 0)
-      itemsThatFit++
+  for (let i = 0; i < widths.length; i++) {
+    const hasRemaining = i < widths.length - 1
+    const nextUsed = used + (visibleCount > 0 ? gap : 0) + widths[i]
+    const reservedForMore = hasRemaining ? (gap + moreWidth) : 0
+    if (nextUsed + reservedForMore <= containerWidth) {
+      visibleCount += 1
+      used = nextUsed
     } else {
       break
     }
   }
 
-  // Always show at least 3 items if they fit
-  if (itemsThatFit === 0) itemsThatFit = Math.min(3, navItems.length)
-
-  if (itemsThatFit !== visibleNavItems.value.length) {
-    visibleNavItems.value = navItems.slice(0, itemsThatFit)
-    hiddenNavItems.value = navItems.slice(itemsThatFit)
-  }
+  visibleCount = Math.min(Math.max(1, visibleCount), navItems.length)
+  visibleNavItems.value = navItems.slice(0, visibleCount)
+  hiddenNavItems.value = navItems.slice(visibleCount)
 }
 
 // Setup ResizeObserver for responsive behavior
@@ -388,8 +397,39 @@ let resizeObserver: ResizeObserver | null = null
 const userProfile = ref<any>(null)
 const userSettings = ref<any>(null)
 const showFeedbackDialog = ref(false)
+const showBackpackDialog = ref(false)
+const redeemedRewards = ref<Array<{
+  id: string
+  name: string
+  description: string
+  points: number
+  redeemedAt: string
+}>>([])
 const feedbackTitle = ref('')
 const feedbackType = ref<'app' | 'community'>('app')
+
+const loadRedeemedRewards = () => {
+  try {
+    const raw = localStorage.getItem('redeemedRewardsBackpack')
+    if (!raw) {
+      redeemedRewards.value = []
+      return
+    }
+    const parsed = JSON.parse(raw)
+    redeemedRewards.value = Array.isArray(parsed) ? parsed : []
+  } catch {
+    redeemedRewards.value = []
+  }
+}
+
+const backpackCount = computed(() => redeemedRewards.value.length)
+
+const clearBackpack = () => {
+  redeemedRewards.value = []
+  localStorage.setItem('redeemedRewardsBackpack', JSON.stringify(redeemedRewards.value))
+  window.dispatchEvent(new CustomEvent('app:backpack-updated'))
+  ElMessage.success(t('backpackCleared'))
+}
 
 interface AppNotification {
   id: string
@@ -700,16 +740,19 @@ onMounted(() => {
   loadUserProfile()
   loadUserSettings()
   loadNotifications()
+  loadRedeemedRewards()
   
   // Listen for storage changes (when profile is updated in another tab or by profile page)
   window.addEventListener('storage', () => {
     loadUserProfile()
     loadUserSettings()
     loadUserLanguage()
+    loadRedeemedRewards()
   })
 
   // Listen for in-page notification events from chat.vue and home.vue
   window.addEventListener('app:notification', handleAppNotificationEvent)
+  window.addEventListener('app:backpack-updated', loadRedeemedRewards)
 
   // Setup responsive navbar
   const topNav = document.querySelector('.top-nav')
@@ -727,11 +770,18 @@ onMounted(() => {
 
   // Also listen to window resize
   window.addEventListener('resize', calculateVisibleItems)
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', calculateVisibleItems)
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('app:notification', handleAppNotificationEvent)
+  window.removeEventListener('app:backpack-updated', loadRedeemedRewards)
   window.removeEventListener('resize', calculateVisibleItems)
+  if (window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', calculateVisibleItems)
+  }
   if (resizeObserver) {
     resizeObserver.disconnect()
   }
@@ -744,6 +794,12 @@ watch(() => route.path, (newPath) => {
   loadUserProfile()
   loadUserSettings()
 }, { immediate: true })
+
+watch(() => locale.value, () => {
+  setTimeout(() => {
+    calculateVisibleItems()
+  }, 0)
+})
 
 const handleMenuClick = (path: string) => {
   navigateTo(path)
@@ -970,6 +1026,22 @@ const handleEmergencyCommand = (command: string) => {
   align-items: center;
   gap: 16px;
   flex: 0 0 auto;
+}
+
+.backpack-header-button {
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  padding: 0 !important;
+}
+
+.backpack-header-badge {
+  display: inline-flex;
+}
+
+.backpack-emoji {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .notification-badge {
@@ -1928,6 +2000,7 @@ const handleEmergencyCommand = (command: string) => {
   overflow-y: hidden;
   padding-bottom: 2px;
   scrollbar-width: thin;
+  position: relative;
 }
 
 .top-nav-button {
@@ -1998,6 +2071,21 @@ const handleEmergencyCommand = (command: string) => {
 
 .top-nav-button span {
   white-space: nowrap;
+}
+
+.top-nav-sizer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.top-nav-button--sizer {
+  margin-right: 6px;
 }
 
 .more-dots {

@@ -42,12 +42,17 @@
 
     <div class="quest-content">
       <h3 class="quest-title-text">{{ truncateText(quest.title, 40) }}</h3>
-      <p class="quest-detail-text">
-        {{ truncateText(quest.detail, 80) }}
-        <span v-if="quest.detail.length > 80" class="read-more">
-          ...
-        </span>
+      <p class="quest-detail-text" :class="{ 'is-expanded': isDetailExpanded }">
+        {{ isDetailExpanded ? quest.detail : displayDetail }}
       </p>
+      <button
+        v-if="isDetailTruncated"
+        type="button"
+        class="quest-detail-toggle"
+        @click.stop="isDetailExpanded = !isDetailExpanded"
+      >
+        {{ isDetailExpanded ? $t('showLess') : $t('showMore') }}
+      </button>
       
       <div class="quest-tags">
         <el-tag v-for="tag in quest.tags.slice(0, 3)" :key="tag" class="tag-item">{{ formatTag(tag) }}</el-tag>
@@ -110,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
 
 interface Quest {
@@ -174,6 +179,45 @@ function truncateText(text: string, maxLength: number): string {
   }
   return text.substring(0, maxLength)
 }
+
+const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
+const isDetailExpanded = ref(false)
+
+const detailMaxLength = computed(() => {
+  if (viewportWidth.value >= 1800) return 220
+  if (viewportWidth.value >= 1500) return 180
+  if (viewportWidth.value >= 1200) return 140
+  if (viewportWidth.value >= 992) return 110
+  return 80
+})
+
+const isDetailTruncated = computed(() => props.quest.detail.length > detailMaxLength.value)
+
+const displayDetail = computed(() => {
+  return isDetailTruncated.value
+    ? truncateText(props.quest.detail, detailMaxLength.value)
+    : props.quest.detail
+})
+
+const updateViewportWidth = () => {
+  if (typeof window === 'undefined') return
+  viewportWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  updateViewportWidth()
+  window.addEventListener('resize', updateViewportWidth)
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateViewportWidth)
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateViewportWidth)
+  if (window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', updateViewportWidth)
+  }
+})
 
 function formatTag(tag: string): string {
   return tag.startsWith('#') ? tag : `#${tag}`
@@ -274,6 +318,27 @@ function handleCardClick() {
   line-height: 1.6;
 }
 
+.quest-detail-text.is-expanded {
+  display: block;
+  -webkit-line-clamp: initial;
+  -webkit-box-orient: initial;
+  overflow: visible;
+}
+
+.quest-detail-toggle {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin: -10px 0 12px;
+}
+
+.quest-detail-toggle:hover {
+  text-decoration: underline;
+}
+
 .read-more {
   color: #409eff;
   cursor: pointer;
@@ -325,5 +390,16 @@ function handleCardClick() {
 .quest-footer {
   display: flex;
   justify-content: flex-end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clickable-quest-card,
+  .clickable-quest-card:hover,
+  .clickable-quest-card:active,
+  .read-more,
+  .quest-detail-toggle {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 </style>
