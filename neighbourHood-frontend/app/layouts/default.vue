@@ -7,18 +7,20 @@
           <h1 class="app-title" @click="goToHome" style="cursor: pointer;">🔗 {{ $t('appName') }}</h1>
           <div class="top-nav">
             <!-- Visible nav buttons -->
-            <el-button
+            <div
               v-for="(item, index) in visibleNavItems"
               :key="item.id"
-              text
-              class="top-nav-button"
-              :class="{ 'top-nav-active': activeMenuPath.includes(item.path) }"
-              @click="handleMenuClick(item.path)"
-              :data-item-id="item.id"
+              class="top-nav-icon-wrapper"
+              :title="t(item.labelKey)"
             >
-              <el-icon :is="item.icon" />
-              <span>{{ t(item.labelKey) }}</span>
-            </el-button>
+              <component
+                :is="item.icon"
+                class="top-nav-icon-button"
+                :class="{ 'top-nav-icon-active': activeMenuPath.includes(item.path) }"
+                @click="handleMenuClick(item.path)"
+                :data-item-id="item.id"
+              />
+            </div>
 
             <!-- More dropdown button (shown only if there are hidden items) -->
             <el-dropdown
@@ -26,9 +28,7 @@
               trigger="click"
               @command="handleMoreMenuCommand"
             >
-              <el-button text class="top-nav-button" :class="{ 'top-nav-active': isMoreMenuActive }">
-                <span class="more-dots">...</span>
-              </el-button>
+              <span class="top-nav-more-dots" :class="{ 'top-nav-active': isMoreMenuActive }">...</span>
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item
@@ -36,7 +36,9 @@
                     :key="item.id"
                     :command="item.path"
                   >
-                    <el-icon :is="item.icon" />
+                    <el-icon>
+                      <component :is="item.icon" />
+                    </el-icon>
                     {{ t(item.labelKey) }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -317,14 +319,14 @@ const navItems: NavItem[] = [
   { id: 'ai-assistant', path: '/ai-chat', labelKey: 'aiAssistant', icon: Service }
 ]
 
-const visibleNavItems = ref<NavItem[]>(navItems.slice(0, 5))
-const hiddenNavItems = ref<NavItem[]>(navItems.slice(5))
+const visibleNavItems = ref<NavItem[]>(navItems)
+const hiddenNavItems = ref<NavItem[]>([])
 
 const isMoreMenuActive = computed(() => {
   return hiddenNavItems.value.some(item => activeMenuPath.value.includes(item.path))
 })
 
-// Calculate visible items based on container width
+// Calculate visible items based on container width - using actual measurement
 const calculateVisibleItems = () => {
   if (typeof window === 'undefined') return
 
@@ -334,18 +336,51 @@ const calculateVisibleItems = () => {
   const navRect = topNav.getBoundingClientRect()
   const containerWidth = navRect.width
 
-  // Estimate button width (approximately 90px per button with icon + text, less for just text)
-  // More button is approximately 50px
-  const moreButtonWidth = 50
-  const estimatedButtonWidth = 110 // average width per button
-  const availableWidth = containerWidth - moreButtonWidth - 20 // 20px for padding/gap
-  const maxVisibleItems = Math.floor(availableWidth / estimatedButtonWidth)
+  // If container is too small or not yet rendered, show at least 2 items
+  if (containerWidth < 100) return
 
-  // Always show at least home button, and at most 5 main items (not including friends/ai-assistant)
-  const itemsToShow = Math.min(Math.max(1, maxVisibleItems), 5)
+  // Get all rendered icon wrappers
+  const iconWrappers = Array.from(topNav.querySelectorAll('[data-item-id]')) as HTMLElement[]
+  if (iconWrappers.length === 0) return
 
-  visibleNavItems.value = navItems.slice(0, itemsToShow)
-  hiddenNavItems.value = navItems.slice(itemsToShow)
+  // Calculate how many items can fit
+  let totalWidth = 0
+  let itemsThatFit = 0
+  const moreButtonWidth = 60 // Space for more button
+  const padding = 16 // Container padding
+  const gap = 6 // Gap between items
+
+  for (let i = 0; i < iconWrappers.length; i++) {
+    const iconElement = iconWrappers[i]
+    const parentWrapper = iconElement.parentElement
+    let buttonWidth = 0
+    
+    if (parentWrapper) {
+      buttonWidth = parentWrapper.getBoundingClientRect().width
+    } else {
+      buttonWidth = iconElement.getBoundingClientRect().width
+    }
+
+    // If a button hasn't rendered yet (width is 0), assume it's 36px
+    if (buttonWidth === 0) buttonWidth = 36
+
+    const estimatedWidth = totalWidth + buttonWidth + (itemsThatFit > 0 ? gap : 0) + moreButtonWidth + padding
+    
+    if (estimatedWidth <= containerWidth) {
+      totalWidth += buttonWidth + (itemsThatFit > 0 ? gap : 0)
+      itemsThatFit++
+    } else {
+      break
+    }
+  }
+
+  // Always show at least 3 items if they fit
+  if (itemsThatFit === 0) itemsThatFit = Math.min(3, navItems.length)
+
+  if (itemsThatFit !== visibleNavItems.value.length) {
+    visibleNavItems.value = navItems.slice(0, itemsThatFit)
+    hiddenNavItems.value = navItems.slice(itemsThatFit)
+  }
 }
 
 // Setup ResizeObserver for responsive behavior
@@ -685,8 +720,10 @@ onMounted(() => {
     resizeObserver.observe(topNav)
   }
 
-  // Initial calculation
-  calculateVisibleItems()
+  // Initial calculation with a small delay to ensure DOM is fully rendered
+  setTimeout(() => {
+    calculateVisibleItems()
+  }, 100)
 
   // Also listen to window resize
   window.addEventListener('resize', calculateVisibleItems)
@@ -1905,6 +1942,60 @@ const handleEmergencyCommand = (command: string) => {
   white-space: nowrap;
 }
 
+.top-nav-icon-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+
+.top-nav-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.top-nav-icon-button:hover {
+  background: #fff4eb;
+  color: #ff6f00;
+}
+
+.top-nav-icon-active {
+  background: #fff0e4;
+  color: #ff6f00;
+}
+
+.top-nav-more-dots {
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: 1;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.top-nav-more-dots:hover {
+  background: #fff4eb;
+  color: #ff6f00;
+}
+
+.top-nav-more-dots.top-nav-active {
+  background: #fff0e4;
+  color: #ff6f00;
+}
+
 .top-nav-button span {
   white-space: nowrap;
 }
@@ -2060,6 +2151,34 @@ const handleEmergencyCommand = (command: string) => {
 .dark .top-nav-active {
   background: #2b1b0d !important;
   color: #ff9f52 !important;
+}
+
+.dark .top-nav-icon-button {
+  color: #d1d5db;
+}
+
+.dark .top-nav-icon-button:hover {
+  background: #1f2937;
+  color: #ff8a33;
+}
+
+.dark .top-nav-icon-active {
+  background: #2b1b0d;
+  color: #ff9f52;
+}
+
+.dark .top-nav-more-dots {
+  color: #d1d5db;
+}
+
+.dark .top-nav-more-dots:hover {
+  background: #1f2937;
+  color: #ff8a33;
+}
+
+.dark .top-nav-more-dots.top-nav-active {
+  background: #2b1b0d;
+  color: #ff9f52;
 }
 
 .dark .sidebar-menu,
