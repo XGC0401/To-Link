@@ -6,66 +6,38 @@
         <div class="header-left">
           <h1 class="app-title" @click="goToHome" style="cursor: pointer;">🔗 {{ $t('appName') }}</h1>
           <div class="top-nav">
+            <!-- Visible nav buttons -->
             <el-button
+              v-for="(item, index) in visibleNavItems"
+              :key="item.id"
               text
               class="top-nav-button"
-              :class="{ 'top-nav-active': activeMenuPath.includes('/home') }"
-              @click="handleMenuClick('/home')"
+              :class="{ 'top-nav-active': activeMenuPath.includes(item.path) }"
+              @click="handleMenuClick(item.path)"
+              :data-item-id="item.id"
             >
-              <el-icon><HomeFilled /></el-icon>
-              <span>{{ $t('home') }}</span>
+              <el-icon :is="item.icon" />
+              <span>{{ t(item.labelKey) }}</span>
             </el-button>
-            <el-button
-              text
-              class="top-nav-button"
-              :class="{ 'top-nav-active': activeMenuPath.includes('/posts') }"
-              @click="handleMenuClick('/posts')"
+
+            <!-- More dropdown button (shown only if there are hidden items) -->
+            <el-dropdown
+              v-if="hiddenNavItems.length > 0"
+              trigger="click"
+              @command="handleMoreMenuCommand"
             >
-              <el-icon><DocumentCopy /></el-icon>
-              <span>{{ $t('posts') }}</span>
-            </el-button>
-            <el-button
-              text
-              class="top-nav-button"
-              :class="{ 'top-nav-active': activeMenuPath.includes('/nearbyShops') }"
-              @click="handleMenuClick('/nearbyShops')"
-            >
-              <el-icon><Location /></el-icon>
-              <span>{{ $t('nearbyShops') }}</span>
-            </el-button>
-            <el-button
-              text
-              class="top-nav-button"
-              :class="{ 'top-nav-active': activeMenuPath.includes('/nearbyCommunity') }"
-              @click="handleMenuClick('/nearbyCommunity')"
-            >
-              <el-icon><OfficeBuilding /></el-icon>
-              <span>{{ $t('nearbyCommunity') }}</span>
-            </el-button>
-            <el-button
-              text
-              class="top-nav-button"
-              :class="{ 'top-nav-active': activeMenuPath.includes('/chat') }"
-              @click="handleMenuClick('/chat')"
-            >
-              <el-icon><ChatLineRound /></el-icon>
-              <span>{{ $t('messages') }}</span>
-            </el-button>
-            <el-dropdown trigger="click" @command="handleMoreMenuCommand">
               <el-button text class="top-nav-button" :class="{ 'top-nav-active': isMoreMenuActive }">
-                <el-icon><Service /></el-icon>
-                <span>{{ $t('more') }}</span>
-                <el-icon><ArrowDown /></el-icon>
+                <span class="more-dots">...</span>
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="/friends">
-                    <el-icon><User /></el-icon>
-                    {{ $t('friends') }}
-                  </el-dropdown-item>
-                  <el-dropdown-item command="/ai-chat">
-                    <el-icon><Service /></el-icon>
-                    {{ $t('aiAssistant') }}
+                  <el-dropdown-item
+                    v-for="item in hiddenNavItems"
+                    :key="item.id"
+                    :command="item.path"
+                  >
+                    <el-icon :is="item.icon" />
+                    {{ t(item.labelKey) }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -303,7 +275,6 @@ import {
   OfficeBuilding,
   User,
   Service,
-  ArrowDown,
   Plus,
   Search,
   Bell,
@@ -327,9 +298,58 @@ const { locale, t, setLocale } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
 const searchQuery = ref('')
 const activeMenuPath = ref(route.path)
+
+// Responsive navigation items
+interface NavItem {
+  id: string
+  path: string
+  labelKey: string
+  icon: any
+}
+
+const navItems: NavItem[] = [
+  { id: 'home', path: '/home', labelKey: 'home', icon: HomeFilled },
+  { id: 'posts', path: '/posts', labelKey: 'posts', icon: DocumentCopy },
+  { id: 'nearby-shops', path: '/nearbyShops', labelKey: 'nearbyShops', icon: Location },
+  { id: 'community', path: '/nearbyCommunity', labelKey: 'nearbyCommunity', icon: OfficeBuilding },
+  { id: 'messages', path: '/chat', labelKey: 'messages', icon: ChatLineRound },
+  { id: 'friends', path: '/friends', labelKey: 'friends', icon: User },
+  { id: 'ai-assistant', path: '/ai-chat', labelKey: 'aiAssistant', icon: Service }
+]
+
+const visibleNavItems = ref<NavItem[]>(navItems.slice(0, 5))
+const hiddenNavItems = ref<NavItem[]>(navItems.slice(5))
+
 const isMoreMenuActive = computed(() => {
-  return ['/friends', '/ai-chat'].some(path => activeMenuPath.value.includes(path))
+  return hiddenNavItems.value.some(item => activeMenuPath.value.includes(item.path))
 })
+
+// Calculate visible items based on container width
+const calculateVisibleItems = () => {
+  if (typeof window === 'undefined') return
+
+  const topNav = document.querySelector('.top-nav')
+  if (!topNav) return
+
+  const navRect = topNav.getBoundingClientRect()
+  const containerWidth = navRect.width
+
+  // Estimate button width (approximately 90px per button with icon + text, less for just text)
+  // More button is approximately 50px
+  const moreButtonWidth = 50
+  const estimatedButtonWidth = 110 // average width per button
+  const availableWidth = containerWidth - moreButtonWidth - 20 // 20px for padding/gap
+  const maxVisibleItems = Math.floor(availableWidth / estimatedButtonWidth)
+
+  // Always show at least home button, and at most 5 main items (not including friends/ai-assistant)
+  const itemsToShow = Math.min(Math.max(1, maxVisibleItems), 5)
+
+  visibleNavItems.value = navItems.slice(0, itemsToShow)
+  hiddenNavItems.value = navItems.slice(itemsToShow)
+}
+
+// Setup ResizeObserver for responsive behavior
+let resizeObserver: ResizeObserver | null = null
 const userProfile = ref<any>(null)
 const userSettings = ref<any>(null)
 const showFeedbackDialog = ref(false)
@@ -655,10 +675,29 @@ onMounted(() => {
 
   // Listen for in-page notification events from chat.vue and home.vue
   window.addEventListener('app:notification', handleAppNotificationEvent)
+
+  // Setup responsive navbar
+  const topNav = document.querySelector('.top-nav')
+  if (topNav && typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => {
+      calculateVisibleItems()
+    })
+    resizeObserver.observe(topNav)
+  }
+
+  // Initial calculation
+  calculateVisibleItems()
+
+  // Also listen to window resize
+  window.addEventListener('resize', calculateVisibleItems)
 })
 
 onUnmounted(() => {
   window.removeEventListener('app:notification', handleAppNotificationEvent)
+  window.removeEventListener('resize', calculateVisibleItems)
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
 })
 
 // Watch route changes and update active menu
@@ -1868,6 +1907,13 @@ const handleEmergencyCommand = (command: string) => {
 
 .top-nav-button span {
   white-space: nowrap;
+}
+
+.more-dots {
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: 1;
 }
 
 .top-nav-button:hover {
