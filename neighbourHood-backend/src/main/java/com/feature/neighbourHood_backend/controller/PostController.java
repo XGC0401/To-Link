@@ -66,8 +66,8 @@ public class PostController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<ApiResponse> getRequest() {
-        List<PostEntity> posts = postService.findAll();
+    public ResponseEntity<ApiResponse> getRequest(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<PostEntity> posts = postService.findAllVisible(userDetails.getUuid());
         if (posts != null) {
             return ResponseEntity.status(200).body(new ApiResponse<>(true, posts, "success"));
         } else {
@@ -79,7 +79,7 @@ public class PostController {
     public ResponseEntity<ApiResponse> getById(@PathVariable("id") Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         PostEntity post = postService.findById(id);
-        if (post != null) {
+        if (post != null && postService.isVisibleForUser(post, userDetails.getUuid())) {
             return ResponseEntity.status(200).body(new ApiResponse<>(true, post, "success"));
         } else {
             return ResponseEntity.status(404).body(new ApiResponse<>(false, null, "fail"));

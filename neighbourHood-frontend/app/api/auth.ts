@@ -91,3 +91,40 @@ export async function updateEmail(email: string): Promise<APIResponse<BasicRespo
     return [error, error.response?.status];
   }
 }
+
+export async function getBlacklist(): Promise<APIResponse<BasicResponse<User[]>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().get<BasicResponse<User[]>>(`/admin/user/blacklist`, getConfig())
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}
+
+export async function blockUser(userId: string): Promise<APIResponse<BasicResponse<boolean>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<boolean>>(
+      `/admin/user/blacklist`,
+      { userId },
+      getConfig()
+    )
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}
+
+export async function unblockUser(userId: string): Promise<APIResponse<BasicResponse<boolean>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().delete<BasicResponse<boolean>>(`/admin/user/blacklist`, {
+      ...getConfig(),
+      data: { userId }
+    })
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}

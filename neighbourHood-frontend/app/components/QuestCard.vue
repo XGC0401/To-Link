@@ -29,6 +29,10 @@
                   <el-icon><Warning /></el-icon>
                   {{ $t('report') }}
                 </el-dropdown-item>
+                <el-dropdown-item v-if="!isOwnQuest" command="block">
+                  <el-icon><CircleClose /></el-icon>
+                  {{ $t('blockUser') }}
+                </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -107,7 +111,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { MoreFilled, Edit, Delete, Warning } from '@element-plus/icons-vue'
+import { MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
 
 interface Quest {
   id: number
@@ -140,6 +144,7 @@ const emit = defineEmits<{
   (e: 'edit', quest: Quest): void
   (e: 'delete', quest: Quest): void
   (e: 'report', quest: Quest): void
+  (e: 'block', quest: Quest): void
 }>()
 
 const isOwnQuest = computed(() => {
@@ -156,6 +161,9 @@ function handleCommand(command: string) {
       break
     case 'report':
       emit('report', props.quest)
+      break
+    case 'block':
+      emit('block', props.quest)
       break
   }
 }

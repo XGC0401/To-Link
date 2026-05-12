@@ -31,6 +31,12 @@
                 </el-icon>
                 {{ $t('report') }}
               </el-dropdown-item>
+              <el-dropdown-item v-if="!isOwnPost" command="block">
+                <el-icon>
+                  <CircleClose />
+                </el-icon>
+                {{ $t('blockUser') }}
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -69,7 +75,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Star, MoreFilled, Edit, Delete, Warning } from '@element-plus/icons-vue'
+import { Star, MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
 import type { Post } from '../api/types/post'
 import { likePost } from '~/api/post';
 
@@ -84,6 +90,7 @@ const emit = defineEmits<{
   (e: 'edit', post: Post): void
   (e: 'delete', post: Post): void
   (e: 'report', post: Post): void
+  (e: 'block', post: Post): void
 }>()
 
 const isOwnPost = computed(() => {
@@ -108,6 +115,9 @@ function handleCommand(command: string) {
       break
     case 'report':
       emit('report', props.post)
+      break
+    case 'block':
+      emit('block', props.post)
       break
   }
 }
@@ -153,6 +163,10 @@ const tagValue = computed(() => {
     case 6: return $t('studySupport')
     case 7: return $t('petSupport')
     case 8: return $t('sportsAndWellness')
+    case 9: return $t('lostItem')
+    case 10: return $t('foundItem')
+    case 11: return $t('secondHandSell')
+    case 12: return $t('secondHandWant')
     case 4: return $t('other')
     default: return $t('other')
   }

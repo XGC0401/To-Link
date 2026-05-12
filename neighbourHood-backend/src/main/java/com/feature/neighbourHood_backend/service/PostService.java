@@ -3,7 +3,9 @@ package com.feature.neighbourHood_backend.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -47,6 +49,57 @@ public class PostService {
 
     public List<PostEntity> findAll() {
         return postRepository.findAll();
+    }
+
+    public List<PostEntity> findAllVisible(UUID currentUserId) {
+        Optional<User> currentUser = userRepository.findById(currentUserId);
+        if (currentUser.isEmpty()) {
+            return postRepository.findAll();
+        }
+
+        Set<UUID> blockedByMe = currentUser.get().getBlockedUsers().stream()
+                .map(User::getUuid)
+                .collect(Collectors.toSet());
+
+        return postRepository.findAll().stream()
+                .filter(post -> post.getUser() != null && post.getUser().getUuid() != null)
+                .filter(post -> {
+                    UUID authorId = post.getUser().getUuid();
+                    if (authorId.equals(currentUserId)) {
+                        return true;
+                    }
+                    if (blockedByMe.contains(authorId)) {
+                        return false;
+                    }
+                    return !post.getUser().getBlockedUsers().stream()
+                            .map(User::getUuid)
+                            .collect(Collectors.toSet())
+                            .contains(currentUserId);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public boolean isVisibleForUser(PostEntity post, UUID currentUserId) {
+        if (post == null || post.getUser() == null || post.getUser().getUuid() == null) {
+            return false;
+        }
+        UUID authorId = post.getUser().getUuid();
+        if (authorId.equals(currentUserId)) {
+            return true;
+        }
+        Optional<User> currentUser = userRepository.findById(currentUserId);
+        if (currentUser.isEmpty()) {
+            return true;
+        }
+        boolean blockedByMe = currentUser.get().getBlockedUsers().stream()
+                .map(User::getUuid)
+                .anyMatch(authorId::equals);
+        if (blockedByMe) {
+            return false;
+        }
+        return post.getUser().getBlockedUsers().stream()
+                .map(User::getUuid)
+                .noneMatch(currentUserId::equals);
     }
 
     public int acceptRequest(Long id, UUID uuid) {

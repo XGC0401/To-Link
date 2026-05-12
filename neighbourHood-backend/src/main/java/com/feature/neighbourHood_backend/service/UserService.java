@@ -1,7 +1,9 @@
 package com.feature.neighbourHood_backend.service;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,6 +140,54 @@ public class UserService implements UserDetailsService {
         } catch (Exception ex) {
             throw new BusinessException(ErrorCode.USER_UPDATE_FAILED, "Failed to update email: " + ex.getMessage(), ex);
         }
+    }
+
+    public Set<UUID> getBlockedUserIds(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));
+        Hibernate.initialize(user.getBlockedUsers());
+        return user.getBlockedUsers().stream()
+                .map(User::getUuid)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<User> getBlockedUsers(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));
+        Hibernate.initialize(user.getBlockedUsers());
+        return user.getBlockedUsers();
+    }
+
+    public boolean blockUser(UUID blockerId, UUID blockedId) {
+        if (blockerId.equals(blockedId)) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "You cannot block yourself");
+        }
+
+        User blocker = userRepository.findById(blockerId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));
+        User blocked = userRepository.findById(blockedId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "Blocked user not found"));
+
+        Hibernate.initialize(blocker.getBlockedUsers());
+        boolean added = blocker.getBlockedUsers().add(blocked);
+        if (added) {
+            userRepository.save(blocker);
+        }
+        return added;
+    }
+
+    public boolean unblockUser(UUID blockerId, UUID blockedId) {
+        User blocker = userRepository.findById(blockerId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));
+        User blocked = userRepository.findById(blockedId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "Blocked user not found"));
+
+        Hibernate.initialize(blocker.getBlockedUsers());
+        boolean removed = blocker.getBlockedUsers().remove(blocked);
+        if (removed) {
+            userRepository.save(blocker);
+        }
+        return removed;
     }
 
     private boolean isValidEmail(String email) {

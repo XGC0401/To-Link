@@ -18,12 +18,21 @@
               <el-option :label="$t('mostComments')" value="mostComments" />
               <el-option :label="$t('leastComments')" value="leastComments" />
             </el-select>
+            <el-select v-model="postBoardType" :placeholder="$t('postBoardType')" style="width: 220px;">
+              <el-option :label="$t('allPosts')" value="all" />
+              <el-option :label="$t('generalRequests')" value="general" />
+              <el-option :label="$t('lostAndFind')" value="lostAndFind" />
+              <el-option :label="$t('secondHandItem')" value="secondHand" />
+            </el-select>
           </div>
           <div class="posts-header-right">
             <div class="header-toggle">
               <el-switch v-model="showOnlyMyPosts" size="large" />
               <span class="header-toggle-label">{{ $t('showHideYourPosts') }}</span>
             </div>
+            <el-button plain @click="showBlockedUsersDialog = true">
+              {{ $t('blockedUsers') }} ({{ blockedPeople.length }})
+            </el-button>
             <el-button type="primary" @click="goToCreatePost">
               {{ $t('createNewPost') }}
             </el-button>
@@ -38,7 +47,7 @@
         <div v-else class="posts-list">
           <PostCard v-for="post in filteredPosts" :key="post.id" :post="post" :language="language"
             :current-user-email="currentUser.email" @show-detail="openPostDetail" @edit="editPost" @delete="deletePost"
-            @report="reportPost" />
+            @report="reportPost" @block="blockUserFromPost" />
         </div>
         <el-empty v-if="!isLoadingPosts && filteredPosts.length === 0" :description="$t('noPosts')" />
 
@@ -86,7 +95,7 @@
             :can-accept="canAcceptQuest(quest)" :accept-button-tooltip="getAcceptButtonTooltip(quest)"
             :current-user-name="currentUser.name" @show-detail="openQuestDetail" @accept-quest="acceptQuest"
             @show-introduction-dialog="openIntroductionDialog" @edit="editQuest" @delete="deleteQuest"
-            @report="reportQuest" />
+            @report="reportQuest" @block="blockUserFromQuest" />
         </div>
       </el-tab-pane>
       </el-tabs>
@@ -119,6 +128,19 @@
     <!-- Edit Quest Dialog -->
     <EditQuestDialog v-model="showEditQuestDialog" :quest="selectedEditQuest" :available-tags="availableTags"
       @save="saveEditedQuest" />
+
+    <el-dialog v-model="showBlockedUsersDialog" :title="$t('blockedUsers')" width="540px">
+      <el-empty v-if="blockedPeople.length === 0" :description="$t('noBlockedUsers')" />
+      <div v-else class="blocked-list">
+        <div v-for="person in blockedPeople" :key="person.id" class="blocked-row">
+          <div>
+            <div class="blocked-name">{{ person.label }}</div>
+            <div class="blocked-id">{{ person.id }}</div>
+          </div>
+          <el-button type="success" plain @click="unblockPerson(person)">{{ $t('unblock') }}</el-button>
+        </div>
+      </div>
+    </el-dialog>
   </NuxtLayout>
 </template>
 
@@ -138,8 +160,16 @@ import EditQuestDialog from '~/components/EditQuestDialog.vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { deletePostById, getPost } from '~/api/post'
-import { getUser } from '~/api/auth'
+import { blockUser, getBlacklist, getUser, unblockUser } from '~/api/auth'
 import type { Post } from '~/api/types/post'
+import {
+  loadBlacklist,
+  removeBlockedPerson,
+  saveBlacklist,
+  upsertBlockedPerson,
+  isBlockedByCandidates,
+  type BlockedPerson
+} from '~/utils/blacklist'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -148,12 +178,15 @@ const searchQuery = ref('')
 const questSearchQuery = ref('')
 const selectedCategory = ref('')
 const sortBy = ref('latest')
+const postBoardType = ref<'all' | 'general' | 'lostAndFind' | 'secondHand'>('all')
 const questSortBy = ref('latest')
 const activeTab = ref('posts')
 const isLoadingPosts = ref(false)
 const showOnlyMyPosts = ref(false)
 const showOnlyMyRequests = ref(false)
 const deletedPostIds = ref<number[]>([])
+const blockedPeople = ref<BlockedPerson[]>([])
+const showBlockedUsersDialog = ref(false)
 
 // Current user info (simulated - would come from auth in real app)
 const currentUser = ref({
@@ -390,10 +423,27 @@ const filteredPosts = computed(() => {
   }
 
   let filtered = posts.value.filter(post => {
+    const blocked = isBlockedByCandidates(blockedPeople.value, [
+      post.user?.uuid,
+      post.user?.email,
+      post.user?.username
+    ])
+    if (blocked) {
+      return false
+    }
+
+    const isLostAndFind = [9, 10].includes(post.request_type)
+    const isSecondHand = [11, 12].includes(post.request_type)
+    const matchesBoard =
+      postBoardType.value === 'all' ||
+      (postBoardType.value === 'general' && !isLostAndFind && !isSecondHand) ||
+      (postBoardType.value === 'lostAndFind' && isLostAndFind) ||
+      (postBoardType.value === 'secondHand' && isSecondHand)
+
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       post.content.toLowerCase().includes(searchQuery.value.toLowerCase())
     const matchesMine = !showOnlyMyPosts.value || isMyPost(post)
-    return matchesSearch && matchesMine
+    return matchesSearch && matchesMine && matchesBoard
   })
 
   // Sort posts based on selected sort option
@@ -421,6 +471,11 @@ const filteredPosts = computed(() => {
 
 const filteredQuests = computed(() => {
   let filtered = questRequests.value.filter(quest => {
+    const blocked = isBlockedByCandidates(blockedPeople.value, [quest.authorId, quest.author])
+    if (blocked) {
+      return false
+    }
+
     const matchesSearch = quest.title.toLowerCase().includes(questSearchQuery.value.toLowerCase()) ||
       quest.detail.toLowerCase().includes(questSearchQuery.value.toLowerCase()) ||
       quest.tags.some(tag => tag.toLowerCase().includes(questSearchQuery.value.toLowerCase()))
@@ -452,6 +507,68 @@ const filteredQuests = computed(() => {
 function openPostDetail(post: any) {
   selectedPost.value = post
   showPostDetailDialog.value = true
+}
+
+const syncBlacklist = (list: BlockedPerson[]) => {
+  blockedPeople.value = list
+  saveBlacklist(list)
+}
+
+const blockLocalPerson = (person: { id: string; label: string; backendUuid?: string }) => {
+  const next = upsertBlockedPerson(blockedPeople.value, person)
+  syncBlacklist(next)
+}
+
+async function blockUserFromPost(post: Post) {
+  const user = post.user
+  if (!user) {
+    return
+  }
+  if (isMyPost(post)) {
+    ElMessage.warning(t('cannotBlockYourself'))
+    return
+  }
+
+  blockLocalPerson({
+    id: String(user.uuid || user.email || user.username),
+    label: String(user.username || user.email || user.uuid),
+    backendUuid: user.uuid ? String(user.uuid) : undefined
+  })
+
+  if (user.uuid) {
+    await blockUser(String(user.uuid))
+  }
+
+  ElMessage.success(t('userBlocked'))
+}
+
+async function blockUserFromQuest(quest: any) {
+  if (String(quest.authorId) === String(currentUser.value.id)) {
+    ElMessage.warning(t('cannotBlockYourself'))
+    return
+  }
+
+  blockLocalPerson({
+    id: String(quest.authorId),
+    label: String(quest.author || quest.authorId)
+  })
+
+  if (quest.authorId && String(quest.authorId).includes('-')) {
+    await blockUser(String(quest.authorId))
+  }
+
+  ElMessage.success(t('userBlocked'))
+}
+
+async function unblockPerson(person: BlockedPerson) {
+  const target = person.backendUuid || person.id
+  if (target && target.includes('-')) {
+    await unblockUser(target)
+  }
+
+  const next = removeBlockedPerson(blockedPeople.value, person.id)
+  syncBlacklist(next)
+  ElMessage.success(t('userUnblocked'))
 }
 
 // Navigate to create post page
@@ -820,6 +937,21 @@ function reportQuest(quest: any) {
 
 onMounted(async () => {
   window.addEventListener('storage', handlePostStorage)
+  blockedPeople.value = loadBlacklist()
+
+  const [blacklistError, blacklistResponse] = await getBlacklist()
+  if (!blacklistError && blacklistResponse?.data && Array.isArray(blacklistResponse.data)) {
+    let next = blockedPeople.value
+    for (const user of blacklistResponse.data) {
+      next = upsertBlockedPerson(next, {
+        id: String(user.uuid),
+        label: String(user.username || user.email || user.uuid),
+        backendUuid: String(user.uuid)
+      })
+    }
+    syncBlacklist(next)
+  }
+
   try {
     const [userError, userData] = await getUser()
     if (!userError && userData) {
@@ -1241,6 +1373,32 @@ onUnmounted(() => {
 
 .rewards-info :deep(.el-button) {
   order: -1;
+}
+
+.blocked-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.blocked-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(129, 140, 248, 0.24);
+  background: rgba(247, 249, 255, 0.9);
+}
+
+.blocked-name {
+  font-weight: 600;
+  color: #2f3b67;
+}
+
+.blocked-id {
+  font-size: 12px;
+  color: #6b7280;
 }
 
 .quests-list {

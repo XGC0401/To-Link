@@ -105,6 +105,15 @@ public class User {
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_block", joinColumns = @JoinColumn(name = "blocker_id"), inverseJoinColumns = @JoinColumn(name = "blocked_id"))
+    private Set<User> blockedUsers = new HashSet<>();
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "blockedUsers", fetch = FetchType.LAZY)
+    private Set<User> blockedByUsers = new HashSet<>();
+
     // @JsonIgnore
     // @ManyToMany(fetch = FetchType.EAGER)
     // @JoinTable(name = "user_likePosts", joinColumns = @JoinColumn(name =
@@ -140,6 +149,14 @@ public class User {
 
     public List<PostEntity> getPosts() {
         return posts;
+    }
+
+    public Set<User> getBlockedUsers() {
+        return blockedUsers;
+    }
+
+    public Set<User> getBlockedByUsers() {
+        return blockedByUsers;
     }
 
     // public void addLike(PostEntity post){

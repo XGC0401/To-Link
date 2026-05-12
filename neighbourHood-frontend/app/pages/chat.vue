@@ -9,6 +9,11 @@
       <!-- Conversations List -->
       <div class="conversations-panel">
         <div class="search-bar">
+          <div class="search-actions">
+            <el-button type="primary" plain @click="showCreateGroupDialog = true">
+              {{ $t('createGroupChat') }}
+            </el-button>
+          </div>
           <el-input
             v-model="searchConversation"
             :placeholder="$t('search')"
@@ -53,6 +58,13 @@
               </div>
             </div>
             <div class="chat-header-right">
+              <el-button
+                text
+                :type="isConversationBlocked(selectedConversation) ? 'danger' : undefined"
+                @click="toggleConversationBlock(selectedConversation)"
+              >
+                {{ isConversationBlocked(selectedConversation) ? $t('unblock') : $t('blockUser') }}
+              </el-button>
               <el-button text :icon="Phone" circle />
               <el-button text :icon="VideoCamera" circle />
               <el-button text :icon="MoreFilled" circle />
@@ -212,6 +224,7 @@
             <el-input
               v-model="messageInput"
               :placeholder="$t('typeMessage')"
+              :disabled="isConversationBlocked(selectedConversation)"
               @keyup.enter="sendMessage"
             />
             <div class="composer-actions">
@@ -243,7 +256,7 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-button type="primary" :icon="Promotion" circle size="large" @click="sendMessage" />
+              <el-button type="primary" :icon="Promotion" circle size="large" :disabled="isConversationBlocked(selectedConversation)" @click="sendMessage" />
             </div>
           </div>
         </template>
@@ -267,12 +280,33 @@
     :can-accept="false"
     :accept-button-tooltip="$t('questAlreadyAccepted')"
   />
+
+  <el-dialog v-model="showCreateGroupDialog" :title="$t('createGroupChat')" width="560px">
+    <el-form label-position="top">
+      <el-form-item :label="$t('groupChatName')">
+        <el-input v-model="groupChatName" :placeholder="$t('groupChatNamePlaceholder')" />
+      </el-form-item>
+      <el-form-item :label="$t('groupMembers')">
+        <el-select v-model="selectedGroupMembers" multiple filterable style="width: 100%">
+          <el-option
+            v-for="option in availableGroupMembers"
+            :key="option.id"
+            :label="option.name"
+            :value="option.id"
+          />
+        </el-select>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="showCreateGroupDialog = false">{{ $t('cancel') }}</el-button>
+      <el-button type="primary" @click="createGroupConversation">{{ $t('createGroupChat') }}</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
-import { useHead } from '@unhead/vue'
 import QuestDetailDialog from '~/components/QuestDetailDialog.vue'
 import {
   Search,
@@ -295,6 +329,8 @@ import {
 } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
+import { blockUser, unblockUser } from '~/api/auth'
+import { loadBlacklist, removeBlockedPerson, saveBlacklist, upsertBlockedPerson, isBlockedByCandidates, type BlockedPerson } from '~/utils/blacklist'
 
 // Add Leaflet CSS
 useHead({
@@ -350,7 +386,19 @@ interface Conversation {
   lastMessageTime: string
   unread: number
   messages: Message[]
+  members?: Array<{ id: string | number; name: string }>
+  isGroup?: boolean
 }
+
+interface GroupMemberOption {
+  id: number
+  name: string
+}
+
+const blockedPeople = ref<BlockedPerson[]>([])
+const showCreateGroupDialog = ref(false)
+const groupChatName = ref('')
+const selectedGroupMembers = ref<number[]>([])
 
 const conversations = ref<Conversation[]>([
   {
@@ -540,6 +588,7 @@ const conversations = ref<Conversation[]>([
 
 // Load conversations from localStorage on mount
 onMounted(() => {
+  blockedPeople.value = loadBlacklist()
   const storedConversations = localStorage.getItem('chatConversations')
   if (storedConversations) {
     const parsed = JSON.parse(storedConversations)
@@ -573,13 +622,38 @@ onMounted(() => {
 
 const filteredConversations = computed(() => {
   return conversations.value.filter(conv =>
-    conv.name.toLowerCase().includes(searchConversation.value.toLowerCase())
+    !isConversationBlocked(conv) && conv.name.toLowerCase().includes(searchConversation.value.toLowerCase())
   )
+})
+
+const availableGroupMembers = computed<GroupMemberOption[]>(() => {
+  return conversations.value
+    .filter((conversation) => !conversation.isGroup)
+    .filter((conversation) => !isConversationBlocked(conversation))
+    .map((conversation) => ({
+      id: conversation.id,
+      name: conversation.name
+    }))
 })
 
 const selectedConversation = computed(() => {
   return conversations.value.find(c => c.id === selectedConversationId.value)
 })
+
+const isConversationBlocked = (conversation?: Conversation) => {
+  if (!conversation) {
+    return false
+  }
+
+  const memberCandidates = [conversation.id, conversation.name]
+  if (Array.isArray(conversation.members)) {
+    for (const member of conversation.members) {
+      memberCandidates.push(member.id, member.name)
+    }
+  }
+
+  return isBlockedByCandidates(blockedPeople.value, memberCandidates)
+}
 
 const selectConversation = (conversation: Conversation) => {
   selectedConversationId.value = conversation.id
@@ -619,6 +693,10 @@ const createNewConversation = (userId: number) => {
 
 const sendMessage = () => {
   if (!messageInput.value.trim() || !selectedConversation.value) return
+  if (isConversationBlocked(selectedConversation.value)) {
+    ElMessage.warning(t('conversationBlocked'))
+    return
+  }
 
   const newMessage: Message = {
     id: (selectedConversation.value.messages.length || 0) + 1,
@@ -721,6 +799,11 @@ const handleFileSelect = (event: Event) => {
   const file = target.files?.[0]
   
   if (!file || !selectedConversation.value) return
+  if (isConversationBlocked(selectedConversation.value)) {
+    ElMessage.warning(t('conversationBlocked'))
+    target.value = ''
+    return
+  }
   
   // Validate file size (max 10MB)
   const maxSize = 10 * 1024 * 1024 // 10MB
@@ -775,6 +858,10 @@ const handleFileSelect = (event: Event) => {
 // Handle location sharing
 const handleLocationShare = () => {
   if (!selectedConversation.value) return
+  if (isConversationBlocked(selectedConversation.value)) {
+    ElMessage.warning(t('conversationBlocked'))
+    return
+  }
   
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -951,6 +1038,80 @@ const openQuestDetail = (message: Message) => {
     showQuestDetailDialog.value = true
   }
 }
+
+const updateBlockedStorage = (next: BlockedPerson[]) => {
+  blockedPeople.value = next
+  saveBlacklist(next)
+
+  if (selectedConversation.value && isConversationBlocked(selectedConversation.value)) {
+    selectedConversationId.value = null
+  }
+}
+
+const toggleConversationBlock = async (conversation: Conversation) => {
+  if (conversation.isGroup) {
+    ElMessage.warning(t('groupBlockHint'))
+    return
+  }
+
+  const currentId = String(conversation.id)
+  const blocked = isConversationBlocked(conversation)
+  if (blocked) {
+    const next = removeBlockedPerson(blockedPeople.value, currentId)
+    updateBlockedStorage(next)
+    if (currentId.includes('-')) {
+      await unblockUser(currentId)
+    }
+    ElMessage.success(t('userUnblocked'))
+    return
+  }
+
+  const next = upsertBlockedPerson(blockedPeople.value, {
+    id: currentId,
+    label: conversation.name
+  })
+  updateBlockedStorage(next)
+  if (currentId.includes('-')) {
+    await blockUser(currentId)
+  }
+  ElMessage.success(t('userBlocked'))
+}
+
+const createGroupConversation = () => {
+  const name = groupChatName.value.trim()
+  if (!name || selectedGroupMembers.value.length === 0) {
+    ElMessage.warning(t('groupChatValidation'))
+    return
+  }
+
+  const members = availableGroupMembers.value.filter((member) => selectedGroupMembers.value.includes(member.id))
+  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const newConversation: Conversation = {
+    id: Date.now(),
+    name,
+    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+    lastMessage: t('groupChatCreatedMessage'),
+    lastMessageTime: now,
+    unread: 0,
+    isGroup: true,
+    members,
+    messages: [
+      {
+        id: 1,
+        text: `${t('groupChatCreatedMessage')}: ${members.map((member) => member.name).join(', ')}`,
+        sender: 'user',
+        time: now
+      }
+    ]
+  }
+
+  conversations.value.unshift(newConversation)
+  selectConversation(newConversation)
+  showCreateGroupDialog.value = false
+  groupChatName.value = ''
+  selectedGroupMembers.value = []
+  ElMessage.success(t('groupChatCreatedSuccess'))
+}
 </script>
 
 <style scoped>
@@ -1007,6 +1168,12 @@ const openQuestDetail = (message: Message) => {
   box-shadow: 0 30px 58px rgba(40, 53, 124, 0.18);
   position: relative;
   z-index: 1;
+}
+
+.search-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
 }
 
 .chat-container {

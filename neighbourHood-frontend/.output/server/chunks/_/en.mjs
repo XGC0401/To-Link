@@ -48,6 +48,7 @@ var browseCommunities = "Browse Communities";
 var recentPosts = "Recent Posts";
 var recentlyAcceptedQuests = "Recently Accepted Quests";
 var yourPost = "Your Post";
+var admin = "Admin";
 var category = "Category";
 var all = "All";
 var news = "News";
@@ -345,6 +346,7 @@ var postUpdatedSuccess = "Post updated successfully!";
 var confirmDeletePostMessage = "Are you sure you want to delete this post?";
 var deletePostTitle = "Delete Post";
 var postDeletedSuccess = "Post deleted successfully!";
+var postDeleteFailed = "Failed to delete post. Please try again.";
 var reportComingSoon = "Report feature coming soon!";
 var questUpdatedSuccess = "Quest updated successfully!";
 var confirmDeleteQuestMessage = "Are you sure you want to delete this quest?";
@@ -363,6 +365,31 @@ var eventOrganizing = "Event Organizing";
 var studySupport = "Study Support";
 var petSupport = "Pet Support";
 var sportsAndWellness = "Sports and Wellness";
+var lostItem = "Lost Item";
+var foundItem = "Found Item";
+var lostAndFind = "Lost & Find";
+var secondHandItem = "2nd Hand Item";
+var secondHandSell = "Sell 2nd Hand";
+var secondHandWant = "Want 2nd Hand";
+var generalRequests = "General Requests";
+var allPosts = "All Posts";
+var postBoardType = "Board Type";
+var blockUser = "Block User";
+var blockedUsers = "Blocked Users";
+var noBlockedUsers = "No blocked users";
+var unblock = "Unblock";
+var userBlocked = "User blocked successfully";
+var userUnblocked = "User unblocked successfully";
+var cannotBlockYourself = "You cannot block yourself";
+var conversationBlocked = "You blocked this conversation. Unblock to continue.";
+var groupBlockHint = "Manage blocks from individual chats instead of group chats.";
+var createGroupChat = "Create Group Chat";
+var groupChatName = "Group Chat Name";
+var groupChatNamePlaceholder = "Enter group name";
+var groupMembers = "Group Members";
+var groupChatValidation = "Please enter a group name and choose at least one member";
+var groupChatCreatedMessage = "Group chat created";
+var groupChatCreatedSuccess = "Group chat created successfully";
 var tagPhysicalHelp = "Physical Help";
 var tagMoving = "Moving";
 var tagPetCare = "Pet Care";
@@ -513,6 +540,58 @@ var weatherSnow = "Snow";
 var weatherThunderstorm = "Thunderstorm";
 var weatherUnknown = "Weather";
 var weatherLocationUnknown = "Location unavailable";
+var adminDeletePostTitle = "Delete Post (Admin)";
+var adminDeleteTagLabel = "Removal Reason";
+var adminDeleteTagPlaceholder = "Select a reason";
+var adminDeleteDescLabel = "Additional Details";
+var adminDeleteDescPlaceholder = "Please provide further explanation (min. 5 characters)";
+var adminDeleteConfirmLabel = "Confirmation";
+var adminDeleteConfirmHint = "Type \"post remove confirm\" to enable the delete button.";
+var adminDeleteConfirmPlaceholder = "post remove confirm";
+var adminDeleteConfirmButton = "Delete Post";
+var deleteTagSpam = "Spam";
+var deleteTagInappropriate = "Inappropriate Content";
+var deleteTagMisinformation = "Misinformation";
+var deleteTagHarassment = "Harassment or Bullying";
+var deleteTagDuplicate = "Duplicate Post";
+var deleteTagOther = "Other";
+var deleteTag_spam = "Spam";
+var deleteTag_inappropriate = "Inappropriate Content";
+var deleteTag_misinformation = "Misinformation";
+var deleteTag_harassment = "Harassment or Bullying";
+var deleteTag_duplicate = "Duplicate Post";
+var deleteTag_other = "Other";
+var chatNotificationTitle = "New message from {name}";
+var chatAutoReply1 = "Got it, thanks!";
+var chatAutoReply2 = "Sure, I'll get back to you shortly.";
+var chatAutoReply3 = "That sounds good!";
+var chatAutoReply4 = "Thanks for the update!";
+var postRemovedNotificationTitle = "Your post has been removed";
+var postRemovedNotificationMessage = "Your post was removed due to: {tag}";
+var postRemovalDetailTitle = "Post Removal Details";
+var postTitle = "Post Title";
+var postCreateDate = "Post Created";
+var postRemovalDate = "Removed On";
+var removalReason = "Reason";
+var removalDescription = "Details";
+var postDescription = "Post Description";
+var postPhotos = "Photos";
+var falseRemovalReportButton = "Report False Removal";
+var falseRemovalReportLabel = "Describe why you believe this removal was incorrect";
+var falseRemovalReportPlaceholder = "Please explain in detail why your post should not have been removed (min. 10 characters)...";
+var falseRemovalReportSubmitted = "Your false removal report has been submitted.";
+var deleteAllPosts = "Delete All Posts";
+var deleteAllPostsTitle = "Delete All Posts";
+var confirmDeleteAllPostsMessage = "Are you sure you want to delete all posts? This will also hide ghost posts after reload.";
+var allPostsDeletedSuccess = "All posts deleted successfully.";
+var hide = "Hide";
+var secret = "Secret";
+var secretDeleteAllPostsWarning = "This action is irreversible. Use only for complete emergency cleanup.";
+var justNow = "Just now";
+var minutesAgo = "{n} min ago";
+var hoursAgo = "{n} hr ago";
+var daysAgo = "{n} days ago";
+var refresh = "Refresh";
 const enLocale = {
 	neighbourHood: neighbourHood,
 	login: login,
@@ -564,6 +643,7 @@ const enLocale = {
 	recentPosts: recentPosts,
 	recentlyAcceptedQuests: recentlyAcceptedQuests,
 	yourPost: yourPost,
+	admin: admin,
 	category: category,
 	all: all,
 	news: news,
@@ -864,6 +944,7 @@ const enLocale = {
 	confirmDeletePostMessage: confirmDeletePostMessage,
 	deletePostTitle: deletePostTitle,
 	postDeletedSuccess: postDeletedSuccess,
+	postDeleteFailed: postDeleteFailed,
 	reportComingSoon: reportComingSoon,
 	questUpdatedSuccess: questUpdatedSuccess,
 	confirmDeleteQuestMessage: confirmDeleteQuestMessage,
@@ -882,6 +963,31 @@ const enLocale = {
 	studySupport: studySupport,
 	petSupport: petSupport,
 	sportsAndWellness: sportsAndWellness,
+	lostItem: lostItem,
+	foundItem: foundItem,
+	lostAndFind: lostAndFind,
+	secondHandItem: secondHandItem,
+	secondHandSell: secondHandSell,
+	secondHandWant: secondHandWant,
+	generalRequests: generalRequests,
+	allPosts: allPosts,
+	postBoardType: postBoardType,
+	blockUser: blockUser,
+	blockedUsers: blockedUsers,
+	noBlockedUsers: noBlockedUsers,
+	unblock: unblock,
+	userBlocked: userBlocked,
+	userUnblocked: userUnblocked,
+	cannotBlockYourself: cannotBlockYourself,
+	conversationBlocked: conversationBlocked,
+	groupBlockHint: groupBlockHint,
+	createGroupChat: createGroupChat,
+	groupChatName: groupChatName,
+	groupChatNamePlaceholder: groupChatNamePlaceholder,
+	groupMembers: groupMembers,
+	groupChatValidation: groupChatValidation,
+	groupChatCreatedMessage: groupChatCreatedMessage,
+	groupChatCreatedSuccess: groupChatCreatedSuccess,
 	tagPhysicalHelp: tagPhysicalHelp,
 	tagMoving: tagMoving,
 	tagPetCare: tagPetCare,
@@ -1031,8 +1137,60 @@ const enLocale = {
 	weatherSnow: weatherSnow,
 	weatherThunderstorm: weatherThunderstorm,
 	weatherUnknown: weatherUnknown,
-	weatherLocationUnknown: weatherLocationUnknown
+	weatherLocationUnknown: weatherLocationUnknown,
+	adminDeletePostTitle: adminDeletePostTitle,
+	adminDeleteTagLabel: adminDeleteTagLabel,
+	adminDeleteTagPlaceholder: adminDeleteTagPlaceholder,
+	adminDeleteDescLabel: adminDeleteDescLabel,
+	adminDeleteDescPlaceholder: adminDeleteDescPlaceholder,
+	adminDeleteConfirmLabel: adminDeleteConfirmLabel,
+	adminDeleteConfirmHint: adminDeleteConfirmHint,
+	adminDeleteConfirmPlaceholder: adminDeleteConfirmPlaceholder,
+	adminDeleteConfirmButton: adminDeleteConfirmButton,
+	deleteTagSpam: deleteTagSpam,
+	deleteTagInappropriate: deleteTagInappropriate,
+	deleteTagMisinformation: deleteTagMisinformation,
+	deleteTagHarassment: deleteTagHarassment,
+	deleteTagDuplicate: deleteTagDuplicate,
+	deleteTagOther: deleteTagOther,
+	deleteTag_spam: deleteTag_spam,
+	deleteTag_inappropriate: deleteTag_inappropriate,
+	deleteTag_misinformation: deleteTag_misinformation,
+	deleteTag_harassment: deleteTag_harassment,
+	deleteTag_duplicate: deleteTag_duplicate,
+	deleteTag_other: deleteTag_other,
+	chatNotificationTitle: chatNotificationTitle,
+	chatAutoReply1: chatAutoReply1,
+	chatAutoReply2: chatAutoReply2,
+	chatAutoReply3: chatAutoReply3,
+	chatAutoReply4: chatAutoReply4,
+	postRemovedNotificationTitle: postRemovedNotificationTitle,
+	postRemovedNotificationMessage: postRemovedNotificationMessage,
+	postRemovalDetailTitle: postRemovalDetailTitle,
+	postTitle: postTitle,
+	postCreateDate: postCreateDate,
+	postRemovalDate: postRemovalDate,
+	removalReason: removalReason,
+	removalDescription: removalDescription,
+	postDescription: postDescription,
+	postPhotos: postPhotos,
+	falseRemovalReportButton: falseRemovalReportButton,
+	falseRemovalReportLabel: falseRemovalReportLabel,
+	falseRemovalReportPlaceholder: falseRemovalReportPlaceholder,
+	falseRemovalReportSubmitted: falseRemovalReportSubmitted,
+	deleteAllPosts: deleteAllPosts,
+	deleteAllPostsTitle: deleteAllPostsTitle,
+	confirmDeleteAllPostsMessage: confirmDeleteAllPostsMessage,
+	allPostsDeletedSuccess: allPostsDeletedSuccess,
+	hide: hide,
+	secret: secret,
+	secretDeleteAllPostsWarning: secretDeleteAllPostsWarning,
+	justNow: justNow,
+	minutesAgo: minutesAgo,
+	hoursAgo: hoursAgo,
+	daysAgo: daysAgo,
+	refresh: refresh
 };
 
-export { To, aboutUs, aboutUsMessage, acceptQuest, acceptedBy, acceptedQuest, activeNow, addTags, address, address1, address1Placeholder, address1Required, address2, address2Placeholder, address2Required, address3, address3Placeholder, addressAllWarningMessage, addressCustomOptionHint, addressHint, addressNotAvailable, addressPrivacyTitle, addressSection, age, agePlaceholder, ageRequired, aiAssistant, aiConnectionErrorMessage, aiNoInfoMessage, aiWelcome, all, allCategories, allowMessages, alreadyAcceptedOne, alreadyAppliedQuest, announcementsAndSales, appFeedback, appName, appearance, approve, area, areaHongKong, areaKowloon, areaNewTerritories, areaPlaceholder, areaSelectNationFirst, askAI, assistanceSupport, attachments, audio, availability, availabilityHint, availablePoints, avatarSize, backToTop, bakery, bio, bioPlaceholder, brandDescription, brandTitle, browseCommunities, buildingInfo, buildingName, buildingPlaceholder, busy, call, callSecurity, callSecurityNow, cancel, cannotAcceptOwnRequest, care, category, changePhoto, charityOrg, chatHistory, chatLimitReached, clearAll, clickToViewDetails, coffeeShop, comfortableMode, comments, communities, communityCenter, communityEvents, communityFeedback, communityMockCenterName, communityMockEveryTuesday, communityMockFoodDriveContent, communityMockFoodDriveTitle, communityMockHealthFairContent, communityMockHealthFairTitle, communityMockHopeFoundationName, communityMockMeetupContent, communityMockMeetupTitle, communityMockNearbyLocation, communityMockSeniorSupportContent, communityMockSeniorSupportTitle, communityMockTeenGameNightContent, communityMockTeenGameNightTitle, communityMockVolunteerContent, communityMockVolunteerTitle, communityMockYouthCenterName, communityMockYouthWorkshopContent, communityMockYouthWorkshopTitle, compactMode, confirmDeletePostMessage, confirmDeleteQuestMessage, content, contentLength, convenienceStore, couldNotGetLocation, country, countryChina, countryPlaceholder, countryUnitedKingdom, countryUnitedStates, create, createAccount, createNewPost, createNewPostTitle, createQuestRequest, customCategory, customCategoryPlaceholder, daily, darkMode, dateFormat, enLocale as default, deleteChatConfirm, deleteChatTitle, deletePostTitle, deleteQuestTitle, detail, details, disabled, displayMode, distance, document, download, edit, email, emailInvalid, emailNotifications, emailPlaceholder, emailRequired, emailUpdateUnauthorized, emergencyAlert, emergencyFailed, emergencyGroupChat, emergencySent, enabled, endTime, enterContent, enterQuestDetails, enterQuestTitle, enterTitle, enterUsername, event, eventOrganizing, events, everyone, exampleQ1, exampleQ2, exampleQ3, exampleQ4, exampleQuestions, extraLarge, faceToFace, failedLoadShops, failedToLoadCommunities, failedToLoadShops, feedbackDescription, feedbackPlaceholder, feedbackSubmitted, fileFailed, fileSent, fileTooLarge, fillAllFields, fillRequired, fireEmergency, floodAlert, floor, floorPlaceholder, fontSize, fontSizePreview, friday, friendNotifications, friends, friendsOnly, fullDay, fullDayAll, general, geolocationNotSupported, gettingLocation, help, helpCenter, helpCenterComingSoon, hidden, highestReward, hkid, hkidPlaceholder, hkidRequired, home, hour, hours, hoursNotAvailable, hoverForInfo, imagePreview, imageSize, imagesOptional, importantInformation, introduceYourself, introduction, introductionHint, introductionPlaceholder, invalidCredentials, language, languageAndRegion, languageChangeFailed, languageChanged, languageChineseTraditional, languageChineseTraditionalWithFlag, languageEnglish, languageEnglishWithFlag, large, latest, layoutDensity, leastComments, leastLikes, lightMode, likes, loadingCommunities, loadingPosts, loadingShops, location, locationDataLoadFailed, locationError, locationNotSupported, locationShared, loggingIn, login, loginSubtitle, loginTitle, logingFailed, logout, lowestReward, markAllRead, maxFilesExceeded, medium, message, messageNotifications, messages, mission, missionApplication, missionDetails, monday, mostComments, mostLikes, myLocation, name, namePlaceholder, nameRequired, nation, nationBeijing, nationCalifornia, nationEngland, nationGuangdong, nationNewYork, nationNorthernIreland, nationPlaceholder, nationScotland, nationSelectCountryFirst, nationShanghai, nationTexas, nationWales, nearbyCommunity, nearbyShops, nearestCity, nearestCountry, nearestCountrySection, nearestLocationSection, neighbourHood, networkUnavailable, newChat, newFailedLoadShops, news, ngo, no, noAcceptedQuests, noAnnouncements, noChatHistory, noCommunityFound, noEvents, noNotifications, noOne, noPendingQuests, noPosts, noResults, noShopsFound, notEnoughPoints, notice, notificationPreferences, notificationSound, notifications, off, offline, oldest, on, online, onlyImages, openInMaps, openLoginPage, other, others, othersTooltipDescription, password, passwordMinLength, passwordPlaceholder, passwordRequired, payment, paymentMethod, pendingApplicants, pendingQuest, petSupport, pharmacy, phone, phoneInvalid, phonePlaceholder, phoneRequired, photo, pleaseCheck, pleaseEnterCustomCategory, pleaseEnterFeedback, pleaseEnterQuestDetails, pleaseEnterTitle, pleaseEnterUsername, pleaseHelp, pleaseSelectCategory, points, postDeletedSuccess, postFailed, postNotifications, postSuccess, postUpdatedSuccess, posts, powerOutage, premiumFeature, preview, privacyAndSecurity, privacyPolicy, privacyPolicyComingSoon, profile, profilePicture, profileSaveFailed, profileSaved, profileSettings, profileVisibility, program, publishPost, questAcceptedSuccess, questAlreadyAccepted, questApplicationSubmitted, questApprovedSuccess, questCreatedSuccess, questDeletedSuccess, questNotifications, questOnHold, questRequests, questUpdatedSuccess, recentPosts, recentlyAcceptedQuests, redeem, redeemRewards, redeemSuccess, register, registerSubtitle, registering, registrationFailed, registrationSuccess, religiousOrg, rememberMe, renameChatPlaceholder, renameChatRequired, renameChatTitle, repair, report, reportComingSoon, restaurant, rewardPoints, roomNumber, roomPlaceholder, sale, saturday, save, saveChanges, search, searchCommunities, searchCountry, searchFriends, searchPosts, searchQuests, searchShops, selectCategory, selectConversation, selectStatus, sendIntroduction, serverMessageRequired, serverN8nNotConfigured, serverN8nRequestFailed, serverReachN8nFailed, serverWakingUp, settings, settingsSaveFailed, settingsSaved, share, shareThoughts, sharedLocation, shopMockBigMacDealContent, shopMockBigMacDealTitle, shopMockExtendedHoursContent, shopMockLatestDealsContent, shopping, showAddressTo, showAllPeople, showFriendsOnly, showHideYourPosts, showHideYourRequests, showNoOne, showOnlineStatus, showSpecificPeopleOnly, small, socialClub, sortBy, specialOffer, specificPeople, specificPeoplePlaceholder, sportsAndWellness, startTime, status, statusFreelancer, statusOther, statusRetired, statusStudent, statusWorker, street, streetPlaceholder, studySupport, submit, sunday, supermarket, systemNotifications, tagAlreadyExists, tagCleaning, tagDesign, tagErrands, tagGardening, tagHint, tagMoving, tagMustStartWithHash, tagNoSpaces, tagPetCare, tagPhysicalHelp, tagTech, tagTutoring, tags, tagsOptional, termsOfService, termsOfServiceComingSoon, themeColor, themePreview, thursday, timeFormat, timeSelect, title, titleLength, tuesday, typeMessage, typeQuestion, unknownLocation, unknownUser, updatedOpeningHours, uploadTip, urgentPleaseRespond, username, usernameLength, version, versionMessage, video, visible, warningTitle, weatherCity, weatherClear, weatherCloudy, weatherDateMon, weatherDayFri, weatherDayThu, weatherDayTue, weatherDayWed, weatherDrizzle, weatherFog, weatherLocationUnknown, weatherPartlyCloudy, weatherRain, weatherSnow, weatherSunny, weatherThunderstorm, weatherUnknown, website, wednesday, welcomeMessage, welcomeTitle, yes, youAreHere, yourIntroduction, yourPost, yourRewardPoints, youthCenter };
+export { To, aboutUs, aboutUsMessage, acceptQuest, acceptedBy, acceptedQuest, activeNow, addTags, address, address1, address1Placeholder, address1Required, address2, address2Placeholder, address2Required, address3, address3Placeholder, addressAllWarningMessage, addressCustomOptionHint, addressHint, addressNotAvailable, addressPrivacyTitle, addressSection, admin, adminDeleteConfirmButton, adminDeleteConfirmHint, adminDeleteConfirmLabel, adminDeleteConfirmPlaceholder, adminDeleteDescLabel, adminDeleteDescPlaceholder, adminDeletePostTitle, adminDeleteTagLabel, adminDeleteTagPlaceholder, age, agePlaceholder, ageRequired, aiAssistant, aiConnectionErrorMessage, aiNoInfoMessage, aiWelcome, all, allCategories, allPosts, allPostsDeletedSuccess, allowMessages, alreadyAcceptedOne, alreadyAppliedQuest, announcementsAndSales, appFeedback, appName, appearance, approve, area, areaHongKong, areaKowloon, areaNewTerritories, areaPlaceholder, areaSelectNationFirst, askAI, assistanceSupport, attachments, audio, availability, availabilityHint, availablePoints, avatarSize, backToTop, bakery, bio, bioPlaceholder, blockUser, blockedUsers, brandDescription, brandTitle, browseCommunities, buildingInfo, buildingName, buildingPlaceholder, busy, call, callSecurity, callSecurityNow, cancel, cannotAcceptOwnRequest, cannotBlockYourself, care, category, changePhoto, charityOrg, chatAutoReply1, chatAutoReply2, chatAutoReply3, chatAutoReply4, chatHistory, chatLimitReached, chatNotificationTitle, clearAll, clickToViewDetails, coffeeShop, comfortableMode, comments, communities, communityCenter, communityEvents, communityFeedback, communityMockCenterName, communityMockEveryTuesday, communityMockFoodDriveContent, communityMockFoodDriveTitle, communityMockHealthFairContent, communityMockHealthFairTitle, communityMockHopeFoundationName, communityMockMeetupContent, communityMockMeetupTitle, communityMockNearbyLocation, communityMockSeniorSupportContent, communityMockSeniorSupportTitle, communityMockTeenGameNightContent, communityMockTeenGameNightTitle, communityMockVolunteerContent, communityMockVolunteerTitle, communityMockYouthCenterName, communityMockYouthWorkshopContent, communityMockYouthWorkshopTitle, compactMode, confirmDeleteAllPostsMessage, confirmDeletePostMessage, confirmDeleteQuestMessage, content, contentLength, convenienceStore, conversationBlocked, couldNotGetLocation, country, countryChina, countryPlaceholder, countryUnitedKingdom, countryUnitedStates, create, createAccount, createGroupChat, createNewPost, createNewPostTitle, createQuestRequest, customCategory, customCategoryPlaceholder, daily, darkMode, dateFormat, daysAgo, enLocale as default, deleteAllPosts, deleteAllPostsTitle, deleteChatConfirm, deleteChatTitle, deletePostTitle, deleteQuestTitle, deleteTagDuplicate, deleteTagHarassment, deleteTagInappropriate, deleteTagMisinformation, deleteTagOther, deleteTagSpam, deleteTag_duplicate, deleteTag_harassment, deleteTag_inappropriate, deleteTag_misinformation, deleteTag_other, deleteTag_spam, detail, details, disabled, displayMode, distance, document, download, edit, email, emailInvalid, emailNotifications, emailPlaceholder, emailRequired, emailUpdateUnauthorized, emergencyAlert, emergencyFailed, emergencyGroupChat, emergencySent, enabled, endTime, enterContent, enterQuestDetails, enterQuestTitle, enterTitle, enterUsername, event, eventOrganizing, events, everyone, exampleQ1, exampleQ2, exampleQ3, exampleQ4, exampleQuestions, extraLarge, faceToFace, failedLoadShops, failedToLoadCommunities, failedToLoadShops, falseRemovalReportButton, falseRemovalReportLabel, falseRemovalReportPlaceholder, falseRemovalReportSubmitted, feedbackDescription, feedbackPlaceholder, feedbackSubmitted, fileFailed, fileSent, fileTooLarge, fillAllFields, fillRequired, fireEmergency, floodAlert, floor, floorPlaceholder, fontSize, fontSizePreview, foundItem, friday, friendNotifications, friends, friendsOnly, fullDay, fullDayAll, general, generalRequests, geolocationNotSupported, gettingLocation, groupBlockHint, groupChatCreatedMessage, groupChatCreatedSuccess, groupChatName, groupChatNamePlaceholder, groupChatValidation, groupMembers, help, helpCenter, helpCenterComingSoon, hidden, hide, highestReward, hkid, hkidPlaceholder, hkidRequired, home, hour, hours, hoursAgo, hoursNotAvailable, hoverForInfo, imagePreview, imageSize, imagesOptional, importantInformation, introduceYourself, introduction, introductionHint, introductionPlaceholder, invalidCredentials, justNow, language, languageAndRegion, languageChangeFailed, languageChanged, languageChineseTraditional, languageChineseTraditionalWithFlag, languageEnglish, languageEnglishWithFlag, large, latest, layoutDensity, leastComments, leastLikes, lightMode, likes, loadingCommunities, loadingPosts, loadingShops, location, locationDataLoadFailed, locationError, locationNotSupported, locationShared, loggingIn, login, loginSubtitle, loginTitle, logingFailed, logout, lostAndFind, lostItem, lowestReward, markAllRead, maxFilesExceeded, medium, message, messageNotifications, messages, minutesAgo, mission, missionApplication, missionDetails, monday, mostComments, mostLikes, myLocation, name, namePlaceholder, nameRequired, nation, nationBeijing, nationCalifornia, nationEngland, nationGuangdong, nationNewYork, nationNorthernIreland, nationPlaceholder, nationScotland, nationSelectCountryFirst, nationShanghai, nationTexas, nationWales, nearbyCommunity, nearbyShops, nearestCity, nearestCountry, nearestCountrySection, nearestLocationSection, neighbourHood, networkUnavailable, newChat, newFailedLoadShops, news, ngo, no, noAcceptedQuests, noAnnouncements, noBlockedUsers, noChatHistory, noCommunityFound, noEvents, noNotifications, noOne, noPendingQuests, noPosts, noResults, noShopsFound, notEnoughPoints, notice, notificationPreferences, notificationSound, notifications, off, offline, oldest, on, online, onlyImages, openInMaps, openLoginPage, other, others, othersTooltipDescription, password, passwordMinLength, passwordPlaceholder, passwordRequired, payment, paymentMethod, pendingApplicants, pendingQuest, petSupport, pharmacy, phone, phoneInvalid, phonePlaceholder, phoneRequired, photo, pleaseCheck, pleaseEnterCustomCategory, pleaseEnterFeedback, pleaseEnterQuestDetails, pleaseEnterTitle, pleaseEnterUsername, pleaseHelp, pleaseSelectCategory, points, postBoardType, postCreateDate, postDeleteFailed, postDeletedSuccess, postDescription, postFailed, postNotifications, postPhotos, postRemovalDate, postRemovalDetailTitle, postRemovedNotificationMessage, postRemovedNotificationTitle, postSuccess, postTitle, postUpdatedSuccess, posts, powerOutage, premiumFeature, preview, privacyAndSecurity, privacyPolicy, privacyPolicyComingSoon, profile, profilePicture, profileSaveFailed, profileSaved, profileSettings, profileVisibility, program, publishPost, questAcceptedSuccess, questAlreadyAccepted, questApplicationSubmitted, questApprovedSuccess, questCreatedSuccess, questDeletedSuccess, questNotifications, questOnHold, questRequests, questUpdatedSuccess, recentPosts, recentlyAcceptedQuests, redeem, redeemRewards, redeemSuccess, refresh, register, registerSubtitle, registering, registrationFailed, registrationSuccess, religiousOrg, rememberMe, removalDescription, removalReason, renameChatPlaceholder, renameChatRequired, renameChatTitle, repair, report, reportComingSoon, restaurant, rewardPoints, roomNumber, roomPlaceholder, sale, saturday, save, saveChanges, search, searchCommunities, searchCountry, searchFriends, searchPosts, searchQuests, searchShops, secondHandItem, secondHandSell, secondHandWant, secret, secretDeleteAllPostsWarning, selectCategory, selectConversation, selectStatus, sendIntroduction, serverMessageRequired, serverN8nNotConfigured, serverN8nRequestFailed, serverReachN8nFailed, serverWakingUp, settings, settingsSaveFailed, settingsSaved, share, shareThoughts, sharedLocation, shopMockBigMacDealContent, shopMockBigMacDealTitle, shopMockExtendedHoursContent, shopMockLatestDealsContent, shopping, showAddressTo, showAllPeople, showFriendsOnly, showHideYourPosts, showHideYourRequests, showNoOne, showOnlineStatus, showSpecificPeopleOnly, small, socialClub, sortBy, specialOffer, specificPeople, specificPeoplePlaceholder, sportsAndWellness, startTime, status, statusFreelancer, statusOther, statusRetired, statusStudent, statusWorker, street, streetPlaceholder, studySupport, submit, sunday, supermarket, systemNotifications, tagAlreadyExists, tagCleaning, tagDesign, tagErrands, tagGardening, tagHint, tagMoving, tagMustStartWithHash, tagNoSpaces, tagPetCare, tagPhysicalHelp, tagTech, tagTutoring, tags, tagsOptional, termsOfService, termsOfServiceComingSoon, themeColor, themePreview, thursday, timeFormat, timeSelect, title, titleLength, tuesday, typeMessage, typeQuestion, unblock, unknownLocation, unknownUser, updatedOpeningHours, uploadTip, urgentPleaseRespond, userBlocked, userUnblocked, username, usernameLength, version, versionMessage, video, visible, warningTitle, weatherCity, weatherClear, weatherCloudy, weatherDateMon, weatherDayFri, weatherDayThu, weatherDayTue, weatherDayWed, weatherDrizzle, weatherFog, weatherLocationUnknown, weatherPartlyCloudy, weatherRain, weatherSnow, weatherSunny, weatherThunderstorm, weatherUnknown, website, wednesday, welcomeMessage, welcomeTitle, yes, youAreHere, yourIntroduction, yourPost, yourRewardPoints, youthCenter };
 //# sourceMappingURL=en.mjs.map

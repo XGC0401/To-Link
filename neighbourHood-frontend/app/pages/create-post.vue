@@ -24,6 +24,10 @@
               <el-option :label="$t('studySupport')" :value="6" />
               <el-option :label="$t('petSupport')" :value="7" />
               <el-option :label="$t('sportsAndWellness')" :value="8" />
+              <el-option :label="$t('lostItem')" :value="9" />
+              <el-option :label="$t('foundItem')" :value="10" />
+              <el-option :label="$t('secondHandSell')" :value="11" />
+              <el-option :label="$t('secondHandWant')" :value="12" />
               <el-option :label="$t('other')" :value="4" />
             </el-select>
           </el-form-item>

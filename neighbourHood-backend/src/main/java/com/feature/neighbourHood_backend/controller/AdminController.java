@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import com.feature.neighbourHood_backend.model.CustomUserDetails;
 import com.feature.neighbourHood_backend.model.DTO.ApiResponse;
+import com.feature.neighbourHood_backend.model.DTO.BlockUserRequestDTO;
 import com.feature.neighbourHood_backend.model.DTO.UpdateEmailRequestDTO;
 import com.feature.neighbourHood_backend.model.entity.User;
 import com.feature.neighbourHood_backend.service.UserService;
@@ -54,5 +56,33 @@ public class AdminController {
         } catch (IllegalArgumentException ex) {
             return new ApiResponse(false, ex.getMessage());
         }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/user/blacklist")
+    public ApiResponse<Object> getBlacklist(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return new ApiResponse<>(true, userService.getBlockedUsers(userDetails.getUuid()), "success");
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/user/blacklist")
+    public ApiResponse<Boolean> blockUser(@AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody BlockUserRequestDTO request) {
+        if (request.getUserId() == null) {
+            return new ApiResponse<>(false, false, "userId is required");
+        }
+        boolean blocked = userService.blockUser(userDetails.getUuid(), request.getUserId());
+        return new ApiResponse<>(true, blocked, blocked ? "user blocked" : "already blocked");
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/user/blacklist")
+    public ApiResponse<Boolean> unblockUser(@AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody BlockUserRequestDTO request) {
+        if (request.getUserId() == null) {
+            return new ApiResponse<>(false, false, "userId is required");
+        }
+        boolean unblocked = userService.unblockUser(userDetails.getUuid(), request.getUserId());
+        return new ApiResponse<>(true, unblocked, unblocked ? "user unblocked" : "user not in blacklist");
     }
 }
