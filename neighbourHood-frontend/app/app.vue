@@ -2,7 +2,13 @@
   <NuxtPage />
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { loadAndApplyThemeFromStorage } from '@/utils/theme'
+
+onMounted(() => {
+  loadAndApplyThemeFromStorage()
+})
 </script>
 
 <style>

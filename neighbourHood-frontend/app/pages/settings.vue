@@ -262,6 +262,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Check } from '@element-plus/icons-vue'
+import { applyCompactMode, applyDarkMode, applyFontSize, applyThemeColor } from '@/utils/theme'
 
 const router = useRouter()
 const { t, locale, setLocale } = useI18n()
@@ -293,51 +294,12 @@ const settingsForm = reactive({
   allowMessages: 'everyone'
 })
 
-// Apply theme color to CSS variables
-const applyThemeColor = (color: string) => {
-  document.documentElement.style.setProperty('--el-color-primary', color)
-  document.documentElement.style.setProperty('--user-theme-color', color)
-}
-// Apply font size to document
-const applyFontSize = (size: number) => {
-  document.documentElement.style.setProperty('--base-font-size', `${size}px`)
-  document.body.style.fontSize = `${size}px`
-}
-
 const formatFontSizeTooltip = (value: number) => {
   return `${value}px`
 }
 
 const handleFontSizeChange = (value: number) => {
   applyFontSize(value)
-}
-
-// Apply compact mode to document
-const applyCompactMode = (isCompact: boolean) => {
-  if (isCompact) {
-    document.documentElement.style.setProperty('--spacing-unit', '8px')
-    document.documentElement.style.setProperty('--card-padding', '12px')
-    document.documentElement.style.setProperty('--element-height', '32px')
-  } else {
-    document.documentElement.style.setProperty('--spacing-unit', '16px')
-    document.documentElement.style.setProperty('--card-padding', '20px')
-    document.documentElement.style.setProperty('--element-height', '40px')
-  }
-}
-
-// Apply dark mode to document
-const applyDarkMode = (isDark: boolean) => {
-  if (isDark) {
-    document.documentElement.classList.add('dark')
-    document.body.classList.add('dark')
-    document.body.style.backgroundColor = '#1a1a1a'
-    document.body.style.color = '#e5e5e5'
-  } else {
-    document.documentElement.classList.remove('dark')
-    document.body.classList.remove('dark')
-    document.body.style.backgroundColor = '#f5f7fa'
-    document.body.style.color = '#333'
-  }
 }
 
 // Watch theme color changes and apply immediately

@@ -595,691 +595,194 @@ html.dark .quests-list .el-card {
   }
 }
 
-/* ============ COMPREHENSIVE DARK MODE CSS ============ */
-/* All dark mode rules use html.dark selector for proper matching */
-
-/* Dark mode - basic surfaces and text */
-html.dark {
-  background-color: #111827 !important;
-  color: #e5e7eb !important;
+/* ============ REWRITTEN THEME SYSTEM ============ */
+:root,
+html[data-theme='light'] {
+  --theme-bg: #f5f7fa;
+  --theme-surface: #ffffff;
+  --theme-surface-soft: #f8fafc;
+  --theme-text: #111827;
+  --theme-text-muted: #6b7280;
+  --theme-border: #e5e7eb;
+  --theme-input: #ffffff;
+  --theme-hover: #f3f4f6;
 }
 
-html.dark * {
-  color-scheme: dark !important;
+html.dark,
+html[data-theme='dark'] {
+  --theme-bg: #0f172a;
+  --theme-surface: #182235;
+  --theme-surface-soft: #1f2c44;
+  --theme-text: #e5e7eb;
+  --theme-text-muted: #b8c3ed;
+  --theme-border: #334155;
+  --theme-input: #0b1220;
+  --theme-hover: #24324a;
 }
 
-/* Dark mode - common elements */
-html.dark h1,
-html.dark h2,
-html.dark h3,
-html.dark h4,
-html.dark h5,
-html.dark h6,
-html.dark p,
-html.dark span,
-html.dark a,
-html.dark label,
-html.dark li,
-html.dark div {
-  color: #e5e7eb !important;
+html,
+body,
+#__nuxt,
+#app {
+  background: var(--theme-bg);
+  color: var(--theme-text);
 }
 
-/* Dark mode - text colors for specific text classes */
-html.dark .conversation-time,
-html.dark .conversation-preview,
-html.dark .chat-header-info .status,
-html.dark .empty-chat,
-html.dark .location-coords,
-html.dark .file-size,
-html.dark .message-time,
-html.dark .file-name {
-  color: #b8c3ed !important;
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-html.dark .conversation-name,
-html.dark .chat-header-info h3,
-html.dark .card-header h2,
-html.dark .location-header,
-html.dark .header-toggle-label {
-  color: #e8eeff !important;
-}
-
-html.dark .location-link,
-html.dark .location-header,
-html.dark .file-download,
-html.dark .document-icon {
-  color: #a5b4fc !important;
-}
-
-html.dark .location-link:hover,
-html.dark .file-download:hover {
-  color: #c7d2fe !important;
-}
-
-/* Dark mode - chat page specific */
-html.dark .chat-full {
-  border-color: rgba(129, 140, 248, 0.36) !important;
-  box-shadow: 0 34px 64px rgba(1, 5, 17, 0.68) !important;
-  background: #1a2847 !important;
-}
-
-html.dark .chat-page-shell {
-  border-color: rgba(129, 140, 248, 0.45) !important;
-  background:
-    radial-gradient(145% 125% at 0% 0%, rgba(79, 70, 229, 0.46), rgba(10, 16, 34, 0.08) 58%),
-    radial-gradient(135% 150% at 100% 0%, rgba(6, 182, 212, 0.24), rgba(10, 16, 34, 0.08) 62%),
-    linear-gradient(165deg, rgba(12, 18, 38, 0.98), rgba(20, 28, 56, 0.95)) !important;
-  box-shadow: 0 44px 80px rgba(1, 5, 15, 0.72), inset 0 1px 0 rgba(169, 188, 255, 0.2) !important;
-  background-color: #111827 !important;
-}
-
-html.dark .chat-pattern {
-  background-image: linear-gradient(rgba(129, 140, 248, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(129, 140, 248, 0.08) 1px, transparent 1px) !important;
-}
-
-html.dark .chat-container {
-  background:
-    radial-gradient(130% 130% at 0% 0%, rgba(79, 70, 229, 0.34), rgba(16, 22, 45, 0.08) 58%),
-    radial-gradient(130% 145% at 100% 0%, rgba(14, 165, 233, 0.18), rgba(16, 22, 45, 0.08) 62%),
-    linear-gradient(160deg, #11162d, #1a2345) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .conversations-panel {
-  background: linear-gradient(160deg, rgba(24, 31, 61, 0.95), rgba(18, 24, 49, 0.92)) !important;
-  border-right-color: rgba(129, 140, 248, 0.34) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .search-bar {
-  border-bottom-color: rgba(129, 140, 248, 0.3) !important;
-  background: #111827 !important;
-}
-
-html.dark .search-bar :deep(.el-input__wrapper),
-html.dark .search-bar .el-input__wrapper {
-  background: rgba(16, 22, 44, 0.88) !important;
-  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.36) inset, 0 8px 16px rgba(1, 5, 15, 0.52) !important;
-}
-
-html.dark .conversation-item {
-  border-bottom-color: rgba(129, 140, 248, 0.24) !important;
-  background: #111827 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .conversation-item:hover {
-  background-color: rgba(79, 70, 229, 0.24) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .conversation-item.active {
-  background-color: rgba(79, 70, 229, 0.32) !important;
-  box-shadow: inset 3px 0 0 rgba(165, 180, 252, 0.85) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .chat-panel {
-  background: linear-gradient(160deg, rgba(21, 28, 57, 0.95), rgba(16, 22, 45, 0.92)) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .chat-header {
-  background: linear-gradient(150deg, rgba(24, 31, 61, 0.95), rgba(18, 24, 49, 0.92)) !important;
-  border-bottom-color: rgba(129, 140, 248, 0.32) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .message.received .message-bubble,
-html.dark .document-message,
-html.dark .location-message {
-  background: linear-gradient(150deg, rgba(36, 42, 74, 0.88), rgba(24, 31, 58, 0.84)) !important;
-  border-color: rgba(129, 140, 248, 0.3) !important;
-  color: #e5e5e5 !important;
-}
-
-html.dark .message.sent .message-bubble,
-html.dark .message.sent .document-message {
-  background: linear-gradient(145deg, #4f46e5, #6366f1) !important;
-  color: #fff !important;
-}
-
-html.dark .message-input-area {
-  background: linear-gradient(150deg, rgba(24, 31, 61, 0.92), rgba(18, 24, 49, 0.9)) !important;
-  border-top-color: rgba(129, 140, 248, 0.32) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .message-input-area :deep(.el-input__wrapper),
-html.dark .message-input-area .el-input__wrapper {
-  background: rgba(16, 22, 44, 0.88) !important;
-  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.38) inset, 0 8px 16px rgba(1, 5, 15, 0.52) !important;
-}
-
-html.dark .message-input-area :deep(.el-input__inner),
-html.dark .message-input-area :deep(.el-button--text),
-html.dark .message-input-area .el-input__inner,
-html.dark .message-input-area .el-button--text {
-  color: #e5e5e5 !important;
-}
-
-html.dark .message-input-area :deep(.el-button--text:hover) {
-  color: #a5b4fc !important;
-}
-
-html.dark .message-image,
-html.dark .message-video {
-  border: 1px solid rgba(129, 140, 248, 0.28) !important;
-}
-
-html.dark .clickable-quest:hover {
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.62) !important;
-}
-
-html.dark .click-to-view {
-  border-top-color: rgba(255, 255, 255, 0.2) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .chat-page-shell::before {
-  border-color: rgba(171, 185, 255, 0.28) !important;
-}
-
-html.dark .conversation-item.active {
-  box-shadow: inset 3px 0 0 rgba(165, 180, 252, 0.85), 0 0 24px rgba(129, 140, 248, 0.26) !important;
-}
-
-html.dark .message.sent .message-bubble {
-  box-shadow: 0 14px 24px rgba(79, 70, 229, 0.34) !important;
-}
-
-html.dark .chat-page-shell :deep(.el-button.is-circle) {
-  box-shadow: 0 10px 20px rgba(2, 6, 19, 0.65) !important;
-}
-
-/* Dark mode - home/welcome sections */
-html.dark .welcome-section,
-html.dark .weather-card,
-html.dark .welcome-card {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .weather-circle {
-  background: rgba(79, 70, 229, 0.1) !important;
-}
-
-html.dark .weather-info-section {
-  background: #1a1a1a !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .weather-day {
-  color: #e5e7eb !important;
-}
-
-html.dark .weather-day-range,
-html.dark .weather-day-condition,
-html.dark .weather-range,
-html.dark .weather-hour,
-html.dark .weather-date {
-  color: #b8c3ed !important;
-}
-
-html.dark .weather-main,
-html.dark .weather-temperature,
-html.dark .weather-city {
-  color: #e5e7eb !important;
-}
-
-/* Dark mode - create post/quest dialogs */
-html.dark .el-dialog__wrapper {
-  background: rgba(0, 0, 0, 0.7) !important;
-}
-
-html.dark .el-dialog {
-  background: #1f2937 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-dialog__header {
-  background: #262727 !important;
-  border-bottom-color: #374151 !important;
-}
-
-html.dark .el-dialog__close {
-  color: #9ca3af !important;
-}
-
-html.dark .el-dialog__close:hover {
-  color: #e5e7eb !important;
-}
-
-/* Dark mode - form inputs and controls */
-html.dark .el-form-item__label {
-  color: #e5e7eb !important;
+/* Core Element Plus surfaces */
+html.dark .el-card,
+html.dark .el-dialog,
+html.dark .el-drawer,
+html.dark .el-popover,
+html.dark .el-dropdown-menu,
+html.dark .el-select-dropdown,
+html.dark .el-message,
+html.dark .el-notification,
+html.dark .el-message-box,
+html.dark .el-picker-panel,
+html.dark .el-time-panel,
+html.dark .el-color-picker__panel,
+html.dark .el-table,
+html.dark .el-table th,
+html.dark .el-table td,
+html.dark .el-tabs__nav-wrap,
+html.dark .el-tabs__header,
+html.dark .el-radio-button__inner,
+html.dark .el-tag,
+html.dark .el-switch__core {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
 }
 
 html.dark .el-input__wrapper,
-html.dark .el-textarea__wrapper {
-  background: #111827 !important;
-  border-color: #374151 !important;
-}
-
-html.dark .el-input__inner,
-html.dark .el-textarea__inner {
-  background: #111827 !important;
-  color: #e5e7eb !important;
-  border-color: #374151 !important;
+html.dark .el-textarea__inner,
+html.dark .el-select__wrapper,
+html.dark .el-input__inner {
+  background: var(--theme-input) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+  box-shadow: 0 0 0 1px var(--theme-border) inset !important;
 }
 
 html.dark .el-input__inner::placeholder,
-html.dark .el-textarea__inner::placeholder {
-  color: #9ca3af !important;
-}
-
-html.dark .el-select__placeholder {
-  color: #9ca3af !important;
-}
-
-html.dark .el-select__wrapper {
-  background: #111827 !important;
-  border-color: #374151 !important;
-}
-
-/* Dark mode - date picker and dropdowns */
-html.dark .el-picker-panel,
-html.dark .el-picker__body,
-html.dark .el-date-picker,
-html.dark .el-month-table,
-html.dark .el-time-panel {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-date-table td.available:hover,
-html.dark .el-date-table td.in-range {
-  background-color: rgba(79, 70, 229, 0.2) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-date-table td.today span {
-  background-color: #4f46e5 !important;
-  color: #fff !important;
-}
-
-html.dark .el-date-table td.selected {
-  background-color: #4f46e5 !important;
-  color: #fff !important;
-}
-
-html.dark .el-picker-panel__header {
-  border-bottom-color: #374151 !important;
-}
-
-html.dark .el-picker-panel__body {
-  background: #1f2937 !important;
-}
-
-html.dark .el-picker-panel__footer {
-  background: #1f2937 !important;
-  border-top-color: #374151 !important;
-}
-
-/* Dark mode - nested inputs in dialogs */
-html.dark .el-dialog .el-input__wrapper,
-html.dark .el-dialog .el-textarea__inner,
-html.dark .el-dialog .el-select__wrapper {
-  background: #111827 !important;
-  border-color: #334155 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-dialog .el-input__inner,
-html.dark .el-dialog .el-textarea__inner {
-  color: #e5e7eb !important;
-}
-
-html.dark .el-dialog .el-input__inner::placeholder,
-html.dark .el-dialog .el-textarea__inner::placeholder {
-  color: #9ca3af !important;
-}
-
-/* Dark mode - buttons in dialogs */
-html.dark .el-dialog__footer .el-button--default {
-  background: #374151 !important;
-  border-color: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-dialog__footer .el-button--default:hover {
-  background: #4b5563 !important;
-  border-color: #4b5563 !important;
-}
-
-html.dark .el-dialog__footer .el-button--primary {
-  background: #4f46e5 !important;
-  border-color: #4f46e5 !important;
-  color: #fff !important;
-}
-
-html.dark .el-dialog__footer .el-button--primary:hover {
-  background: #6366f1 !important;
-  border-color: #6366f1 !important;
-}
-
-/* Dark mode - page shells */
-html.dark .home-page-shell,
-html.dark .create-page-shell,
-html.dark .friends-page-shell,
-html.dark .posts-page-shell,
-html.dark .chat-page-shell,
-html.dark .profile-page-shell,
-html.dark .settings-page-shell,
-html.dark .ai-chat-page-shell,
-html.dark .nearby-community-page-shell,
-html.dark .nearby-shops-page-shell {
-  background: #111827 !important;
-  color: #e5e7eb !important;
-}
-
-/* Dark mode - cards and sections */
-html.dark .el-card {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
-}
-
-html.dark .el-card__header {
-  background: #262727 !important;
-  border-bottom-color: #374151 !important;
-}
-
-html.dark .el-card__body {
-  background: #1f2937 !important;
-  color: #e5e7eb !important;
-}
-
-/* Dark mode - post and quest cards */
-html.dark .post-card,
-html.dark .quest-card,
-html.dark .friend-card {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .post-title,
-html.dark .quest-title {
-  color: #e5e7eb !important;
-}
-
-html.dark .post-preview,
-html.dark .quest-preview,
-html.dark .friend-info {
-  color: #b8c3ed !important;
-}
-
-html.dark .post-metadata,
-html.dark .quest-metadata {
-  color: #9ca3af !important;
-}
-
-/* Dark mode - avatars and images */
-html.dark .el-avatar {
-  background: #374151 !important;
-  border-color: #4b5563 !important;
-}
-
-/* Dark mode - tabs */
-html.dark .el-tabs {
-  background: #1f2937 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-tabs__nav {
-  background: #262727 !important;
-  border-bottom-color: #374151 !important;
-}
-
-html.dark .el-tabs__item {
-  color: #b8c3ed !important;
-}
-
-html.dark .el-tabs__item.is-active {
-  color: #4f46e5 !important;
-  border-bottom-color: #4f46e5 !important;
-}
-
-/* Dark mode - tables */
-html.dark .el-table {
-  background: #1f2937 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-table__header,
-html.dark .el-table__body {
-  background: #1f2937 !important;
-}
-
-html.dark .el-table__header th {
-  background: #262727 !important;
-  color: #e5e7eb !important;
-  border-color: #374151 !important;
-}
-
-html.dark .el-table__body td {
-  border-color: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-table__body tr:hover > td {
-  background: rgba(79, 70, 229, 0.1) !important;
-}
-
-/* Dark mode - header elements */
-html.dark .app-header {
-  background: #1f2937 !important;
-  border-bottom-color: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .app-title {
-  color: #e5e7eb !important;
-}
-
-html.dark .top-nav-button,
-html.dark .hamburger-menu-btn {
-  color: #b8c3ed !important;
-}
-
-html.dark .top-nav-button:hover,
-html.dark .hamburger-menu-btn:hover {
-  color: #e5e7eb !important;
-  background: rgba(79, 70, 229, 0.1) !important;
-}
-
-html.dark .top-nav-active {
-  color: #4f46e5 !important;
-}
-
-html.dark .el-drawer {
-  background: #1f2937 !important;
-}
-
-html.dark .el-drawer__header {
-  background: #262727 !important;
-  border-bottom-color: #374151 !important;
-}
-
-html.dark .el-drawer__body {
-  background: #1f2937 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .drawer-menu-item {
-  color: #b8c3ed !important;
-  border-bottom-color: #374151 !important;
-}
-
-html.dark .drawer-menu-item:hover {
-  background: rgba(79, 70, 229, 0.1) !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .drawer-menu-item.active {
-  background: rgba(79, 70, 229, 0.2) !important;
-  color: #4f46e5 !important;
-}
-
-/* Dark mode - SVG stroke/fill fixes */
-html.dark svg {
-  stroke: #e5e7eb !important;
-  fill: #e5e7eb !important;
-}
-
-html.dark .weather-info-section svg {
-  stroke: #fff !important;
-  fill: #fff !important;
-}
-
-/* Dark mode - scrollbars */
-html.dark ::-webkit-scrollbar {
-  background: #1f2937 !important;
-}
-
-html.dark ::-webkit-scrollbar-track {
-  background: #262727 !important;
-}
-
-html.dark ::-webkit-scrollbar-thumb {
-  background: #4b5563 !important;
-  border-radius: 8px;
-}
-
-html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280 !important;
-}
-
-/* Dark mode - notifications and messages */
-html.dark .el-notification {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-notification__title {
-  color: #e5e7eb !important;
-}
-
-html.dark .el-notification__content {
-  color: #b8c3ed !important;
-}
-
-html.dark .el-message {
-  background: #1f2937 !important;
-  color: #e5e7eb !important;
-  border-color: #374151 !important;
-}
-
-html.dark .el-message__content {
-  color: #e5e7eb !important;
-}
-
-/* Dark mode - dropdown menu */
-html.dark .el-dropdown-menu {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
-}
-
-html.dark .el-dropdown-menu__item {
-  color: #b8c3ed !important;
-}
-
-html.dark .el-dropdown-menu__item:hover {
-  background: rgba(79, 70, 229, 0.2) !important;
-  color: #e5e7eb !important;
-}
-
-/* Dark mode - radio and checkbox */
+html.dark .el-textarea__inner::placeholder,
+html.dark .el-form-item__label,
 html.dark .el-radio__label,
-html.dark .el-checkbox__label {
-  color: #e5e7eb !important;
+html.dark .el-checkbox__label,
+html.dark .el-descriptions__label,
+html.dark .el-descriptions__content,
+html.dark .el-dropdown-menu__item,
+html.dark .el-select-dropdown__item,
+html.dark .el-tabs__item,
+html.dark .el-message__content,
+html.dark .el-notification__content {
+  color: var(--theme-text-muted) !important;
 }
 
-html.dark .el-radio,
-html.dark .el-checkbox {
-  color: #e5e7eb !important;
+html.dark .el-dropdown-menu__item:hover,
+html.dark .el-select-dropdown__item:hover,
+html.dark .el-select-dropdown__item.hover,
+html.dark .el-tabs__item:hover,
+html.dark .el-menu-item:hover {
+  background: var(--theme-hover) !important;
+  color: var(--theme-text) !important;
 }
 
-html.dark .el-radio__inner,
-html.dark .el-checkbox__inner {
-  background: #111827 !important;
-  border-color: #374151 !important;
+/* High-specificity rescue layer for page-level white !important backgrounds */
+html.dark body #__nuxt #app .app-layout,
+html.dark body #__nuxt #app .app-header,
+html.dark body #__nuxt #app .app-main,
+html.dark body #__nuxt #app .main-content,
+html.dark body #__nuxt #app .mobile-nav-content,
+html.dark body #__nuxt #app .mobile-nav-items,
+html.dark body #__nuxt #app .mobile-nav-actions,
+html.dark body #__nuxt #app .mobile-nav-button,
+html.dark body #__nuxt #app .mobile-nav-action-btn,
+html.dark body #__nuxt #app .notification-menu,
+html.dark body #__nuxt #app .notification-item,
+html.dark body #__nuxt #app .home-page-shell,
+html.dark body #__nuxt #app .friends-page-shell,
+html.dark body #__nuxt #app .post-page-shell,
+html.dark body #__nuxt #app .posts-page-shell,
+html.dark body #__nuxt #app .profile-page-shell,
+html.dark body #__nuxt #app .settings-page-shell,
+html.dark body #__nuxt #app .create-post-page-shell,
+html.dark body #__nuxt #app .chat-page-shell,
+html.dark body #__nuxt #app .chat-full,
+html.dark body #__nuxt #app .chat-container,
+html.dark body #__nuxt #app .conversations-panel,
+html.dark body #__nuxt #app .chat-panel,
+html.dark body #__nuxt #app .chat-header,
+html.dark body #__nuxt #app .message-input-area,
+html.dark body #__nuxt #app .messages-container,
+html.dark body #__nuxt #app .search-bar,
+html.dark body #__nuxt #app .conversation-item,
+html.dark body #__nuxt #app .friends-toolbar,
+html.dark body #__nuxt #app .friend-card,
+html.dark body #__nuxt #app .posts-header,
+html.dark body #__nuxt #app .quests-header,
+html.dark body #__nuxt #app .posts-section,
+html.dark body #__nuxt #app .quests-section,
+html.dark body #__nuxt #app .weather-card,
+html.dark body #__nuxt #app .welcome-card,
+html.dark body #__nuxt #app .settings-card,
+html.dark body #__nuxt #app .profile-card,
+html.dark body #__nuxt #app .post-card,
+html.dark body #__nuxt #app .quest-card {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
 }
 
-html.dark .el-radio__input.is-checked .el-radio__inner,
-html.dark .el-checkbox__input.is-checked .el-checkbox__inner {
-  background: #4f46e5 !important;
-  border-color: #4f46e5 !important;
+html.dark body #__nuxt #app .conversation-item:hover,
+html.dark body #__nuxt #app .friend-card:hover,
+html.dark body #__nuxt #app .post-card:hover,
+html.dark body #__nuxt #app .quest-card:hover,
+html.dark body #__nuxt #app .notification-item:hover {
+  background: var(--theme-hover) !important;
 }
 
-/* Dark mode - badges */
-html.dark .el-badge__content {
-  background: #ef4444 !important;
-  color: #fff !important;
+html.dark body #__nuxt #app .message.received .message-bubble,
+html.dark body #__nuxt #app .document-message,
+html.dark body #__nuxt #app .location-message {
+  background: var(--theme-surface-soft) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
 }
 
-/* Dark mode - select dropdown */
-html.dark .el-select-dropdown {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
+html.dark body #__nuxt #app h1,
+html.dark body #__nuxt #app h2,
+html.dark body #__nuxt #app h3,
+html.dark body #__nuxt #app h4,
+html.dark body #__nuxt #app h5,
+html.dark body #__nuxt #app h6,
+html.dark body #__nuxt #app p,
+html.dark body #__nuxt #app span,
+html.dark body #__nuxt #app label,
+html.dark body #__nuxt #app li,
+html.dark body #__nuxt #app a {
+  color: var(--theme-text) !important;
 }
 
-html.dark .el-select-dropdown__item {
-  color: #b8c3ed !important;
+html.dark body #__nuxt #app .conversation-time,
+html.dark body #__nuxt #app .conversation-preview,
+html.dark body #__nuxt #app .message-time,
+html.dark body #__nuxt #app .location-coords,
+html.dark body #__nuxt #app .friend-status,
+html.dark body #__nuxt #app .post-metadata,
+html.dark body #__nuxt #app .quest-metadata,
+html.dark body #__nuxt #app .notification-item-time,
+html.dark body #__nuxt #app .notification-item-message {
+  color: var(--theme-text-muted) !important;
 }
 
-html.dark .el-select-dropdown__item:hover {
-  background: rgba(79, 70, 229, 0.2) !important;
-  color: #e5e7eb !important;
+html.dark body #__nuxt #app .el-button--primary,
+html.dark body #__nuxt #app .message.sent .message-bubble,
+html.dark body #__nuxt #app .file-download-btn {
+  color: #ffffff !important;
 }
 
-html.dark .el-select-dropdown__item.selected {
-  color: #4f46e5 !important;
-  background: rgba(79, 70, 229, 0.1) !important;
-}
-
-/* Dark mode - popovers */
-html.dark .el-popover {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-html.dark .el-popover__title {
-  color: #e5e7eb !important;
-  border-bottom-color: #374151 !important;
-}
-
-/* Dark mode - specific page/component classes */
-html.dark .weather-background-design {
-  opacity: 0.1 !important;
-}
-
-html.dark .home-aurora {
-  opacity: 0.08 !important;
-}
-
-html.dark .home-grain {
-  opacity: 0.03 !important;
-}
-
-html.dark .chat-aura {
-  opacity: 0.08 !important;
-}
-
-html.dark .chat-grain {
-  opacity: 0.03 !important;
-}
