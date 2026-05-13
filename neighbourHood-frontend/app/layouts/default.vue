@@ -7,6 +7,7 @@
           <!-- Hamburger menu button (mobile only) -->
           <el-button
             class="hamburger-menu-btn"
+            :class="{ 'hamburger-menu-btn--visible': shouldShowHamburger }"
             text
             :icon="mobileMenuOpen ? Close : Menu"
             @click="mobileMenuOpen = !mobileMenuOpen"
@@ -14,7 +15,7 @@
           />
           
           <h1 class="app-title" @click="goToHome" style="cursor: pointer;">🔗 {{ $t('appName') }}</h1>
-          <div class="top-nav">
+          <div class="top-nav" :class="{ 'top-nav--collapsed': shouldUseHamburgerOnly }">
             <!-- Visible nav buttons -->
             <el-button
               v-for="(item, index) in visibleNavItems"
@@ -32,7 +33,7 @@
 
             <!-- More dropdown button (shown only if there are hidden items) -->
             <el-dropdown
-              v-if="hiddenNavItems.length > 0"
+              v-if="hiddenNavItems.length > 0 && !shouldUseHamburgerOnly"
               trigger="click"
               @command="handleMoreMenuCommand"
             >
@@ -275,7 +276,7 @@
             text
             class="mobile-nav-action-btn"
             type="danger"
-            @click="handleLogout; mobileMenuOpen = false"
+            @click="handleLogout(); mobileMenuOpen = false"
           >
             <el-icon><Close /></el-icon>
             {{ $t('logout') }}
@@ -415,6 +416,8 @@ const switchLocalePath = useSwitchLocalePath()
 const searchQuery = ref('')
 const activeMenuPath = ref(route.path)
 const mobileMenuOpen = ref(false)
+const viewportWidth = ref(typeof window === 'undefined' ? 1440 : window.innerWidth)
+const shouldUseHamburgerOnly = ref(false)
 
 // Responsive navigation items
 interface NavItem {
@@ -442,19 +445,27 @@ const isMoreMenuActive = computed(() => {
   return hiddenNavItems.value.some(item => activeMenuPath.value.includes(item.path))
 })
 
+const shouldShowHamburger = computed(() => {
+  return viewportWidth.value <= 480 || shouldUseHamburgerOnly.value
+})
+
 // Calculate visible items based on actual rendered widths.
 const calculateVisibleItems = () => {
   if (typeof window === 'undefined') return
 
   const topNav = document.querySelector('.top-nav') as HTMLElement | null
-  if (!topNav) return
+  const headerLeft = document.querySelector('.header-left') as HTMLElement | null
+  const appTitle = document.querySelector('.app-title') as HTMLElement | null
+  if (!topNav || !headerLeft || !appTitle) return
 
   const sizerButtons = Array.from(topNav.querySelectorAll('.top-nav-sizer .top-nav-button--sizer')) as HTMLElement[]
   const moreDots = topNav.querySelector('.top-nav-sizer .top-nav-more-dots') as HTMLElement | null
 
   if (sizerButtons.length !== navItems.length) return
 
-  const containerWidth = Math.floor(topNav.clientWidth)
+  const headerGap = Number.parseFloat(window.getComputedStyle(headerLeft).gap || '16') || 16
+  const titleWidth = Math.ceil(appTitle.getBoundingClientRect().width)
+  const containerWidth = Math.max(0, Math.floor(headerLeft.clientWidth - titleWidth - headerGap))
   const widths = sizerButtons.map((el) => Math.ceil(el.getBoundingClientRect().width))
   // Reserve a little extra width for the dropdown trigger wrapper/padding.
   const moreWidth = moreDots ? Math.ceil(moreDots.getBoundingClientRect().width) + 10 : 52
@@ -476,12 +487,15 @@ const calculateVisibleItems = () => {
   }
 
   visibleCount = Math.min(Math.max(1, visibleCount), navItems.length)
+  shouldUseHamburgerOnly.value = viewportWidth.value > 480 && visibleCount < navItems.length
   visibleNavItems.value = navItems.slice(0, visibleCount)
   hiddenNavItems.value = navItems.slice(visibleCount)
 }
 
 const scheduleVisibleItemsCalculation = () => {
   if (typeof window === 'undefined') return
+
+  viewportWidth.value = window.innerWidth
 
   if (navRecalculateRaf !== null) {
     window.cancelAnimationFrame(navRecalculateRaf)
@@ -2111,6 +2125,7 @@ const handleEmergencyCommand = (command: string) => {
   align-items: center;
   gap: 16px;
   min-width: 0;
+  position: relative;
 }
 
 .top-nav {
@@ -2126,6 +2141,14 @@ const handleEmergencyCommand = (command: string) => {
   padding-bottom: 2px;
   scrollbar-width: thin;
   position: relative;
+}
+
+.top-nav--collapsed {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .top-nav-button {
@@ -2446,6 +2469,10 @@ const handleEmergencyCommand = (command: string) => {
   display: none;
   margin-right: 12px;
   font-size: 20px !important;
+}
+
+.hamburger-menu-btn--visible {
+  display: inline-flex;
 }
 
 /* Mobile menu drawer */
