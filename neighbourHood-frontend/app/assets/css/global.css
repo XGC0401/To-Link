@@ -1076,3 +1076,76 @@ html.dark .post-time {
   box-shadow: 0 0 0 1px var(--tl-border) inset;
 }
 
+/* Keep switch active labels synced with the selected theme color everywhere. */
+#app .el-switch__label.is-active,
+#__nuxt .el-switch__label.is-active,
+html.dark #app .el-switch__label.is-active,
+html.dark #__nuxt .el-switch__label.is-active {
+  color: var(--el-color-primary) !important;
+}
+
+#app .notification-settings .el-switch__label,
+#__nuxt .notification-settings .el-switch__label {
+  color: var(--tl-text-muted) !important;
+}
+
+/* Fix over-broad dark coverage side effects on chat conversation headers. */
+html.dark .conversation-header,
+html.dark .chat-header-left,
+html.dark .chat-header-right,
+html.dark .chat-header-info {
+  background: transparent !important;
+}
+
+/* Keep tab items clean and readable (especially top tabs like posts/quests/lost&found). */
+html.dark .el-tabs__item,
+html.dark .el-tabs__item.is-top,
+html.dark .tabs-container .el-tabs__item,
+html.dark .tabs-container .el-tabs__item.is-top {
+  background: transparent !important;
+  color: var(--theme-text-muted) !important;
+  border-color: transparent !important;
+}
+
+html.dark .el-tabs__item:hover,
+html.dark .el-tabs__item.is-top:hover,
+html.dark .tabs-container .el-tabs__item:hover,
+html.dark .tabs-container .el-tabs__item.is-top:hover {
+  background: var(--theme-hover) !important;
+  color: var(--theme-text) !important;
+  border-radius: 8px;
+}
+
+html.dark .el-tabs__item.is-active,
+html.dark .el-tabs__item.is-top.is-active,
+html.dark .tabs-container .el-tabs__item.is-active,
+html.dark .tabs-container .el-tabs__item.is-top.is-active {
+  background: color-mix(in srgb, var(--el-color-primary) 15%, transparent) !important;
+  color: var(--theme-text) !important;
+  border-radius: 8px;
+}
+
+/* Dropdown/select item state fix: prevent white text from sticking after hover-out. */
+html.dark .el-dropdown-menu__item,
+html.dark .el-select-dropdown__item {
+  background: transparent !important;
+  color: var(--theme-text-muted) !important;
+}
+
+html.dark .el-dropdown-menu__item:hover,
+html.dark .el-dropdown-menu__item:focus,
+html.dark .el-dropdown-menu__item.is-hovering,
+html.dark .el-select-dropdown__item:hover,
+html.dark .el-select-dropdown__item.hover,
+html.dark .el-select-dropdown__item.is-hovering {
+  background: var(--theme-hover) !important;
+  color: var(--theme-text) !important;
+}
+
+html.dark .el-select-dropdown__item.selected,
+html.dark .el-select-dropdown__item.is-selected,
+html.dark .el-dropdown-menu__item.is-selected {
+  background: color-mix(in srgb, var(--el-color-primary) 16%, var(--theme-surface)) !important;
+  color: var(--theme-text) !important;
+}
+

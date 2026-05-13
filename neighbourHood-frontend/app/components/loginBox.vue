@@ -968,8 +968,11 @@ onMounted(() => {
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  min-height: 100%;
-  padding-top: 300px;
+  min-height: auto;
+  padding: clamp(120px, 18vh, 220px) 22px 22px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0.04));
+  backdrop-filter: blur(2px);
 }
 
 .brand-logo {
@@ -1267,18 +1270,18 @@ onMounted(() => {
 .login-container :deep(.el-input__wrapper) {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.8) !important;
-  box-shadow: 0 0 0 1px rgba(171, 183, 214, 0.45), 0 8px 18px rgba(42, 58, 103, 0.08) !important;
+  box-shadow: 0 0 0 1px rgba(171, 183, 214, 0.5) inset !important;
   padding: 0 14px;
   min-height: 50px;
-  transition: box-shadow 0.28s ease, transform 0.28s ease;
+  transition: box-shadow 0.24s ease, background-color 0.24s ease;
 }
 
 .login-container :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px rgba(105, 103, 255, 0.38), 0 12px 24px rgba(59, 71, 127, 0.18) !important;
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(105, 103, 255, 0.38) inset !important;
 }
 
 .login-container :deep(.el-input__inner) {
+  background: transparent !important;
   color: #1c2740;
   font-size: 15px;
   font-weight: 500;
@@ -1286,7 +1289,7 @@ onMounted(() => {
 
 .login-container.dark-mode :deep(.el-input__wrapper) {
   background-color: rgba(43, 55, 84, 0.72) !important;
-  box-shadow: 0 0 0 1px rgba(130, 145, 189, 0.28), 0 10px 20px rgba(0, 0, 0, 0.28) !important;
+  box-shadow: 0 0 0 1px rgba(130, 145, 189, 0.32) inset !important;
 }
 
 .login-container.dark-mode :deep(.el-input__inner) {
@@ -1343,13 +1346,13 @@ onMounted(() => {
 .login-container :deep(.el-select__wrapper) {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.8) !important;
-  box-shadow: 0 0 0 1px rgba(171, 183, 214, 0.45), 0 8px 18px rgba(42, 58, 103, 0.08) !important;
-  transition: box-shadow 0.28s ease, transform 0.28s ease;
+  box-shadow: 0 0 0 1px rgba(171, 183, 214, 0.5) inset !important;
+  transition: box-shadow 0.24s ease, background-color 0.24s ease;
 }
 
 .login-container.dark-mode :deep(.el-select__wrapper) {
   background-color: rgba(43, 55, 84, 0.72) !important;
-  box-shadow: 0 0 0 1px rgba(130, 145, 189, 0.28), 0 10px 20px rgba(0, 0, 0, 0.28) !important;
+  box-shadow: 0 0 0 1px rgba(130, 145, 189, 0.32) inset !important;
 }
 
 /* ── Custom phone country picker ──────────────────────────────── */
@@ -1644,7 +1647,7 @@ onMounted(() => {
   .brand-content {
     max-width: 560px;
     text-align: center;
-    padding-top: 90px;
+    padding: 78px 16px 16px;
     align-items: center;
   }
 

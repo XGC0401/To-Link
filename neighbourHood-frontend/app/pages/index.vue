@@ -103,12 +103,16 @@
     width: min(92%, 620px);
     position: relative;
     z-index: 1;
+    display: flex;
+    justify-content: center;
+    padding: clamp(12px, 2.2vw, 22px);
 }
 
 .cover-card {
     padding: 46px 40px;
     border-radius: 24px;
     text-align: center;
+    width: 100%;
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.28);
     background:

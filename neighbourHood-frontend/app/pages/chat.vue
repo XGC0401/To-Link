@@ -1236,7 +1236,8 @@ const createGroupConversation = () => {
 .conversation-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 10px;
   margin-bottom: 4px;
 }
 
@@ -1244,11 +1245,14 @@ const createGroupConversation = () => {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
+  line-height: 1.3;
   color: #1e2952;
 }
 
 .conversation-time {
-  font-size: 16px;
+  font-size: 14px;
+  line-height: 1.3;
+  white-space: nowrap;
   color: #6f78a8;
 }
 
