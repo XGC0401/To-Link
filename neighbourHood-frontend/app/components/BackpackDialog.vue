@@ -114,7 +114,7 @@ function formatDate(isoDate: string) {
 
 .item-name {
   font-weight: 700;
-  color: #303133;
+  color: var(--tl-text);
 }
 
 .item-desc {

@@ -920,7 +920,7 @@ const handleCancel = () => {
 }
 
 .address-item-label {
-  color: #263266;
+  color: var(--tl-text);
   font-weight: 500;
   font-size: 16px;
 }

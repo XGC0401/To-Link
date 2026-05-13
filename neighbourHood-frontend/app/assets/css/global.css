@@ -1086,7 +1086,12 @@ html.dark #__nuxt .el-switch__label.is-active {
 
 #app .notification-settings .el-switch__label,
 #__nuxt .notification-settings .el-switch__label {
-  color: var(--tl-text-muted) !important;
+  color: var(--tl-text) !important;
+}
+
+html.dark #app .notification-settings .el-switch__label,
+html.dark #__nuxt .notification-settings .el-switch__label {
+  color: var(--theme-text) !important;
 }
 
 /* Fix over-broad dark coverage side effects on chat conversation headers. */
@@ -1147,5 +1152,18 @@ html.dark .el-select-dropdown__item.is-selected,
 html.dark .el-dropdown-menu__item.is-selected {
   background: color-mix(in srgb, var(--el-color-primary) 16%, var(--theme-surface)) !important;
   color: var(--theme-text) !important;
+}
+
+/* Keep top tab text vertically centered (posts/quests/lost&found/settings tabs). */
+.el-tabs--top .el-tabs__item.is-top,
+.tabs-container .el-tabs__item.is-top,
+.settings-tabs .el-tabs__item.is-top {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2 !important;
+  min-height: 36px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
