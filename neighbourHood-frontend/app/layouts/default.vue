@@ -450,7 +450,8 @@ const calculateVisibleItems = () => {
 
   const containerWidth = Math.floor(topNav.clientWidth)
   const widths = sizerButtons.map((el) => Math.ceil(el.getBoundingClientRect().width))
-  const moreWidth = moreDots ? Math.ceil(moreDots.getBoundingClientRect().width) : 42
+  // Reserve a little extra width for the dropdown trigger wrapper/padding.
+  const moreWidth = moreDots ? Math.ceil(moreDots.getBoundingClientRect().width) + 10 : 52
   const gap = 6
 
   let visibleCount = 0
@@ -2512,6 +2513,7 @@ const handleEmergencyCommand = (command: string) => {
   .header-left {
     width: auto;
     flex: 0 0 auto;
+    min-width: 0;
   }
 
   .app-title {
@@ -2519,15 +2521,11 @@ const handleEmergencyCommand = (command: string) => {
   }
 
   .top-nav {
-    max-width: 300px;
+    max-width: 260px;
   }
 
   .header-right {
     gap: 8px;
-  }
-
-  .top-nav-button span {
-    display: none;
   }
 
   .backpack-header-button,

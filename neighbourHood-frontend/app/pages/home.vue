@@ -1105,8 +1105,13 @@ const deletePost = (post: Post) => {
   gap: 24px;
   margin-top: 0;
   width: 100%;
+  min-width: 0;
   position: relative;
   z-index: 1;
+}
+
+.content-grid > * {
+  min-width: 0;
 }
 
 @media (max-width: 1400px) {
@@ -1124,6 +1129,7 @@ const deletePost = (post: Post) => {
 .posts-section {
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   padding: 18px;
   border-radius: 18px;
   border: 1px solid rgba(129, 140, 248, 0.2);
@@ -1254,6 +1260,7 @@ const deletePost = (post: Post) => {
 .quests-section {
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   padding: 18px;
   border-radius: 18px;
   border: 1px solid rgba(129, 140, 248, 0.2);
