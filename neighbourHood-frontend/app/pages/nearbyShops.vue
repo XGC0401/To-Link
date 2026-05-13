@@ -485,14 +485,14 @@ onUnmounted(() => {
 
 .shops-toolbar h2 {
   margin: 0;
-  color: #333;
+  color: var(--tl-text);
   font-size: 32px;
 }
 
 .map-section {
   width: 100%;
   height: 600px;
-  background: white;
+  background: var(--tl-surface);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
@@ -515,13 +515,13 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.95);
+  background: color-mix(in srgb, var(--tl-surface) 95%, transparent);
   z-index: 1000;
 }
 
 .map-loading p {
   margin-top: 16px;
-  color: #666;
+  color: var(--tl-text-muted);
   font-size: 20px;
 }
 
@@ -581,7 +581,7 @@ onUnmounted(() => {
 
 .shop-announcements h3 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: var(--tl-text);
   font-size: 24px;
 }
 
@@ -592,7 +592,7 @@ onUnmounted(() => {
 }
 
 .announcement-card {
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--tl-border);
   box-shadow: none;
 }
 
@@ -604,24 +604,24 @@ onUnmounted(() => {
 
 .announcement-date {
   font-size: 16px;
-  color: #999;
+  color: var(--tl-text-muted);
 }
 
 .announcement-card h4 {
   margin: 0 0 8px 0;
-  color: #333;
+  color: var(--tl-text);
   font-size: 20px;
 }
 
 .announcement-card p {
   margin: 0;
-  color: #666;
+  color: var(--tl-text-muted);
   font-size: 18px;
   line-height: 1.6;
 }
 
 :deep(.el-dialog__header) {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--tl-border);
   padding: 20px;
 }
 
@@ -631,7 +631,7 @@ onUnmounted(() => {
 
 :deep(.el-badge__content) {
   background-color: #f56c6c;
-  border: 2px solid white;
+  border: 2px solid var(--tl-surface);
 }
 
 /* Dark mode styles for el-descriptions */
@@ -685,25 +685,6 @@ onUnmounted(() => {
   color: #9ca3af !important;
 }
 
-:global(html.dark) .map-section {
-  background: #1f2937;
-}
-
-:global(html.dark) .map-loading {
-  background: rgba(15, 23, 42, 0.92);
-}
-
-:global(html.dark) .map-loading p,
-:global(html.dark) .shops-toolbar h2,
-:global(html.dark) .shop-announcements h3,
-:global(html.dark) .announcement-card h4 {
-  color: #e5e7eb;
-}
-
-:global(html.dark) .announcement-card p,
-:global(html.dark) .announcement-date {
-  color: #9ca3af;
-}
 </style>
 
 <style>
@@ -733,7 +714,7 @@ onUnmounted(() => {
   position: relative;
   width: 48px;
   height: 48px;
-  background: white;
+  background: var(--tl-surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -741,7 +722,7 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: all 0.3s;
-  border: 2px solid #ddd;
+  border: 2px solid var(--tl-border);
 }
 
 .shop-initial {
@@ -781,7 +762,7 @@ onUnmounted(() => {
   justify-content: center;
   font-size: 15px;
   font-weight: bold;
-  border: 2px solid white;
+  border: 2px solid var(--tl-surface);
 }
 
 .shop-marker-label {
@@ -790,19 +771,14 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   padding: 4px 8px;
-  background: white;
+  background: var(--tl-surface);
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
-  color: #333;
+  color: var(--tl-text);
   pointer-events: none;
-}
-
-:global(html.dark) .shop-marker-icon {
-  background: #1f2937;
-  border-color: #475569;
 }
 
 :global(html.dark) .shop-marker-icon.has-announcements {
@@ -811,12 +787,10 @@ onUnmounted(() => {
 }
 
 :global(html.dark) .announcement-badge {
-  border-color: #111827;
+  border-color: var(--tl-surface);
 }
 
 :global(html.dark) .shop-marker-label {
-  background: #1f2937;
-  color: #e5e7eb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 

@@ -1555,12 +1555,12 @@ const handleEmergencyCommand = (command: string) => {
 
 /* Marketplace-inspired override */
 .app-layout {
-  background: #f7f8fa !important;
+  background: var(--tl-bg) !important;
 }
 
 .app-header {
-  background: #ffffff !important;
-  border-bottom: 1px solid #eceef3 !important;
+  background: var(--tl-surface) !important;
+  border-bottom: 1px solid var(--tl-border) !important;
   box-shadow: 0 1px 0 rgba(16, 24, 40, 0.03);
 }
 
@@ -1617,7 +1617,7 @@ const handleEmergencyCommand = (command: string) => {
   align-items: center;
   gap: 6px;
   border-radius: 10px;
-  color: #4b5563 !important;
+  color: var(--tl-text-muted) !important;
   padding: 8px 10px !important;
   height: auto !important;
   flex: 0 0 auto;
@@ -1630,7 +1630,7 @@ const handleEmergencyCommand = (command: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4b5563;
+  color: var(--tl-text-muted);
   cursor: pointer;
   border-radius: 6px;
   transition: all 0.3s ease;
@@ -1646,17 +1646,17 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .top-nav-icon-button:hover {
-  background: #fff4eb;
+  background: var(--tl-surface-soft);
   color: #ff6f00;
 }
 
 .top-nav-icon-active {
-  background: #fff0e4;
+  background: var(--tl-surface-active);
   color: #ff6f00;
 }
 
 .top-nav-more-dots {
-  color: #4b5563;
+  color: var(--tl-text-muted);
   cursor: pointer;
   padding: 8px 10px;
   border-radius: 10px;
@@ -1676,12 +1676,12 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .top-nav-more-dots:hover {
-  background: #fff4eb;
+  background: var(--tl-surface-soft);
   color: #ff6f00;
 }
 
 .top-nav-more-dots.top-nav-active {
-  background: #fff0e4;
+  background: var(--tl-surface-active);
   color: #ff6f00;
 }
 
@@ -1712,12 +1712,12 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .top-nav-button:hover {
-  background: #fff4eb !important;
+  background: var(--tl-surface-soft) !important;
   color: #ff6f00 !important;
 }
 
 .top-nav-active {
-  background: #fff0e4 !important;
+  background: var(--tl-surface-active) !important;
   color: #ff6f00 !important;
 }
 
@@ -1748,8 +1748,8 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .app-sidebar {
-  background: #ffffff !important;
-  border-right: 1px solid #eceef3 !important;
+  background: var(--tl-surface) !important;
+  border-right: 1px solid var(--tl-border) !important;
 }
 
 .create-post-btn {
@@ -1767,7 +1767,7 @@ const handleEmergencyCommand = (command: string) => {
 
 .sidebar-menu,
 .sidebar-menu .el-menu {
-  background: #ffffff !important;
+  background: var(--tl-surface) !important;
 }
 
 .sidebar-menu .el-menu-item,
@@ -1775,20 +1775,20 @@ const handleEmergencyCommand = (command: string) => {
   margin: 4px 8px !important;
   border-radius: 10px !important;
   border: 1px solid transparent !important;
-  background: #ffffff !important;
+  background: var(--tl-surface) !important;
   box-shadow: none !important;
-  color: #1f2937 !important;
+  color: var(--tl-text-strong) !important;
   transform: none !important;
 }
 
 .sidebar-menu .el-menu-item .el-icon,
 .sidebar-menu :deep(.el-menu-item .el-icon) {
-  color: #4b5563 !important;
+  color: var(--tl-text-muted) !important;
 }
 
 .sidebar-menu .el-menu-item:hover,
 .sidebar-menu :deep(.el-menu-item:hover) {
-  background: #fff4eb !important;
+  background: var(--tl-surface-soft) !important;
   color: #ff6f00 !important;
 }
 
@@ -1796,9 +1796,9 @@ const handleEmergencyCommand = (command: string) => {
 .sidebar-menu .el-menu-item.menu-active,
 .sidebar-menu :deep(.el-menu-item.is-active),
 .sidebar-menu :deep(.el-menu-item.menu-active) {
-  background: #fff0e4 !important;
+  background: var(--tl-surface-active) !important;
   color: #ff6f00 !important;
-  border-color: #ffd6b8 !important;
+  border-color: var(--tl-border-strong) !important;
 }
 
 .sidebar-menu .el-menu-item.is-active .el-icon,
@@ -1822,93 +1822,7 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .app-main {
-  background: #f7f8fa !important;
-}
-
-:global(.dark) .app-layout {
-  background: #111827 !important;
-}
-
-:global(.dark) .app-header,
-:global(.dark) .app-sidebar {
-  background: #111827 !important;
-  border-color: #1f2937 !important;
-}
-
-:global(.dark) .app-main {
-  background: #111827 !important;
-}
-
-:global(.dark) .app-title {
-  color: #ff8a33 !important;
-}
-
-:global(.dark) .top-nav-button {
-  color: #d1d5db !important;
-}
-
-:global(.dark) .top-nav-button:hover {
-  background: #1f2937 !important;
-  color: #ff8a33 !important;
-}
-
-:global(.dark) .top-nav-active {
-  background: #2b1b0d !important;
-  color: #ff9f52 !important;
-}
-
-:global(.dark) .top-nav-icon-button {
-  color: #d1d5db;
-}
-
-:global(.dark) .top-nav-icon-button:hover {
-  background: #1f2937;
-  color: #ff8a33;
-}
-
-:global(.dark) .top-nav-icon-active {
-  background: #2b1b0d;
-  color: #ff9f52;
-}
-
-:global(.dark) .top-nav-more-dots {
-  color: #d1d5db;
-}
-
-:global(.dark) .top-nav-more-dots:hover {
-  background: #1f2937;
-  color: #ff8a33;
-}
-
-:global(.dark) .top-nav-more-dots.top-nav-active {
-  background: #2b1b0d;
-  color: #ff9f52;
-}
-
-:global(.dark) .sidebar-menu,
-:global(.dark) .sidebar-menu .el-menu {
-  background: #111827 !important;
-}
-
-:global(.dark) .sidebar-menu .el-menu-item,
-:global(.dark) .sidebar-menu :deep(.el-menu-item) {
-  background: #111827 !important;
-  color: #d1d5db !important;
-}
-
-:global(.dark) .sidebar-menu .el-menu-item:hover,
-:global(.dark) .sidebar-menu :deep(.el-menu-item:hover) {
-  background: #1f2937 !important;
-  color: #ff8a33 !important;
-}
-
-:global(.dark) .sidebar-menu .el-menu-item.is-active,
-:global(.dark) .sidebar-menu .el-menu-item.menu-active,
-:global(.dark) .sidebar-menu :deep(.el-menu-item.is-active),
-:global(.dark) .sidebar-menu :deep(.el-menu-item.menu-active) {
-  background: #2b1b0d !important;
-  border-color: #6b3f16 !important;
-  color: #ff9f52 !important;
+  background: var(--tl-bg) !important;
 }
 
 :global(.dark) .el-button--primary:disabled,
@@ -1936,7 +1850,7 @@ const handleEmergencyCommand = (command: string) => {
   gap: 6px;
   border-radius: 10px;
   border: 1px solid rgba(255, 111, 0, 0.22);
-  background: #fff6f0;
+  background: var(--tl-surface-soft);
   color: #ff6f00;
   font-size: 18px !important;
   transition: all 0.2s ease;
@@ -1953,7 +1867,7 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .hamburger-menu-btn:hover {
-  background: #ffe7d5;
+  background: var(--tl-surface-active);
   border-color: rgba(255, 111, 0, 0.4);
 }
 
@@ -1965,8 +1879,8 @@ const handleEmergencyCommand = (command: string) => {
 .mobile-nav-drawer :deep(.el-drawer__header) {
   margin-bottom: 0;
   padding: 18px 18px 14px;
-  border-bottom: 1px solid #f1e6db;
-  color: #1f2937;
+  border-bottom: 1px solid var(--tl-border);
+  color: var(--tl-text-strong);
   font-weight: 700;
 }
 

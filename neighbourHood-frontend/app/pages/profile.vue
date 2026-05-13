@@ -1197,10 +1197,10 @@ const handleCancel = () => {
 .avatar-uploader-wrapper,
 .address-item,
 .day-schedule {
-  background: #ffffff !important;
-  border: 1px solid #eceef3 !important;
+  background: var(--tl-surface) !important;
+  border: 1px solid var(--tl-border) !important;
   border-radius: 12px !important;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: var(--tl-shadow) !important;
   backdrop-filter: none !important;
 }
 
@@ -1208,7 +1208,7 @@ const handleCancel = () => {
   text-transform: none !important;
   letter-spacing: 0 !important;
   font-size: 28px !important;
-  color: #111827 !important;
+  color: var(--tl-text) !important;
   text-shadow: none !important;
 }
 
@@ -1235,8 +1235,8 @@ const handleCancel = () => {
 .profile-form :deep(.el-textarea__inner),
 .profile-form :deep(.el-select__wrapper),
 .profile-form :deep(.el-time-select .el-input__wrapper) {
-  background: #ffffff !important;
-  box-shadow: 0 0 0 1px #dfe3eb inset !important;
+  background: var(--tl-surface) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
   border-radius: 10px !important;
 }
 
@@ -1255,26 +1255,12 @@ const handleCancel = () => {
   border-color: #f06500 !important;
 }
 
-:global(.dark) .profile-page-shell,
-:global(.dark) .profile-card,
-:global(.dark) .avatar-uploader-wrapper,
-:global(.dark) .address-item,
-:global(.dark) .day-schedule {
-  background: #111827 !important;
-  border-color: #1f2937 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-}
-
-:global(.dark) .card-header h2 {
-  color: #f9fafb !important;
-}
-
 :global(.dark) .profile-form :deep(.el-input__wrapper),
 :global(.dark) .profile-form :deep(.el-textarea__inner),
 :global(.dark) .profile-form :deep(.el-select__wrapper),
 :global(.dark) .profile-form :deep(.el-time-select .el-input__wrapper) {
-  background: #0f172a !important;
-  box-shadow: 0 0 0 1px #334155 inset !important;
+  background: var(--tl-bg) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
 }
 
 @media (max-width: 1200px) {

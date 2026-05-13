@@ -452,10 +452,10 @@ const sendMessage = (friend: Friend) => {
 
 .friends-toolbar,
 .friend-card {
-  background: #ffffff !important;
-  border: 1px solid #eceef3 !important;
+  background: var(--tl-surface) !important;
+  border: 1px solid var(--tl-border) !important;
   border-radius: 12px !important;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: var(--tl-shadow) !important;
 }
 
 .friend-card:hover {
@@ -475,8 +475,8 @@ const sendMessage = (friend: Friend) => {
 
 .friends-page-shell :deep(.el-input__wrapper),
 .friends-page-shell :deep(.el-select__wrapper) {
-  background: #ffffff !important;
-  box-shadow: 0 0 0 1px #dfe3eb inset !important;
+  background: var(--tl-surface) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
   border-radius: 10px !important;
 }
 
@@ -490,18 +490,10 @@ const sendMessage = (friend: Friend) => {
   border-color: #f06500 !important;
 }
 
-:global(.dark) .friends-page-shell,
-:global(.dark) .friends-toolbar,
-:global(.dark) .friend-card {
-  background: #111827 !important;
-  border-color: #1f2937 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-}
-
 :global(.dark) .friends-page-shell :deep(.el-input__wrapper),
 :global(.dark) .friends-page-shell :deep(.el-select__wrapper) {
-  background: #0f172a !important;
-  box-shadow: 0 0 0 1px #334155 inset !important;
+  background: var(--tl-bg) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
 }
 
 /* ============ TABLET BREAKPOINT (481-1024px) ============ */

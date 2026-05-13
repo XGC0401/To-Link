@@ -1850,9 +1850,9 @@ onUnmounted(() => {
 .posts-header,
 .quests-header {
   padding: 14px !important;
-  border: 1px solid #eceef3 !important;
+  border: 1px solid var(--tl-border) !important;
   border-radius: 12px !important;
-  background: #ffffff !important;
+  background: var(--tl-surface) !important;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
 }
 
@@ -1863,20 +1863,20 @@ onUnmounted(() => {
 }
 
 .header-toggle {
-  background: #f8fafc !important;
-  border: 1px solid #e5e7eb !important;
+  background: var(--tl-bg) !important;
+  border: 1px solid var(--tl-border) !important;
 }
 
 .header-toggle-label {
-  color: #334155 !important;
+  color: var(--tl-text-muted) !important;
 }
 
 .posts-list :deep(.el-card),
 .quests-list :deep(.el-card) {
-  border: 1px solid #eceef3 !important;
+  border: 1px solid var(--tl-border) !important;
   border-radius: 12px !important;
-  background: #ffffff !important;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+  background: var(--tl-surface) !important;
+  box-shadow: var(--tl-shadow) !important;
 }
 
 .posts-list :deep(.el-card:hover),
@@ -1902,8 +1902,8 @@ onUnmounted(() => {
 
 .post-page-shell :deep(.el-input__wrapper),
 .post-page-shell :deep(.el-select__wrapper) {
-  background: #ffffff !important;
-  box-shadow: 0 0 0 1px #dfe3eb inset !important;
+  background: var(--tl-surface) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
   border-radius: 10px !important;
   backdrop-filter: none !important;
 }
@@ -1923,28 +1923,19 @@ onUnmounted(() => {
   background: transparent !important;
 }
 
-:global(.dark) .posts-header,
-:global(.dark) .quests-header,
-:global(.dark) .posts-list :deep(.el-card),
-:global(.dark) .quests-list :deep(.el-card) {
-  background: #111827 !important;
-  border-color: #1f2937 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-}
-
 :global(.dark) .header-toggle {
-  background: #111827 !important;
-  border-color: #1f2937 !important;
+  background: var(--tl-bg) !important;
+  border-color: var(--tl-border) !important;
 }
 
 :global(.dark) .header-toggle-label {
-  color: #d1d5db !important;
+  color: var(--tl-text-muted) !important;
 }
 
 :global(.dark) .post-page-shell :deep(.el-input__wrapper),
 :global(.dark) .post-page-shell :deep(.el-select__wrapper) {
-  background: #0f172a !important;
-  box-shadow: 0 0 0 1px #334155 inset !important;
+  background: var(--tl-bg) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
 }
 
 :global(.dark) .tabs-container :deep(.el-tabs__item.is-active) {

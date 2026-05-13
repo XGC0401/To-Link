@@ -32,6 +32,7 @@ export default defineNuxtConfig({
     }
   },
   css: [
+    '@/assets/css/theme-tokens.css',
     '@/assets/css/global.css'
   ],
   runtimeConfig: {

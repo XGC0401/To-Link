@@ -549,21 +549,21 @@ const sendMessage = async () => {
 .chat-container {
   display: flex;
   width: 100%;
-  background: #fff;
+  background: var(--tl-surface);
 }
 
 .history-panel {
   width: 280px;
-  border-right: 1px solid #e5e5e5;
+  border-right: 1px solid var(--tl-border);
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--tl-surface);
   overflow-x: hidden;
 }
 
 .history-header {
   padding: 16px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--tl-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -574,7 +574,7 @@ const sendMessage = async () => {
 .history-header h4 {
   margin: 0;
   font-size: 20px;
-  color: #333;
+  color: var(--tl-text);
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -616,7 +616,7 @@ const sendMessage = async () => {
   width: 100% !important;
   box-sizing: border-box;
   margin: 0 0 8px !important;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--tl-border);
   border-radius: 8px;
   padding: 7px 8px;
   display: flex;
@@ -633,7 +633,7 @@ const sendMessage = async () => {
 .history-item-title {
   width: 100%;
   font-size: 15px;
-  color: #333;
+  color: var(--tl-text);
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -642,7 +642,7 @@ const sendMessage = async () => {
 
 .history-item-time {
   font-size: 13px;
-  color: #999;
+  color: var(--tl-text-muted);
 }
 
 .history-item-footer {
@@ -663,12 +663,12 @@ const sendMessage = async () => {
 
 .history-item.active {
   border-color: var(--el-color-primary);
-  background: color-mix(in srgb, var(--el-color-primary) 8%, #fff);
+  background: color-mix(in srgb, var(--el-color-primary) 8%, var(--tl-surface));
 }
 
 .history-empty {
   margin: 16px 8px;
-  color: #999;
+  color: var(--tl-text-muted);
   font-size: 14px;
 }
 
@@ -677,17 +677,17 @@ const sendMessage = async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--tl-surface);
 }
 
 /* Chat Header */
 .chat-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--tl-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
+  background: var(--tl-surface);
 }
 
 .chat-header-left {
@@ -699,13 +699,13 @@ const sendMessage = async () => {
 .chat-header-info h3 {
   margin: 0;
   font-size: 20px;
-  color: #333;
+  color: var(--tl-text);
 }
 
 .status {
   margin: 0;
   font-size: 16px;
-  color: #999;
+  color: var(--tl-text-muted);
 }
 
 /* Messages */
@@ -728,7 +728,7 @@ const sendMessage = async () => {
 
 .welcome-text {
   font-size: 18px;
-  color: #666;
+  color: var(--tl-text-muted);
   line-height: 1.6;
   margin: 20px 0 30px;
 }
@@ -741,7 +741,7 @@ const sendMessage = async () => {
 .example-questions h4 {
   font-size: 24px;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--tl-text);
   font-weight: 600;
   text-align: center;
 }
@@ -754,7 +754,7 @@ const sendMessage = async () => {
   text-align: left;
   padding: 16px 20px !important;
   margin: 0 0 12px 0 !important;
-  border: 2px solid #e0e0e0 !important;
+  border: 2px solid var(--tl-border) !important;
   border-radius: 12px;
   font-size: 18px;
   font-weight: 500;
@@ -772,7 +772,7 @@ const sendMessage = async () => {
 }
 
 .example-btn:hover {
-  background-color: #f5f7fa;
+  background-color: var(--tl-bg);
   border-color: var(--el-color-primary);
   color: var(--el-color-primary);
 }
@@ -824,8 +824,8 @@ const sendMessage = async () => {
 }
 
 .message.received .message-bubble {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: var(--tl-bg);
+  color: var(--tl-text);
 }
 
 .message.sent .message-bubble {
@@ -843,7 +843,7 @@ const sendMessage = async () => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #999;
+  background-color: var(--tl-text-muted);
   animation: typing 1.4s infinite;
 }
 
@@ -868,114 +868,18 @@ const sendMessage = async () => {
 
 .message-time {
   font-size: 16px;
-  color: #999;
+  color: var(--tl-text-muted);
   padding: 0 4px;
 }
 
 /* Message Input Area */
 .message-input-area {
   padding: 16px 20px;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--tl-border);
   display: flex;
   gap: 12px;
   align-items: flex-end;
-  background: #fff;
-}
-
-.message-input-area :deep(.el-textarea) {
-  flex: 1;
-}
-
-.message-input-area :deep(.el-textarea__inner) {
-  font-size: 20px;
-  line-height: 1.5;
-  padding: 16px 18px;
-  min-height: 64px !important;
-}
-
-.message-input-area :deep(.el-button) {
-  width: 50px;
-  height: 50px;
-}
-
-/* Dark mode styles */
-:global(html.dark) .chat-container {
-  background-color: #1a1a1a;
-}
-
-:global(html.dark) .chat-panel {
-  background-color: #1a1a1a;
-}
-
-:global(html.dark) .history-panel {
-  background-color: #1a1a1a;
-  border-right-color: #404040;
-}
-
-:global(html.dark) .history-header {
-  border-bottom-color: #404040;
-}
-
-:global(html.dark) .history-header h4 {
-  color: #e5e7eb;
-}
-
-:global(html.dark) .history-item {
-  border-color: #404040;
-}
-
-:global(html.dark) .history-item-title {
-  color: #e5e7eb;
-}
-
-:global(html.dark) .history-item-time,
-:global(html.dark) .history-empty {
-  color: #9ca3af;
-}
-
-:global(html.dark) .history-item.active {
-  background: color-mix(in srgb, var(--el-color-primary) 20%, #1a1a1a);
-}
-
-:global(html.dark) .chat-header {
-  background-color: #1a1a1a;
-  border-bottom-color: #404040;
-}
-
-:global(html.dark) .chat-header-info h3 {
-  color: #e5e7eb;
-}
-
-:global(html.dark) .status {
-  color: #9ca3af;
-}
-
-:global(html.dark) .welcome-text {
-  color: #9ca3af;
-}
-
-:global(html.dark) .example-questions h4 {
-  color: #e5e7eb;
-}
-
-:global(html.dark) .example-btn {
-  border-color: #404040;
-  color: #d1d5db;
-}
-
-:global(html.dark) .example-btn:hover {
-  background-color: #262727;
-  border-color: var(--el-color-primary);
-}
-
-:global(html.dark) .message.received .message-bubble {
-  background-color: #262727;
-  color: #e5e7eb;
-}
-
-:global(html.dark) .message-input-area {
-  border-top-color: #404040;
-  background-color: #1a1a1a;
+  background: var(--tl-surface);
 }
 
 @media (max-width: 1200px) {
@@ -998,11 +902,7 @@ const sendMessage = async () => {
     width: 100%;
     max-height: 260px;
     border-right: none;
-    border-bottom: 1px solid #e5e5e5;
-  }
-
-  :global(html.dark) .history-panel {
-    border-bottom-color: #404040;
+    border-bottom: 1px solid var(--tl-border);
   }
 }
 
@@ -1042,7 +942,7 @@ const sendMessage = async () => {
   .history-panel {
     max-height: 30vh;
     border-right: none;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid var(--tl-border);
   }
 
   .chat-full {
@@ -1071,7 +971,7 @@ const sendMessage = async () => {
     max-height: 25vh;
     border-radius: 10px;
     border-right: none;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid var(--tl-border);
     padding: 10px;
   }
 

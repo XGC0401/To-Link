@@ -1447,29 +1447,29 @@ const deletePost = (post: Post) => {
 .quests-section,
 .post-card,
 .applicant-item {
-  background: #ffffff !important;
-  border: 1px solid #eceef3 !important;
+  background: var(--tl-surface) !important;
+  border: 1px solid var(--tl-border) !important;
   border-radius: 12px !important;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: var(--tl-shadow) !important;
   backdrop-filter: none !important;
 }
 
 .section-header {
-  border-bottom: 1px solid #eceef3 !important;
+  border-bottom: 1px solid var(--tl-border) !important;
 }
 
 .section-header h3 {
   text-transform: none !important;
   letter-spacing: 0 !important;
   font-size: 18px !important;
-  color: #111827 !important;
+  color: var(--tl-text) !important;
 }
 
 .card-header h2 {
   text-transform: none !important;
   letter-spacing: 0 !important;
   font-size: 28px !important;
-  color: #111827 !important;
+  color: var(--tl-text) !important;
   text-shadow: none !important;
 }
 
@@ -1487,27 +1487,6 @@ const deletePost = (post: Post) => {
   border: 1px solid #ffd6b8 !important;
   border-radius: 999px !important;
   box-shadow: none !important;
-}
-
-:global(.dark) .home-page-shell,
-:global(.dark) .welcome-card,
-:global(.dark) .posts-section,
-:global(.dark) .quests-section,
-:global(.dark) .post-card,
-:global(.dark) .applicant-item {
-  background: #111827 !important;
-  border-color: #1f2937 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-}
-
-:global(.dark) .section-header {
-  border-bottom-color: #1f2937 !important;
-}
-
-:global(.dark) .section-header h3,
-:global(.dark) .card-header h2 {
-  color: #f9fafb !important;
-  text-shadow: none !important;
 }
 
 .welcome-section {

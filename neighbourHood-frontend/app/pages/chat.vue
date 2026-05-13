@@ -1979,7 +1979,7 @@ const createGroupConversation = () => {
 }
 
 .chat-full {
-  border: 1px solid #eceef3 !important;
+  border: 1px solid var(--tl-border) !important;
   border-radius: 12px !important;
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06) !important;
 }
@@ -1989,13 +1989,13 @@ const createGroupConversation = () => {
 .chat-panel,
 .chat-header,
 .message-input-area {
-  background: #ffffff !important;
+  background: var(--tl-surface) !important;
 }
 
 .conversations-panel,
 .chat-header,
 .message-input-area {
-  border-color: #eceef3 !important;
+  border-color: var(--tl-border) !important;
 }
 
 .conversation-item {
@@ -2003,19 +2003,19 @@ const createGroupConversation = () => {
 }
 
 .conversation-item:hover {
-  background: #fff4eb !important;
+  background: var(--tl-surface-soft) !important;
   transform: none !important;
 }
 
 .conversation-item.active {
-  background: #fff0e4 !important;
+  background: var(--tl-surface-active) !important;
   box-shadow: inset 3px 0 0 #ff6f00 !important;
 }
 
 .message.received .message-bubble {
-  background: #f5f7fb !important;
-  border-color: #e5e7eb !important;
-  color: #111827 !important;
+  background: var(--tl-bg) !important;
+  border-color: var(--tl-border) !important;
+  color: var(--tl-text) !important;
 }
 
 .message.sent .message-bubble,
@@ -2034,8 +2034,8 @@ const createGroupConversation = () => {
 
 .chat-page-shell :deep(.el-input__wrapper),
 .search-bar :deep(.el-input__wrapper) {
-  background: #ffffff !important;
-  box-shadow: 0 0 0 1px #dfe3eb inset !important;
+  background: var(--tl-surface) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
   border-radius: 10px !important;
 }
 
@@ -2043,39 +2043,28 @@ const createGroupConversation = () => {
   background: transparent !important;
 }
 
-:global(.dark) .chat-full,
-:global(.dark) .chat-container,
-:global(.dark) .conversations-panel,
-:global(.dark) .chat-panel,
-:global(.dark) .chat-header,
-:global(.dark) .message-input-area {
-  background: #111827 !important;
-  border-color: #1f2937 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-}
-
 :global(.dark) .conversation-item {
-  border-bottom-color: #1f2937 !important;
+  border-bottom-color: var(--tl-border) !important;
 }
 
 :global(.dark) .conversation-item:hover {
-  background: #1f2937 !important;
+  background: var(--tl-surface-soft) !important;
 }
 
 :global(.dark) .conversation-item.active {
-  background: #2b1b0d !important;
+  background: var(--tl-surface-active) !important;
   box-shadow: inset 3px 0 0 #ff9f52 !important;
 }
 
 :global(.dark) .message.received .message-bubble {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
+  background: var(--tl-bg) !important;
+  border-color: var(--tl-border) !important;
 }
 
 :global(.dark) .chat-page-shell :deep(.el-input__wrapper),
 :global(.dark) .search-bar :deep(.el-input__wrapper) {
-  background: #0f172a !important;
-  box-shadow: 0 0 0 1px #334155 inset !important;
+  background: var(--tl-bg) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
 }
 
 @media (max-width: 768px) {

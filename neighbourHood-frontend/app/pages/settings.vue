@@ -571,7 +571,7 @@ const deleteAllPostsFromSecret = () => {
 }
 
 .settings-form :deep(.el-radio-group .el-radio-button__inner) {
-  background: #ffffff !important;
+  background: var(--tl-surface) !important;
   color: #2d3a6a !important;
   border-color: #c9d2ff !important;
 }
@@ -958,10 +958,10 @@ const deleteAllPostsFromSecret = () => {
 .notification-item,
 .font-size-slider-container,
 .sample-text {
-  background: #ffffff !important;
-  border: 1px solid #eceef3 !important;
+  background: var(--tl-surface) !important;
+  border: 1px solid var(--tl-border) !important;
   border-radius: 12px !important;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: var(--tl-shadow) !important;
   backdrop-filter: none !important;
 }
 
@@ -969,7 +969,7 @@ const deleteAllPostsFromSecret = () => {
   text-transform: none !important;
   letter-spacing: 0 !important;
   font-size: 28px !important;
-  color: #111827 !important;
+  color: var(--tl-text) !important;
   text-shadow: none !important;
 }
 
@@ -1002,14 +1002,14 @@ const deleteAllPostsFromSecret = () => {
 
 .settings-form :deep(.el-form-item__label) {
   font-size: 15px !important;
-  color: #111827 !important;
+  color: var(--tl-text) !important;
 }
 
 .settings-form :deep(.el-input__wrapper),
 .settings-form :deep(.el-select__wrapper),
 .settings-form :deep(.el-radio-button__inner) {
-  background: #ffffff !important;
-  box-shadow: 0 0 0 1px #dfe3eb inset !important;
+  background: var(--tl-surface) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
   border-radius: 10px !important;
 }
 
@@ -1028,27 +1028,11 @@ const deleteAllPostsFromSecret = () => {
   border-color: #f06500 !important;
 }
 
-:global(.dark) .settings-page-shell,
-:global(.dark) .settings-card,
-:global(.dark) .notification-item,
-:global(.dark) .font-size-slider-container,
-:global(.dark) .sample-text {
-  background: #111827 !important;
-  border-color: #1f2937 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-}
-
-:global(.dark) .card-header h2,
-:global(.dark) .settings-form :deep(.el-form-item__label) {
-  color: #f9fafb !important;
-  text-shadow: none !important;
-}
-
 :global(.dark) .settings-form :deep(.el-input__wrapper),
 :global(.dark) .settings-form :deep(.el-select__wrapper),
 :global(.dark) .settings-form :deep(.el-radio-button__inner) {
-  background: #0f172a !important;
-  box-shadow: 0 0 0 1px #334155 inset !important;
+  background: var(--tl-bg) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
 }
 
 :global(.dark) .settings-tabs :deep(.el-tabs__item.is-active) {

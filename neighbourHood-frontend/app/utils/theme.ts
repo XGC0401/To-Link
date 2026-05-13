@@ -7,14 +7,58 @@ export interface ThemeSettings {
 
 const FALLBACK_THEME_COLOR = '#07b981'
 const DARK_OVERRIDE_STYLE_ID = 'to-link-runtime-dark-overrides'
+let darkOverrideHeadObserver: MutationObserver | null = null
 
 const RUNTIME_DARK_CSS = `
+html.dark,
+html.dark body {
+  color-scheme: dark !important;
+}
+
 html.dark body,
 html.dark #__nuxt,
 html.dark #app,
 html.dark #__nuxt #app {
   background: #0f172a !important;
   color: #e5e7eb !important;
+}
+
+html.dark .el-popper,
+html.dark .el-overlay,
+html.dark .el-overlay-dialog,
+html.dark .el-dropdown__popper,
+html.dark .el-dropdown-menu,
+html.dark .el-select-dropdown,
+html.dark .el-picker-panel,
+html.dark .el-date-picker,
+html.dark .el-time-panel,
+html.dark .el-tooltip__popper,
+html.dark .el-popover,
+html.dark .el-dialog,
+html.dark .el-dialog__header,
+html.dark .el-dialog__body,
+html.dark .el-dialog__footer,
+html.dark .el-drawer,
+html.dark .el-drawer__header,
+html.dark .el-drawer__body,
+html.dark .el-message-box,
+html.dark .el-message,
+html.dark .el-notification,
+html.dark .el-menu,
+html.dark .el-menu-item,
+html.dark .el-sub-menu__title,
+html.dark .el-table,
+html.dark .el-table__inner-wrapper,
+html.dark .el-table tr,
+html.dark .el-table th,
+html.dark .el-table td,
+html.dark .el-descriptions,
+html.dark .el-descriptions__body,
+html.dark .el-descriptions__table,
+html.dark .el-descriptions-item__cell {
+  background: #182235 !important;
+  color: #e5e7eb !important;
+  border-color: #334155 !important;
 }
 
 html.dark #__nuxt #app .home-page-shell,
@@ -97,6 +141,37 @@ html.dark #__nuxt #app .el-message-box {
   color: #e5e7eb !important;
   border-color: #334155 !important;
 }
+
+html.dark body [class*='page'],
+html.dark body [class*='shell'],
+html.dark body [class*='container'],
+html.dark body [class*='panel'],
+html.dark body [class*='section'],
+html.dark body [class*='card'],
+html.dark body [class*='header'],
+html.dark body [class*='content'],
+html.dark body [class*='layout'],
+html.dark body [class*='menu'],
+html.dark body [class*='sidebar'],
+html.dark body [class*='toolbar'] {
+  background: #182235 !important;
+  color: #e5e7eb !important;
+  border-color: #334155 !important;
+}
+
+html.dark body [style*='background: #fff'],
+html.dark body [style*='background:#fff'],
+html.dark body [style*='background: white'],
+html.dark body [style*='background:white'],
+html.dark body [style*='background-color: #fff'],
+html.dark body [style*='background-color:#fff'],
+html.dark body [style*='background-color: white'],
+html.dark body [style*='background-color:white'] {
+  background: #182235 !important;
+  background-color: #182235 !important;
+  color: #e5e7eb !important;
+  border-color: #334155 !important;
+}
 `
 
 const fontSizeMap: Record<string, string> = {
@@ -110,11 +185,34 @@ const ensureBrowser = (): boolean => {
   return typeof window !== 'undefined' && typeof document !== 'undefined'
 }
 
+const disconnectDarkOverrideObserver = (): void => {
+  if (darkOverrideHeadObserver) {
+    darkOverrideHeadObserver.disconnect()
+    darkOverrideHeadObserver = null
+  }
+}
+
+const keepDarkOverrideStyleLast = (): void => {
+  const style = document.getElementById(DARK_OVERRIDE_STYLE_ID)
+  if (style && document.head.lastElementChild !== style) {
+    document.head.appendChild(style)
+  }
+}
+
+const ensureDarkOverrideObserver = (): void => {
+  disconnectDarkOverrideObserver()
+  darkOverrideHeadObserver = new MutationObserver(() => {
+    keepDarkOverrideStyleLast()
+  })
+  darkOverrideHeadObserver.observe(document.head, { childList: true })
+}
+
 const syncRuntimeDarkOverrides = (enabled: boolean): void => {
   if (!ensureBrowser()) return
 
   const existing = document.getElementById(DARK_OVERRIDE_STYLE_ID)
   if (!enabled) {
+    disconnectDarkOverrideObserver()
     if (existing?.parentNode) {
       existing.parentNode.removeChild(existing)
     }
@@ -123,6 +221,8 @@ const syncRuntimeDarkOverrides = (enabled: boolean): void => {
 
   if (existing && existing.tagName === 'STYLE') {
     existing.textContent = RUNTIME_DARK_CSS
+    keepDarkOverrideStyleLast()
+    ensureDarkOverrideObserver()
     return
   }
 
@@ -130,6 +230,8 @@ const syncRuntimeDarkOverrides = (enabled: boolean): void => {
   style.id = DARK_OVERRIDE_STYLE_ID
   style.textContent = RUNTIME_DARK_CSS
   document.head.appendChild(style)
+  keepDarkOverrideStyleLast()
+  ensureDarkOverrideObserver()
 }
 
 export const applyThemeColor = (color?: string): void => {
