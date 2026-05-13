@@ -223,12 +223,20 @@
     <!-- Mobile Menu Drawer (phone only) -->
     <el-drawer
       v-model="mobileMenuOpen"
-      :title="$t('menuTitle')"
       direction="ltr"
       :size="260"
       class="mobile-nav-drawer"
       destroy-on-close
     >
+      <template #header>
+        <div class="mobile-drawer-title">
+          <div class="mobile-drawer-brand-row">
+            <img class="mobile-drawer-logo" src="/to-link-logo.svg" alt="To-Link logo" />
+          </div>
+          <div class="mobile-drawer-menu-label">{{ t('menuShort') }}</div>
+        </div>
+      </template>
+
       <div class="mobile-nav-content">
         <!-- Mobile Navigation Items -->
         <div class="mobile-nav-items">
@@ -1889,6 +1897,33 @@ const handleEmergencyCommand = (command: string) => {
   line-height: 1.2;
 }
 
+.mobile-drawer-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.mobile-drawer-brand-row {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+}
+
+.mobile-drawer-logo {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
+.mobile-drawer-menu-label {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--tl-text-strong);
+  line-height: 1.1;
+}
+
 .mobile-nav-drawer :deep(.el-drawer__body) {
   padding: 12px;
   background: linear-gradient(180deg, #fffaf6 0%, #ffffff 100%);
@@ -1913,6 +1948,10 @@ const handleEmergencyCommand = (command: string) => {
 
 :global(.dark) .mobile-nav-drawer :deep(.el-drawer__body) {
   background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+}
+
+:global(.dark) .mobile-drawer-menu-label {
+  color: #e5e7eb;
 }
 
 :global(.dark) .mobile-nav-button {
