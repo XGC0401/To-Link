@@ -977,4 +977,183 @@ html.dark .message-input-area {
   border-top-color: #404040;
   background-color: #1a1a1a;
 }
+
+@media (max-width: 1200px) {
+  .chat-full {
+    height: auto;
+    min-height: 80vh;
+  }
+
+  .history-panel {
+    width: 240px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .chat-container {
+    flex-direction: column;
+  }
+
+  .history-panel {
+    width: 100%;
+    max-height: 260px;
+    border-right: none;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  html.dark .history-panel {
+    border-bottom-color: #404040;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-full {
+    min-height: 74vh;
+  }
+
+  .chat-header {
+    padding: 12px 14px;
+  }
+
+  .messages-container {
+    padding: 12px;
+  }
+
+  .message-bubble {
+    max-width: 85%;
+  }
+
+  .message-input-area {
+    padding: 12px;
+  }
+
+  .message-input-area :deep(.el-button) {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .ai-chat-container {
+    flex-direction: column;
+  }
+
+  .history-panel {
+    max-height: 30vh;
+    border-right: none;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .chat-full {
+    min-height: 60vh;
+  }
+
+  .message-input-area :deep(.el-button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .ai-chat-page {
+    padding: 8px;
+  }
+
+  .ai-chat-container {
+    flex-direction: column;
+    gap: 12px;
+    height: auto;
+  }
+
+  .history-panel {
+    max-height: 25vh;
+    border-radius: 10px;
+    border-right: none;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 10px;
+  }
+
+  .history-panel h3 {
+    font-size: 14px;
+  }
+
+  .history-item {
+    padding: 8px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  .chat-full {
+    min-height: 60vh;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .messages-container {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .message-group {
+    gap: 6px;
+  }
+
+  .message-bubble {
+    max-width: 88%;
+    padding: 8px 10px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .message-input-area {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .message-input-area :deep(.el-input) {
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .message-input-area :deep(.el-button) {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .history-item {
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  .chat-header {
+    font-size: 13px;
+  }
+
+  .message-bubble {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .message-input-area :deep(.el-input) {
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .message-input-area :deep(.el-button) {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
 </style>

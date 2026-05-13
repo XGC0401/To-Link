@@ -1101,12 +1101,18 @@ const deletePost = (post: Post) => {
 
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
   margin-top: 0;
   width: 100%;
   position: relative;
   z-index: 1;
+}
+
+@media (max-width: 1400px) {
+  .content-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 1024px) {
@@ -1117,6 +1123,7 @@ const deletePost = (post: Post) => {
 
 .posts-section {
   width: 100%;
+  min-width: 0;
   padding: 18px;
   border-radius: 18px;
   border: 1px solid rgba(129, 140, 248, 0.2);
@@ -1246,6 +1253,7 @@ const deletePost = (post: Post) => {
 
 .quests-section {
   width: 100%;
+  min-width: 0;
   padding: 18px;
   border-radius: 18px;
   border: 1px solid rgba(129, 140, 248, 0.2);
@@ -1701,6 +1709,285 @@ const deletePost = (post: Post) => {
   .weather-card {
     width: 100%;
     max-width: 360px;
+  }
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .posts-section,
+  .quests-section {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .section-header h3 {
+    font-size: 20px;
+  }
+
+  .post-card,
+  .quest-card {
+    padding: 14px;
+  }
+
+  .weather-days-section button {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .home-page-shell {
+    padding: 8px;
+  }
+
+  .welcome-section {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .weather-card {
+    width: 100%;
+    max-width: none;
+    padding: 12px;
+  }
+
+  .weather-info-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .weather-left-side {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .weather-main {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .weather-main svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .weather-temperature {
+    font-size: 28px;
+  }
+
+  .weather-right-side {
+    text-align: left;
+  }
+
+  .weather-hour {
+    font-size: 14px;
+  }
+
+  .weather-date {
+    font-size: 12px;
+  }
+
+  .weather-days-section {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .weather-days-section button {
+    padding: 8px;
+    font-size: 11px;
+    min-width: calc(33.333% - 5px);
+  }
+
+  .welcome-card {
+    padding: 12px;
+  }
+
+  .welcome-card :deep(.el-card__header) {
+    padding: 12px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .card-header h2 {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .welcome-actions {
+    width: 100%;
+  }
+
+  .welcome-actions .el-button {
+    width: 100%;
+  }
+
+  /* Content grid on phone */
+  .content-grid {
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .posts-section,
+  .quests-section {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .section-header {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+  }
+
+  .section-header h3 {
+    font-size: 16px;
+  }
+
+  .section-header button {
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+
+  .posts-list,
+  .quests-list {
+    gap: 10px;
+  }
+
+  .post-card,
+  .quest-card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .post-card :deep(.el-card__header),
+  .quest-card :deep(.el-card__header) {
+    padding: 12px;
+  }
+
+  .post-card :deep(.el-card__body),
+  .quest-card :deep(.el-card__body) {
+    padding: 12px;
+  }
+
+  .post-header {
+    gap: 10px;
+  }
+
+  .post-author {
+    gap: 10px;
+  }
+
+  .post-author :deep(.el-avatar) {
+    width: 36px;
+    height: 36px;
+  }
+
+  .author-info {
+    min-width: 0;
+  }
+
+  .author-name,
+  .post-time {
+    font-size: 12px;
+  }
+
+  .post-content h4 {
+    font-size: 14px;
+    margin: 0 0 8px;
+  }
+
+  .post-content > p {
+    font-size: 13px;
+    margin: 0 0 8px;
+  }
+
+  .post-tags {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .el-tag {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .quest-card h4 {
+    font-size: 14px;
+  }
+
+  .quest-details {
+    font-size: 12px;
+    gap: 8px;
+  }
+
+  .quest-detail-item {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .quest-detail-label {
+    font-size: 11px;
+  }
+
+  .quest-detail-value {
+    font-size: 12px;
+  }
+
+  .quest-points {
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+
+  .posts-loading {
+    text-align: center;
+  }
+
+  .posts-loading-text {
+    font-size: 13px;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .weather-temperature {
+    font-size: 24px;
+  }
+
+  .card-header h2 {
+    font-size: 16px;
+  }
+
+  .section-header h3 {
+    font-size: 15px;
+  }
+
+  .post-content h4,
+  .quest-card h4 {
+    font-size: 13px;
+  }
+
+  .post-content > p {
+    font-size: 12px;
+  }
+
+  .author-name,
+  .post-time,
+  .quest-details {
+    font-size: 11px;
+  }
+
+  .el-tag {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .weather-days-section button {
+    min-width: calc(50% - 4px);
   }
 }
 

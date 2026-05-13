@@ -17,6 +17,20 @@ body {
   font-size: var(--base-font-size, 18px);
 }
 
+/* Prevent page-level content from forcing horizontal overflow in responsive layouts. */
+.app-main > * {
+  min-width: 0;
+}
+
+.app-main .el-card,
+.app-main .el-tabs,
+.app-main .el-form,
+.app-main .el-dialog,
+.app-main .el-row,
+.app-main .el-col {
+  min-width: 0;
+}
+
 /* Element Plus components should respect base font size */
 .el-button,
 .el-input__inner,
@@ -126,4 +140,298 @@ html.dark .el-empty__image svg path {
 
 html.dark .el-empty__description {
   color: #9ca3af !important;
+}
+
+/* ============ TOUCH-FRIENDLY SIZING FOR MOBILE/TABLET ============ */
+
+/* Tablet breakpoint (481-1024px) - increase touch targets */
+@media (max-width: 1024px) {
+  /* Increase button minimum height for easier tapping */
+  .el-button {
+    min-height: 44px;
+    padding: 8px 16px;
+  }
+
+  .el-button--large {
+    min-height: 48px;
+  }
+
+  .el-button--small {
+    min-height: 36px;
+  }
+
+  /* Increase input/select minimum height */
+  .el-input__wrapper {
+    height: 44px;
+  }
+
+  .el-select {
+    min-height: 44px;
+  }
+
+  .el-select__wrapper {
+    height: 44px;
+  }
+
+  /* Increase checkbox and radio sizes */
+  .el-checkbox {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .el-checkbox :deep(.el-checkbox__input.is-checked .el-checkbox__inner),
+  .el-checkbox :deep(.el-checkbox__input .el-checkbox__inner) {
+    width: 20px;
+    height: 20px;
+  }
+
+  .el-radio {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  /* Increase menu item size */
+  .el-menu-item {
+    min-height: 44px !important;
+  }
+
+  /* Increase dropdown menu item size */
+  .el-dropdown-menu__item {
+    min-height: 40px;
+    padding: 8px 16px;
+  }
+
+  /* Increase form field label size */
+  .el-form-item {
+    margin-bottom: 20px;
+  }
+
+  .el-form-item__label {
+    line-height: 44px;
+  }
+
+  /* Increase link/text clickable areas */
+  a, button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Phone breakpoint (≤480px) - maximize touch targets */
+@media (max-width: 480px) {
+  /* Phone: 48px minimum for all primary interactive elements */
+  .el-button {
+    min-height: 48px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .el-button--large {
+    min-height: 52px;
+  }
+
+  .el-button--small {
+    min-height: 40px;
+  }
+
+  /* Increase input/select for phone */
+  .el-input__wrapper {
+    height: 48px;
+    padding: 4px 12px;
+  }
+
+  .el-input__inner {
+    height: 40px;
+  }
+
+  .el-select {
+    min-height: 48px;
+  }
+
+  .el-select__wrapper {
+    height: 48px;
+    padding: 4px 12px;
+  }
+
+  /* Phone: Increase checkbox/radio sizes */
+  .el-checkbox {
+    min-width: 52px;
+    min-height: 52px;
+    padding: 2px;
+  }
+
+  .el-checkbox :deep(.el-checkbox__input.is-checked .el-checkbox__inner),
+  .el-checkbox :deep(.el-checkbox__input .el-checkbox__inner) {
+    width: 22px;
+    height: 22px;
+  }
+
+  .el-checkbox :deep(.el-checkbox__label) {
+    font-size: 14px;
+    padding: 0 8px;
+  }
+
+  .el-radio {
+    min-width: 52px;
+    min-height: 52px;
+    padding: 2px;
+  }
+
+  .el-radio :deep(.el-radio__input.is-checked .el-radio__inner),
+  .el-radio :deep(.el-radio__input .el-radio__inner) {
+    width: 22px;
+    height: 22px;
+  }
+
+  .el-radio :deep(.el-radio__label) {
+    font-size: 14px;
+    padding: 0 8px;
+  }
+
+  /* Phone: Increase menu item size */
+  .el-menu-item {
+    min-height: 48px !important;
+    font-size: 14px;
+  }
+
+  /* Phone: Increase dropdown menu items */
+  .el-dropdown-menu__item {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  /* Phone: Better form spacing */
+  .el-form-item {
+    margin-bottom: 24px;
+  }
+
+  .el-form-item__label {
+    line-height: 48px;
+    font-size: 14px;
+  }
+
+  .el-form-item__content {
+    line-height: 48px;
+  }
+
+  /* Phone: Tab size increase */
+  .el-tabs :deep(.el-tabs__nav) {
+    padding: 0 16px;
+  }
+
+  .el-tabs :deep(.el-tabs__item) {
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  /* Phone: Dialog adjustments */
+  .el-dialog__body {
+    padding: 16px;
+  }
+
+  .el-dialog__footer {
+    padding: 12px 16px;
+  }
+
+  /* Phone: Card adjustments */
+  .el-card {
+    margin-bottom: 16px;
+  }
+
+  .el-card__body {
+    padding: 16px;
+  }
+
+  /* Phone: Badge increase */
+  .el-badge__content {
+    min-width: 24px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 12px;
+  }
+
+  /* Phone: Avatar sizes */
+  .el-avatar {
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .el-avatar--small {
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Phone: Pagination buttons */
+  .el-pagination :deep(.el-pager li) {
+    min-width: 40px;
+    height: 40px;
+    line-height: 40px;
+  }
+
+  /* Phone: Reduce paddings for better use of space */
+  .el-main {
+    padding: 12px;
+  }
+
+  /* Phone: Message/notification sizing */
+  .el-notification {
+    min-width: 280px;
+    max-width: calc(100vw - 24px);
+  }
+
+  .el-message {
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* Extra small devices (≤360px) */
+@media (max-width: 360px) {
+  .el-button {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .el-input__wrapper {
+    height: 44px;
+    padding: 2px 8px;
+  }
+
+  .el-select__wrapper {
+    height: 44px;
+    padding: 2px 8px;
+  }
+
+  .el-menu-item {
+    min-height: 44px !important;
+    font-size: 13px;
+  }
+
+  .el-form-item {
+    margin-bottom: 20px;
+  }
+
+  .el-form-item__label {
+    line-height: 44px;
+    font-size: 13px;
+  }
+
+  .el-tabs :deep(.el-tabs__item) {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .el-card__body {
+    padding: 12px;
+  }
+
+  .el-dialog__body {
+    padding: 12px;
+  }
 }

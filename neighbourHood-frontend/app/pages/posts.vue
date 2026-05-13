@@ -1383,7 +1383,7 @@ onUnmounted(() => {
 
 .posts-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: clamp(12px, 1.8vw, 20px);
 }
 
@@ -1580,8 +1580,33 @@ onUnmounted(() => {
 
 .quests-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: clamp(12px, 1.8vw, 20px);
+}
+
+@media (max-width: 1200px) {
+  .posts-header,
+  .quests-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .posts-header-left,
+  .posts-header-right,
+  .quests-header-left,
+  .rewards-info {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .posts-header-left :deep(.el-input),
+  .posts-header-left :deep(.el-select),
+  .quests-header-left :deep(.el-input),
+  .quests-header-left :deep(.el-select) {
+    width: 100% !important;
+    min-width: 0;
+  }
 }
 
 .quests-list :deep(.quest-card),
@@ -1928,5 +1953,166 @@ onUnmounted(() => {
 
 :global(.dark) .tabs-container :deep(.el-tabs__active-bar) {
   background: #ff9f52 !important;
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .posts-list {
+    gap: 14px;
+  }
+
+  .post-card {
+    padding: 14px;
+  }
+
+  .post-content h4 {
+    font-size: 16px;
+  }
+
+  .tab-content .el-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .post-page-shell {
+    padding: 8px;
+  }
+
+  .header-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-box,
+  .sort-box,
+  .filter-box {
+    width: 100%;
+  }
+
+  .search-box :deep(.el-input) {
+    width: 100% !important;
+    height: 44px !important;
+  }
+
+  .sort-box :deep(.el-select),
+  .filter-box :deep(.el-select) {
+    width: 100% !important;
+    height: 44px !important;
+  }
+
+  .posts-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .post-card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .post-content {
+    gap: 8px;
+  }
+
+  .post-content h4 {
+    font-size: 14px;
+    margin: 0 0 6px;
+  }
+
+  .post-content > p {
+    font-size: 12px;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .post-footer {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .post-footer-left,
+  .post-footer-right {
+    gap: 6px;
+  }
+
+  .post-footer-left .el-tag {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .post-footer-left span {
+    font-size: 12px;
+  }
+
+  .post-footer-right {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .post-footer-right .el-button {
+    width: 100%;
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .tabs-container {
+    margin-bottom: 12px;
+  }
+
+  .tabs-container :deep(.el-tabs__header) {
+    margin: 0 -8px;
+  }
+
+  .tabs-container :deep(.el-tabs__item) {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .tab-content {
+    padding: 12px;
+  }
+
+  .tab-content .el-button {
+    height: 40px;
+    font-size: 12px;
+    padding: 0 12px;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .post-card {
+    padding: 10px;
+  }
+
+  .post-content h4 {
+    font-size: 13px;
+  }
+
+  .post-content > p {
+    font-size: 11px;
+  }
+
+  .post-footer-left .el-tag {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .post-footer-left span {
+    font-size: 11px;
+  }
+
+  .tabs-container :deep(.el-tabs__item) {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .header-container :deep(.el-input),
+  .header-container :deep(.el-select) {
+    font-size: 12px;
+  }
 }
 </style>

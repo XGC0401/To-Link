@@ -525,6 +525,50 @@ onUnmounted(() => {
   font-size: 20px;
 }
 
+@media (max-width: 1200px) {
+  .shops-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .shops-toolbar :deep(.el-space) {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .shops-toolbar :deep(.el-space__item) {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+
+  .shops-toolbar :deep(.el-input),
+  .shops-toolbar :deep(.el-select) {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .shops-toolbar h2 {
+    font-size: 28px;
+  }
+
+  .map-section {
+    height: 520px;
+  }
+}
+
+@media (max-width: 768px) {
+  .shops-toolbar h2 {
+    font-size: 24px;
+  }
+
+  .map-section {
+    height: 420px;
+  }
+}
+
 .shop-details {
   display: flex;
   flex-direction: column;
@@ -744,5 +788,98 @@ html.dark :deep(.el-empty__description) {
 .leaflet-popup-content {
   margin: 12px;
   font-size: 18px;
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .shop-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .shop-toolbar :deep(.el-input),
+  .shop-toolbar :deep(.el-select) {
+    height: 44px;
+  }
+
+  .shop-info-panel {
+    max-height: 300px;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .shop-page-shell {
+    padding: 8px;
+  }
+
+  .shop-toolbar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .shop-toolbar :deep(.el-input),
+  .shop-toolbar :deep(.el-select) {
+    width: 100% !important;
+    height: 44px !important;
+  }
+
+  .map-container {
+    border-radius: 10px;
+    margin: 12px 0;
+  }
+
+  .shop-info-panel {
+    max-height: 40vh;
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .shop-info-panel h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .shop-info-panel p {
+    font-size: 12px;
+    margin: 6px 0;
+  }
+
+  .shop-marker-label {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+
+  .leaflet-popup-content {
+    margin: 8px;
+    font-size: 14px;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .shop-toolbar {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .shop-toolbar :deep(.el-input),
+  .shop-toolbar :deep(.el-select) {
+    font-size: 12px;
+  }
+
+  .shop-info-panel h3 {
+    font-size: 13px;
+  }
+
+  .shop-info-panel p {
+    font-size: 11px;
+  }
+
+  .map-container {
+    margin: 10px 0;
+  }
 }
 </style>

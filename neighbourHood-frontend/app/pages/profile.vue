@@ -1277,6 +1277,38 @@ const handleCancel = () => {
   box-shadow: 0 0 0 1px #334155 inset !important;
 }
 
+@media (max-width: 1200px) {
+  .card-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .profile-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .address-item {
+    grid-template-columns: 120px minmax(0, 1fr) auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .time-picker-group {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .address-item {
+    grid-template-columns: 1fr auto;
+  }
+
+  .address-item-label {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 768px) {
   .profile-container {
     padding: 10px;
@@ -1309,6 +1341,236 @@ const handleCancel = () => {
 
   .form-actions .el-button {
     width: 100%;
+  }
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .profile-card {
+    padding: 16px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .profile-header :deep(.el-avatar) {
+    width: 80px;
+    height: 80px;
+  }
+
+  .el-form :deep(.el-input),
+  .el-form :deep(.el-select),
+  .el-form :deep(.el-textarea) {
+    height: 44px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 44px;
+  }
+
+  .time-picker-group {
+    flex-direction: column;
+  }
+
+  .time-separator {
+    display: none;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .profile-page {
+    padding: 8px;
+  }
+
+  .profile-container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .profile-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .card-header h2 {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .card-header-actions {
+    width: 100%;
+  }
+
+  .card-header-actions .el-button {
+    width: 100%;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .profile-header :deep(.el-avatar) {
+    width: 64px;
+    height: 64px;
+  }
+
+  .profile-info {
+    text-align: center;
+  }
+
+  .profile-info h3 {
+    font-size: 14px;
+  }
+
+  .profile-info p {
+    font-size: 12px;
+  }
+
+  .el-form {
+    gap: 12px;
+  }
+
+  .el-form :deep(.el-form-item) {
+    margin-bottom: 14px;
+  }
+
+  .el-form :deep(.el-form-item__label) {
+    font-size: 13px;
+    line-height: 44px;
+  }
+
+  .el-form :deep(.el-input),
+  .el-form :deep(.el-select) {
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .el-form :deep(.el-input__inner),
+  .el-form :deep(.el-select__wrapper) {
+    padding: 8px 12px;
+  }
+
+  .el-form :deep(.el-textarea) {
+    min-height: 100px;
+  }
+
+  .el-form :deep(.el-textarea__inner) {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 44px;
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .time-picker-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .time-picker-item {
+    width: 100%;
+  }
+
+  .time-separator {
+    display: none;
+  }
+
+  .address-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .address-item-label {
+    grid-column: auto;
+  }
+
+  .address-item-value {
+    width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .form-actions .el-button {
+    width: 100%;
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .form-actions .el-button--primary {
+    height: 48px;
+    font-weight: 600;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .profile-container {
+    padding: 10px;
+  }
+
+  .profile-card {
+    padding: 10px;
+  }
+
+  .card-header h2 {
+    font-size: 14px;
+  }
+
+  .profile-header :deep(.el-avatar) {
+    width: 56px;
+    height: 56px;
+  }
+
+  .profile-info h3 {
+    font-size: 13px;
+  }
+
+  .profile-info p {
+    font-size: 11px;
+  }
+
+  .el-form :deep(.el-form-item__label) {
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-input),
+  .el-form :deep(.el-select) {
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-textarea__inner) {
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-button--primary) {
+    height: 44px;
   }
 }
 </style>

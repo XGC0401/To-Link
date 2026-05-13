@@ -213,13 +213,14 @@ const sendMessage = (friend: Friend) => {
 
 .friends-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 22px;
   position: relative;
   z-index: 1;
 }
 
 .friend-card {
+  min-width: 0;
   border-radius: 20px;
   border: 1px solid rgba(129, 140, 248, 0.18);
   background:
@@ -295,6 +296,33 @@ const sendMessage = (friend: Friend) => {
 .friend-actions button {
   flex: 1;
   border-radius: 12px;
+}
+
+@media (max-width: 1200px) {
+  .friends-toolbar {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .friends-toolbar-search,
+  .friends-toolbar-actions {
+    width: 100%;
+  }
+
+  .friends-toolbar :deep(.el-input),
+  .friends-toolbar :deep(.el-select) {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .friends-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .friend-actions {
+    flex-direction: column;
+  }
 }
 
 .friends-page-shell :deep(.el-button--primary) {
@@ -474,5 +502,154 @@ const sendMessage = (friend: Friend) => {
 :global(.dark) .friends-page-shell :deep(.el-select__wrapper) {
   background: #0f172a !important;
   box-shadow: 0 0 0 1px #334155 inset !important;
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .friends-grid {
+    gap: 16px;
+  }
+
+  .friend-card {
+    padding: 16px;
+  }
+
+  .friend-avatar-wrapper :deep(.el-avatar) {
+    width: 64px;
+    height: 64px;
+  }
+
+  .friend-info h3 {
+    font-size: 16px;
+  }
+
+  .friend-actions {
+    gap: 8px;
+  }
+
+  .friend-actions .el-button {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .friends-page-shell {
+    padding: 8px;
+  }
+
+  .friends-toolbar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+
+  .friends-toolbar-search,
+  .friends-toolbar-actions {
+    width: 100%;
+  }
+
+  .friends-toolbar :deep(.el-input),
+  .friends-toolbar :deep(.el-select) {
+    width: 100% !important;
+    height: 44px !important;
+  }
+
+  .friends-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .friend-card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .friend-content {
+    gap: 12px;
+  }
+
+  .friend-avatar-wrapper {
+    min-width: 56px;
+    width: 56px;
+  }
+
+  .friend-avatar-wrapper :deep(.el-avatar) {
+    width: 56px;
+    height: 56px;
+  }
+
+  .friend-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .friend-info h3 {
+    font-size: 14px;
+    margin: 0 0 4px;
+  }
+
+  .friend-status {
+    font-size: 12px;
+    margin: 0;
+  }
+
+  .friend-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .friend-actions .el-button {
+    width: 100%;
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .friend-actions :deep(.el-icon) {
+    margin-right: 4px;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .friend-card {
+    padding: 10px;
+  }
+
+  .friend-avatar-wrapper {
+    min-width: 48px;
+    width: 48px;
+  }
+
+  .friend-avatar-wrapper :deep(.el-avatar) {
+    width: 48px;
+    height: 48px;
+  }
+
+  .friend-info h3 {
+    font-size: 13px;
+  }
+
+  .friend-status {
+    font-size: 11px;
+  }
+
+  .friend-actions .el-button {
+    height: 36px;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .friends-toolbar-search :deep(.el-input) {
+    font-size: 12px;
+  }
+
+  .friends-toolbar-actions :deep(.el-select) {
+    font-size: 12px;
+  }
 }
 </style>

@@ -4,6 +4,15 @@
     <el-header class="app-header">
       <div class="header-content">
         <div class="header-left">
+          <!-- Hamburger menu button (mobile only) -->
+          <el-button
+            class="hamburger-menu-btn"
+            text
+            :icon="mobileMenuOpen ? Close : Menu"
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            :aria-label="$t('menu')"
+          />
+          
           <h1 class="app-title" @click="goToHome" style="cursor: pointer;">🔗 {{ $t('appName') }}</h1>
           <div class="top-nav">
             <!-- Visible nav buttons -->
@@ -202,6 +211,73 @@
       </el-main>
     </el-container>
 
+    <!-- Mobile Menu Drawer (phone only) -->
+    <el-drawer
+      v-model="mobileMenuOpen"
+      :title="$t('menu')"
+      direction="ltr"
+      :size="260"
+      class="mobile-nav-drawer"
+      destroy-on-close
+    >
+      <div class="mobile-nav-content">
+        <!-- Mobile Navigation Items -->
+        <div class="mobile-nav-items">
+          <el-button
+            v-for="item in navItems"
+            :key="item.id"
+            text
+            class="mobile-nav-button"
+            :class="{ 'mobile-nav-active': activeMenuPath.includes(item.path) }"
+            @click="handleMenuClick(item.path); mobileMenuOpen = false"
+          >
+            <el-icon><component :is="item.icon" /></el-icon>
+            <span>{{ t(item.labelKey) }}</span>
+          </el-button>
+        </div>
+
+        <!-- Divider -->
+        <el-divider />
+
+        <!-- Quick Actions -->
+        <div class="mobile-nav-actions">
+          <el-button
+            text
+            class="mobile-nav-action-btn"
+            @click="router.push('/profile'); mobileMenuOpen = false"
+          >
+            <el-icon><User /></el-icon>
+            {{ $t('profile') }}
+          </el-button>
+          <el-button
+            text
+            class="mobile-nav-action-btn"
+            @click="router.push('/settings'); mobileMenuOpen = false"
+          >
+            <el-icon><Setting /></el-icon>
+            {{ $t('settings') }}
+          </el-button>
+          <el-button
+            text
+            class="mobile-nav-action-btn"
+            @click="handleLanguageToggle"
+          >
+            <el-icon><Globe /></el-icon>
+            {{ locale === 'en' ? '中文' : 'English' }}
+          </el-button>
+          <el-button
+            text
+            class="mobile-nav-action-btn"
+            type="danger"
+            @click="handleLogout; mobileMenuOpen = false"
+          >
+            <el-icon><logout /></el-icon>
+            {{ $t('logout') }}
+          </el-button>
+        </div>
+      </div>
+    </el-drawer>
+
     <!-- Feedback Dialog -->
     <FeedbackDialog
       v-model="showFeedbackDialog"
@@ -320,7 +396,11 @@ import {
   InfoFilled,
   Lock,
   Document,
-  Stamp
+  Stamp,
+  Menu,
+  Close,
+  Globe,
+  logout
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -329,6 +409,7 @@ const { locale, t, setLocale } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
 const searchQuery = ref('')
 const activeMenuPath = ref(route.path)
+const mobileMenuOpen = ref(false)
 
 // Responsive navigation items
 interface NavItem {
@@ -350,6 +431,7 @@ const navItems: NavItem[] = [
 
 const visibleNavItems = ref<NavItem[]>(navItems)
 const hiddenNavItems = ref<NavItem[]>([])
+let navRecalculateRaf: number | null = null
 
 const isMoreMenuActive = computed(() => {
   return hiddenNavItems.value.some(item => activeMenuPath.value.includes(item.path))
@@ -390,6 +472,22 @@ const calculateVisibleItems = () => {
   visibleCount = Math.min(Math.max(1, visibleCount), navItems.length)
   visibleNavItems.value = navItems.slice(0, visibleCount)
   hiddenNavItems.value = navItems.slice(visibleCount)
+}
+
+const scheduleVisibleItemsCalculation = () => {
+  if (typeof window === 'undefined') return
+
+  if (navRecalculateRaf !== null) {
+    window.cancelAnimationFrame(navRecalculateRaf)
+  }
+
+  // Defer measurement until layout settles after resize/flex reflow.
+  navRecalculateRaf = window.requestAnimationFrame(() => {
+    navRecalculateRaf = window.requestAnimationFrame(() => {
+      navRecalculateRaf = null
+      calculateVisibleItems()
+    })
+  })
 }
 
 // Setup ResizeObserver for responsive behavior
@@ -756,34 +854,42 @@ onMounted(() => {
 
   // Setup responsive navbar
   const topNav = document.querySelector('.top-nav')
+  const headerContent = document.querySelector('.header-content')
   if (topNav && typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => {
-      calculateVisibleItems()
+      scheduleVisibleItemsCalculation()
     })
     resizeObserver.observe(topNav)
+    if (headerContent) {
+      resizeObserver.observe(headerContent)
+    }
   }
 
   // Initial calculation with a small delay to ensure DOM is fully rendered
   setTimeout(() => {
-    calculateVisibleItems()
+    scheduleVisibleItemsCalculation()
   }, 100)
 
   // Also listen to window resize
-  window.addEventListener('resize', calculateVisibleItems)
+  window.addEventListener('resize', scheduleVisibleItemsCalculation)
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', calculateVisibleItems)
+    window.visualViewport.addEventListener('resize', scheduleVisibleItemsCalculation)
   }
 })
 
 onUnmounted(() => {
   window.removeEventListener('app:notification', handleAppNotificationEvent)
   window.removeEventListener('app:backpack-updated', loadRedeemedRewards)
-  window.removeEventListener('resize', calculateVisibleItems)
+  window.removeEventListener('resize', scheduleVisibleItemsCalculation)
   if (window.visualViewport) {
-    window.visualViewport.removeEventListener('resize', calculateVisibleItems)
+    window.visualViewport.removeEventListener('resize', scheduleVisibleItemsCalculation)
   }
   if (resizeObserver) {
     resizeObserver.disconnect()
+  }
+  if (navRecalculateRaf !== null) {
+    window.cancelAnimationFrame(navRecalculateRaf)
+    navRecalculateRaf = null
   }
 })
 
@@ -796,9 +902,7 @@ watch(() => route.path, (newPath) => {
 }, { immediate: true })
 
 watch(() => locale.value, () => {
-  setTimeout(() => {
-    calculateVisibleItems()
-  }, 0)
+  scheduleVisibleItemsCalculation()
 })
 
 const handleMenuClick = (path: string) => {
@@ -811,6 +915,19 @@ const handleMoreMenuCommand = (path: string) => {
 
 const goToHome = () => {
   router.push('/home')
+}
+
+const handleLogout = async () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('userToken')
+  clearAccountScopedStorage()
+  await router.push('/')
+}
+
+const handleLanguageToggle = async () => {
+  const newLocale = locale.value === 'en' ? 'zh' : 'en'
+  await setLocale(newLocale)
+  localStorage.setItem('userLanguage', newLocale)
 }
 
 const clearAccountScopedStorage = () => {
@@ -2305,5 +2422,297 @@ const handleEmergencyCommand = (command: string) => {
 
 .dark .el-dialog__footer {
   border-top-color: #404040 !important;
+}
+
+/* ============ PHONE/TABLET RESPONSIVE STYLES ============ */
+
+/* Hamburger menu button styling */
+.hamburger-menu-btn {
+  display: none;
+  margin-right: 12px;
+  font-size: 20px !important;
+}
+
+/* Mobile menu drawer */
+.mobile-nav-drawer :deep(.el-drawer) {
+  width: 260px !important;
+}
+
+.mobile-nav-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mobile-nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-nav-button {
+  width: 100%;
+  height: 48px;
+  justify-content: flex-start;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.3s;
+  border-radius: 8px;
+}
+
+.mobile-nav-button .el-icon {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.mobile-nav-button:hover {
+  color: var(--el-color-primary);
+  background-color: rgba(79, 70, 229, 0.1);
+}
+
+.mobile-nav-button.mobile-nav-active {
+  color: var(--el-color-primary);
+  background-color: rgba(79, 70, 229, 0.15);
+  font-weight: 600;
+}
+
+.mobile-nav-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-nav-action-btn {
+  width: 100%;
+  height: 44px;
+  justify-content: flex-start;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.3s;
+  border-radius: 8px;
+}
+
+.mobile-nav-action-btn .el-icon {
+  margin-right: 12px;
+  font-size: 16px;
+}
+
+.mobile-nav-action-btn:hover {
+  background-color: rgba(79, 70, 229, 0.1);
+}
+
+.mobile-nav-action-btn.is-disabled,
+.mobile-nav-action-btn:disabled {
+  opacity: 0.6;
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .header-left {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .app-title {
+    font-size: 24px;
+  }
+
+  .top-nav {
+    max-width: 300px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .top-nav-button span {
+    display: none;
+  }
+
+  .backpack-header-button,
+  .notification-badge {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+
+  .el-button :deep(.el-icon) {
+    font-size: 18px !important;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  /* Show hamburger menu */
+  .hamburger-menu-btn {
+    display: inline-flex;
+    min-width: 40px;
+    height: 40px;
+    padding: 8px;
+  }
+
+  /* Adjust header layout */
+  .header-content {
+    height: 56px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .header-left {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .app-title {
+    font-size: 20px;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  /* Hide top nav on phone */
+  .top-nav {
+    display: none;
+  }
+
+  /* Hide desktop menu elements on phone */
+  .top-nav-button span {
+    display: none;
+  }
+
+  .assistanceSupport {
+    display: none;
+  }
+
+  /* Resize header right items for phone */
+  .header-right {
+    gap: 4px;
+  }
+
+  .backpack-header-button {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .notification-badge {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .notification-badge :deep(.el-icon) {
+    font-size: 16px !important;
+  }
+
+  .emergency-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .emergency-icon {
+    font-size: 20px !important;
+  }
+
+  /* Reduce header element sizes for mobile */
+  .el-avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Dropdown menus should be full width on phone */
+  .notification-menu {
+    min-width: 280px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  /* Reduce app main padding */
+  .app-main {
+    padding: 12px;
+  }
+
+  /* Adjust dialog sizes for phone */
+  .el-dialog {
+    width: 95vw !important;
+    max-width: 95vw !important;
+  }
+
+  /* Mobile drawer should not have scrollbar overlay */
+  .mobile-nav-drawer :deep(.el-drawer) {
+    width: 80vw !important;
+    max-width: 300px !important;
+  }
+
+  /* Dark mode for mobile drawer */
+  .dark .mobile-nav-button {
+    color: #b0b0b0;
+  }
+
+  .dark .mobile-nav-button:hover {
+    color: #07b981;
+    background-color: #3a3a3a;
+  }
+
+  .dark .mobile-nav-button.mobile-nav-active {
+    color: #07b981;
+    background-color: #2b1b0d;
+  }
+
+  .dark .mobile-nav-action-btn {
+    color: #b0b0b0;
+  }
+
+  .dark .mobile-nav-action-btn:hover {
+    background-color: #3a3a3a;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .header-left {
+    flex: 1;
+  }
+
+  .app-title {
+    font-size: 18px;
+  }
+
+  .header-right {
+    gap: 2px;
+  }
+
+  .backpack-header-button,
+  .notification-badge,
+  .emergency-btn {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .backpack-emoji {
+    font-size: 14px;
+  }
+
+  .emergency-icon {
+    font-size: 16px !important;
+  }
+
+  .el-avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .notification-menu {
+    min-width: 240px !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .app-main {
+    padding: 8px;
+  }
 }
 </style>

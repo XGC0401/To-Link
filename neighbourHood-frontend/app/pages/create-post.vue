@@ -15,7 +15,7 @@
           </el-form-item>
 
           <el-form-item :label="$t('category')" prop="request_type">
-            <el-select v-model="postForm.request_type" :placeholder="$t('selectCategory')" size="large" style="width: 240px">
+            <el-select v-model="postForm.request_type" :placeholder="$t('selectCategory')" size="large" class="create-post-category-select">
               <el-option :label="$t('shopping')" :value="0" />
               <el-option :label="$t('repair')" :value="1" />
               <el-option :label="$t('care')" :value="2" />
@@ -351,6 +351,11 @@ const handleCancel = () => {
   padding: 20px 0;
 }
 
+.create-post-category-select {
+  width: 240px;
+  max-width: 100%;
+}
+
 .post-form :deep(.el-form-item__label) {
   font-weight: 600;
   color: #333;
@@ -549,6 +554,23 @@ const handleCancel = () => {
   border-color: #555;
 }
 
+@media (max-width: 1200px) {
+  .create-post-container {
+    max-width: 100%;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .create-post-category-select {
+    width: 100%;
+  }
+
+  .tag-input-row {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .create-post-container {
     padding: 10px;
@@ -699,5 +721,158 @@ html.dark .el-date-range-picker__time-header {
 
 html.dark .el-date-range-picker .el-picker-panel__content {
   background-color: #2d2d2d !important;
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .create-post-container {
+    max-width: 100%;
+    padding: 16px;
+  }
+
+  .el-form :deep(.el-form-item) {
+    margin-bottom: 20px;
+  }
+
+  .el-form :deep(.el-input),
+  .el-form :deep(.el-select),
+  .el-form :deep(.el-textarea) {
+    height: 44px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 44px;
+    min-width: 100px;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .create-post-page {
+    padding: 8px;
+  }
+
+  .create-post-container {
+    max-width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    gap: 12px;
+  }
+
+  .create-post-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .el-form {
+    gap: 12px;
+  }
+
+  .el-form :deep(.el-form-item) {
+    margin-bottom: 16px;
+  }
+
+  .el-form :deep(.el-form-item__label) {
+    font-size: 13px;
+    line-height: 44px;
+    margin-bottom: 6px;
+  }
+
+  .el-form :deep(.el-input),
+  .el-form :deep(.el-select) {
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .el-form :deep(.el-input__inner),
+  .el-form :deep(.el-select__wrapper) {
+    padding: 8px 12px;
+  }
+
+  .el-form :deep(.el-textarea) {
+    min-height: 120px;
+  }
+
+  .el-form :deep(.el-textarea__inner) {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 44px;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .el-form :deep(.el-button--primary) {
+    height: 48px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .el-form :deep(.el-radio),
+  .el-form :deep(.el-checkbox) {
+    min-height: 48px;
+  }
+
+  .el-form :deep(.el-radio__label),
+  .el-form :deep(.el-checkbox__label) {
+    font-size: 13px;
+    padding: 0 8px;
+  }
+
+  .el-form :deep(.el-picker-panel) {
+    width: calc(100vw - 24px) !important;
+    max-width: 360px !important;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-actions .el-button {
+    width: 100%;
+    height: 44px;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .create-post-container {
+    padding: 10px;
+  }
+
+  .create-post-title {
+    font-size: 14px;
+  }
+
+  .el-form :deep(.el-form-item__label) {
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-input),
+  .el-form :deep(.el-select) {
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-textarea__inner) {
+    font-size: 12px;
+    min-height: 100px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-button--primary) {
+    height: 44px;
+  }
+
+  .el-form :deep(.el-picker-panel) {
+    width: calc(100vw - 16px) !important;
+  }
 }
 </style>

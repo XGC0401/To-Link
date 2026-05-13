@@ -1096,4 +1096,273 @@ const deleteAllPostsFromSecret = () => {
 :global(.dark) .settings-tabs :deep(.el-tabs__active-bar) {
   background: #ff9f52 !important;
 }
+
+@media (max-width: 1200px) {
+  .settings-container {
+    padding: 16px;
+  }
+
+  .card-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .settings-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .slider-wrapper {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .font-size-slider-container {
+    flex-wrap: wrap;
+  }
+
+  .notification-item {
+    min-width: 0;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .notification-label {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-header-actions .el-button {
+    width: 100%;
+  }
+
+  .notification-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .settings-container {
+    padding: 14px;
+  }
+
+  .settings-card {
+    padding: 14px;
+  }
+
+  .settings-card h3 {
+    font-size: 16px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 44px;
+    min-width: 100px;
+  }
+
+  .el-slider {
+    padding: 14px 0;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .settings-page {
+    padding: 8px;
+  }
+
+  .settings-container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .settings-header {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .settings-header h1 {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .settings-header-actions {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .settings-header-actions .el-button {
+    width: 100%;
+    height: 44px;
+    font-size: 12px;
+  }
+
+  .settings-card {
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+
+  .settings-card h3 {
+    font-size: 14px;
+    margin: 0 0 12px;
+  }
+
+  .settings-item {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .settings-item:last-child {
+    border-bottom: none;
+  }
+
+  .settings-item-label {
+    font-size: 13px;
+  }
+
+  .settings-item-description {
+    font-size: 11px;
+    color: #999;
+  }
+
+  .settings-item-control {
+    width: 100%;
+  }
+
+  .font-size-slider-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .font-size-label {
+    font-size: 13px;
+  }
+
+  .el-slider {
+    padding: 12px 0;
+  }
+
+  .el-slider :deep(.el-slider__button) {
+    width: 20px;
+    height: 20px;
+  }
+
+  .color-picker-wrapper {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .color-option {
+    width: 44px;
+    height: 44px;
+  }
+
+  .notification-item {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 0;
+  }
+
+  .notification-label {
+    font-size: 13px;
+  }
+
+  .el-switch {
+    height: 30px;
+    min-width: 52px;
+  }
+
+  .el-form :deep(.el-form-item) {
+    margin-bottom: 16px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 44px;
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .el-form :deep(.el-button--primary) {
+    height: 48px;
+    font-weight: 600;
+  }
+
+  .theme-color-grid {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 10px;
+  }
+
+  .theme-color-item {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .settings-container {
+    padding: 10px;
+  }
+
+  .settings-card {
+    padding: 10px;
+  }
+
+  .settings-header h1 {
+    font-size: 16px;
+  }
+
+  .settings-card h3 {
+    font-size: 13px;
+  }
+
+  .settings-header-actions .el-button {
+    height: 40px;
+    font-size: 11px;
+  }
+
+  .settings-item-label {
+    font-size: 12px;
+  }
+
+  .settings-item-description {
+    font-size: 10px;
+  }
+
+  .color-option {
+    width: 40px;
+    height: 40px;
+  }
+
+  .notification-label {
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-button) {
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .el-form :deep(.el-button--primary) {
+    height: 44px;
+  }
+
+  .font-size-label {
+    font-size: 12px;
+  }
+
+  .theme-color-grid {
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  }
+}
 </style>

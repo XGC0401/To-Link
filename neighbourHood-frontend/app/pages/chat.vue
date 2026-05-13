@@ -1952,6 +1952,12 @@ const createGroupConversation = () => {
   box-shadow: 0 10px 20px rgba(2, 6, 19, 0.65);
 }
 
+@media (max-width: 1200px) {
+  .conversations-panel {
+    width: 320px;
+  }
+}
+
 /* Marketplace-inspired override */
 .chat-aura,
 .chat-pattern {
@@ -2070,5 +2076,263 @@ const createGroupConversation = () => {
 :global(.dark) .search-bar :deep(.el-input__wrapper) {
   background: #0f172a !important;
   box-shadow: 0 0 0 1px #334155 inset !important;
+}
+
+@media (max-width: 768px) {
+  .chat-page-shell {
+    padding: 0 !important;
+  }
+
+  .chat-full {
+    min-height: 74vh;
+    border-radius: 10px !important;
+  }
+
+  .chat-header {
+    padding: 10px 12px;
+  }
+
+  .messages-area {
+    padding: 12px;
+  }
+
+  .message-input-area {
+    padding: 10px 12px;
+  }
+}
+
+/* ============ TABLET BREAKPOINT (481-1024px) ============ */
+@media (max-width: 1024px) {
+  .chat-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sidebar {
+    max-height: 30vh;
+    border-right: none;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .chat-full {
+    min-height: 60vh;
+  }
+
+  .search-bar :deep(.el-input) {
+    height: 44px;
+  }
+
+  .message-input-area :deep(.el-input) {
+    height: 44px;
+  }
+
+  .message-input-area :deep(.el-button) {
+    min-height: 44px;
+  }
+}
+
+/* ============ PHONE BREAKPOINT (≤480px) ============ */
+@media (max-width: 480px) {
+  .chat-page-shell {
+    padding: 0 !important;
+    gap: 8px;
+  }
+
+  .chat-container {
+    flex-direction: column;
+    gap: 10px;
+    height: auto;
+  }
+
+  .sidebar {
+    max-height: 25vh;
+    border-radius: 10px;
+    border-right: none;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  .search-bar {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .search-bar :deep(.el-input) {
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .conversation-list {
+    gap: 6px;
+  }
+
+  .conversation-item {
+    padding: 10px;
+    border-radius: 8px;
+    gap: 8px;
+  }
+
+  .conversation-item :deep(.el-avatar) {
+    width: 40px;
+    height: 40px;
+  }
+
+  .conversation-info {
+    min-width: 0;
+  }
+
+  .conversation-name {
+    font-size: 12px;
+  }
+
+  .conversation-preview {
+    font-size: 11px;
+  }
+
+  .chat-full {
+    min-height: 60vh;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .chat-header-title {
+    font-size: 14px;
+  }
+
+  .chat-header :deep(.el-button) {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px;
+  }
+
+  .messages-area {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .message-group {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .message {
+    margin: 6px 0;
+  }
+
+  .message-bubble {
+    max-width: 85%;
+    padding: 8px 10px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .message-time {
+    font-size: 10px;
+    margin-top: 4px;
+  }
+
+  .message-input-area {
+    padding: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .message-input-area :deep(.el-input) {
+    height: 44px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .message-input-area :deep(.el-button) {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .message-input-area .emoji-picker {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .system-message {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  .message-tooltip {
+    font-size: 11px;
+  }
+}
+
+/* ============ EXTRA SMALL DEVICES (≤360px) ============ */
+@media (max-width: 360px) {
+  .sidebar {
+    max-height: 20vh;
+    padding: 8px;
+  }
+
+  .conversation-item {
+    padding: 8px;
+  }
+
+  .conversation-name {
+    font-size: 11px;
+  }
+
+  .conversation-preview {
+    font-size: 10px;
+  }
+
+  .chat-header {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .chat-header-title {
+    font-size: 13px;
+  }
+
+  .messages-area {
+    padding: 8px;
+  }
+
+  .message-bubble {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .message-time {
+    font-size: 9px;
+  }
+
+  .message-input-area :deep(.el-input) {
+    min-width: 180px;
+    font-size: 12px;
+    height: 40px;
+  }
+
+  .message-input-area :deep(.el-button) {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 11px;
+  }
+
+  .system-message {
+    font-size: 10px;
+  }
+
+  .search-bar :deep(.el-input) {
+    height: 40px;
+    font-size: 12px;
+  }
 }
 </style>
