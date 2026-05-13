@@ -215,6 +215,6 @@ const openLogin = () => {
     window.setTimeout(() => {
         showLogin.value = true
         isFadingOut.value = false
-    }, 800)
+    }, 250)
 }
 </script>

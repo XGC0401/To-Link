@@ -8,7 +8,7 @@ const createAxiosInstance = () => {
   const baseURL = rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl}/api`
   return axios.create({
     baseURL,
-    timeout: 60000
+    timeout: 15000
   })
 }
 

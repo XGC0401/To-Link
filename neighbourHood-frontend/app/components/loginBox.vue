@@ -260,7 +260,7 @@ import { navigateTo } from '#app'
 import type { FormInstance } from 'element-plus'
 import type { loginParams, registerParams } from '../api/types/common'
 import { useI18n } from 'vue-i18n'
-import { getUser, login, register } from '~/api/auth'
+import { login, register } from '~/api/auth'
 import { ArrowDown, Moon, Sunny, View, TurnOff } from '@element-plus/icons-vue'
 import { Storage } from '~/utils/storage'
 import { ElMessage } from 'element-plus'
@@ -530,7 +530,6 @@ const handleLogin = async () => {
         localStorage.setItem(scopedProfileKey, JSON.stringify(activeProfile))
       }
 
-      getUser()
       await navigateTo('/home')
     } else if (error) {
       showError.value = true

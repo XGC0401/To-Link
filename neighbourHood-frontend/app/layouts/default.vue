@@ -37,7 +37,7 @@
               @command="handleMoreMenuCommand"
             >
               <span class="top-nav-more-dots" :class="{ 'top-nav-active': isMoreMenuActive }">
-                <span class="top-nav-more-icon" aria-hidden="true">...</span>
+                <el-icon class="top-nav-more-icon" aria-hidden="true"><Plus /></el-icon>
                 <span class="top-nav-more-label">{{ t('topNavMore') }}</span>
               </span>
               <template #dropdown>
@@ -70,7 +70,7 @@
                 <span>{{ t(item.labelKey) }}</span>
               </el-button>
               <span class="top-nav-more-dots">
-                <span class="top-nav-more-icon">...</span>
+                <el-icon class="top-nav-more-icon"><Plus /></el-icon>
                 <span class="top-nav-more-label">{{ t('topNavMore') }}</span>
               </span>
             </div>
@@ -2172,13 +2172,10 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .top-nav-more-dots {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
   color: #4b5563;
   cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
@@ -2187,15 +2184,11 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .top-nav-more-icon {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  line-height: 1;
+  font-size: 16px;
 }
 
 .top-nav-more-label {
-  font-size: 13px;
-  font-weight: 600;
+  font: inherit;
 }
 
 .top-nav-more-dots:hover {
@@ -2534,7 +2527,7 @@ const handleEmergencyCommand = (command: string) => {
 @media (max-width: 1024px) {
   .header-left {
     width: auto;
-    flex: 0 0 auto;
+    flex: 1 1 auto;
     min-width: 0;
   }
 
@@ -2543,8 +2536,9 @@ const handleEmergencyCommand = (command: string) => {
   }
 
   .top-nav {
-    flex: 0 1 auto;
-    max-width: 260px;
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
   }
 
   .header-right {
