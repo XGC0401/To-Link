@@ -262,7 +262,7 @@
             class="mobile-nav-action-btn"
             @click="handleLanguageToggle"
           >
-            <el-icon><Language /></el-icon>
+            <el-icon><Setting /></el-icon>
             {{ locale === 'en' ? '中文' : 'English' }}
           </el-button>
           <el-button
@@ -271,7 +271,7 @@
             type="danger"
             @click="handleLogout; mobileMenuOpen = false"
           >
-            <el-icon><SwitchButton /></el-icon>
+            <el-icon><Close /></el-icon>
             {{ $t('logout') }}
           </el-button>
         </div>
@@ -399,8 +399,7 @@ import {
   Stamp,
   Menu,
   Close,
-  Language,
-  SwitchButton
+  Setting
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
