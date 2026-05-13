@@ -1024,6 +1024,32 @@ const deleteAllPostsFromSecret = () => {
   border-radius: 10px !important;
 }
 
+.settings-form :deep(.el-switch__label) {
+  color: var(--tl-text-muted) !important;
+  font-weight: 600;
+}
+
+.settings-form :deep(.el-switch__label.is-active) {
+  color: var(--el-color-primary) !important;
+}
+
+.settings-form :deep(.el-radio-button__inner) {
+  color: var(--tl-text) !important;
+  font-weight: 600;
+}
+
+.settings-form :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  color: #ffffff !important;
+  background: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+  box-shadow: none !important;
+}
+
+.notification-settings :deep(.el-switch__label) {
+  color: var(--tl-text) !important;
+  font-weight: 600;
+}
+
 .form-actions :deep(.el-button) {
   text-transform: none !important;
   letter-spacing: 0 !important;
@@ -1044,6 +1070,14 @@ const deleteAllPostsFromSecret = () => {
 :global(.dark) .settings-form :deep(.el-radio-button__inner) {
   background: var(--tl-bg) !important;
   box-shadow: 0 0 0 1px var(--tl-border) inset !important;
+}
+
+:global(.dark) .settings-form :deep(.el-switch__label) {
+  color: var(--theme-text-muted) !important;
+}
+
+:global(.dark) .settings-form :deep(.el-switch__label.is-active) {
+  color: var(--el-color-primary) !important;
 }
 
 :global(.dark) .settings-tabs :deep(.el-tabs__item.is-active) {

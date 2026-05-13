@@ -1144,6 +1144,16 @@ html.dark .tabs-container .el-tabs__item.is-top.is-active {
   border-radius: 8px;
 }
 
+/* Keep top tab labels and hit area visually centered in all themes. */
+.el-tabs__item,
+.el-tabs__item.is-top {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  text-align: center;
+}
+
 /* Dropdown/select item state fix: prevent white text from sticking after hover-out. */
 html.dark .el-dropdown-menu__item,
 html.dark .el-select-dropdown__item {

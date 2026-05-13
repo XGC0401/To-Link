@@ -210,15 +210,15 @@
 }
 
 /* Cover page is always light — exempt from dark mode */
-:global(html.dark) .cover-content,
-:global(html.dark) .cover-card {
+:global(html.dark) body #__nuxt #app .cover-content,
+:global(html.dark) body #__nuxt #app .cover-card {
     color: #fff !important;
     background: linear-gradient(150deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08)) !important;
     border-color: rgba(255, 255, 255, 0.28) !important;
 }
-:global(html.dark) .cover-content h1,
-:global(html.dark) .cover-content p,
-:global(html.dark) .cover-content span {
+:global(html.dark) body #__nuxt #app .cover-content h1,
+:global(html.dark) body #__nuxt #app .cover-content p,
+:global(html.dark) body #__nuxt #app .cover-content span {
     color: #fff !important;
 }
 </style>

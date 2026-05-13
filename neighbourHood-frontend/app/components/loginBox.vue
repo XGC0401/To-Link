@@ -1,11 +1,7 @@
 <template>
   <div class="login-container" :class="{ 'dark-mode': isDarkMode }">
     <div class="brand-side">
-      <div class="brand-content">
-        <img class="brand-logo" src="/to-link-logo.svg" alt="To-Link logo" />
-        <h1 class="brand-title">{{ t('brandTitle') }}</h1>
-        <p class="brand-description">{{ t('brandDescription') }}</p>
-      </div>
+      <img class="brand-logo" src="/to-link-logo.svg" alt="To-Link logo" />
     </div>
 
     <div class="form-side">
@@ -958,28 +954,13 @@ onMounted(() => {
   z-index: 0;
 }
 
-.brand-content {
-  text-align: left;
-  color: white;
-  z-index: 1;
-  max-width: 460px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  min-height: auto;
-  padding: clamp(120px, 18vh, 220px) 22px 22px;
-  border-radius: 20px;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0.04));
-  backdrop-filter: blur(2px);
-}
-
 .brand-logo {
+  position: relative;
+  z-index: 1;
   width: clamp(170px, 25vw, 250px);
   max-width: 100%;
   height: auto;
-  margin: 0 0 14px 0;
+  margin: 0;
   display: block;
   filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.24));
 }
@@ -1033,16 +1014,9 @@ onMounted(() => {
   background: linear-gradient(140deg, #3b1708 0%, #7c2d12 40%, #b45309 68%, #f06500 100%);
 }
 
-/* brand-side and brand-content always stay original — exempt from dark mode */
-:global(html.dark) .brand-side {
+/* brand-side always stays original — exempt from dark mode */
+:global(html.dark) body #__nuxt #app .brand-side {
   background: linear-gradient(135deg, #7c2d12 0%, #c2410c 36%, #ff6f00 64%, #f06500 100%) !important;
-}
-:global(html.dark) .brand-content {
-  color: white !important;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0.04)) !important;
-}
-:global(html.dark) .brand-content * {
-  color: white !important;
 }
 
 .theme-switcher-left {
@@ -1191,7 +1165,10 @@ onMounted(() => {
 }
 
 .tab-button.active {
-  color: #1a2238;
+  color: #0f172a;
+  background: color-mix(in srgb, #ff6f00 18%, #ffffff);
+  border-radius: 10px 10px 0 0;
+  font-weight: 700;
 }
 
 .tab-button.active::after {
@@ -1209,7 +1186,8 @@ onMounted(() => {
 }
 
 .login-container.dark-mode .tab-button.active {
-  color: #edf2ff;
+  color: #f8fbff;
+  background: color-mix(in srgb, #ff9f52 16%, transparent);
 }
 
 .form-wrapper {
@@ -1294,9 +1272,13 @@ onMounted(() => {
 
 .login-container :deep(.el-input__inner) {
   background: transparent !important;
-  color: #1c2740;
+  color: #0f1b33 !important;
   font-size: 15px;
   font-weight: 500;
+}
+
+.login-container :deep(.el-input__inner::placeholder) {
+  color: #5f6d88 !important;
 }
 
 .login-container.dark-mode :deep(.el-input__wrapper) {
@@ -1656,16 +1638,8 @@ onMounted(() => {
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   }
 
-  .brand-content {
-    max-width: 560px;
-    text-align: center;
-    padding: 78px 16px 16px;
-    align-items: center;
-  }
-
-  .brand-description {
-    margin-left: auto;
-    margin-right: auto;
+  .brand-logo {
+    width: clamp(170px, 34vw, 260px);
   }
 
   .form-side {
@@ -1684,8 +1658,8 @@ onMounted(() => {
     min-height: 70vh;
   }
 
-  .brand-content {
-    padding-top: 70px;
+  .brand-logo {
+    width: clamp(170px, 40vw, 240px);
   }
 
   .theme-switcher-left {

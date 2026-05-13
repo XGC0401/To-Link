@@ -1033,7 +1033,12 @@ const handleCancel = () => {
 }
 
 .notification-settings :deep(.el-switch__label) {
-  color: #333;
+  color: var(--tl-text) !important;
+  font-weight: 600;
+}
+
+.notification-settings :deep(.el-switch__label.is-active) {
+  color: var(--el-color-primary) !important;
 }
 
 .form-actions {

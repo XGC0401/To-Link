@@ -1186,45 +1186,59 @@ const createGroupConversation = () => {
 }
 
 .conversations-panel {
-  width: 360px;
-  border-right: 1px solid rgba(129, 140, 248, 0.2);
+  width: 320px;
+  border-right: 1px solid var(--tl-border);
   display: flex;
   flex-direction: column;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(243, 247, 255, 0.92));
+  background: var(--tl-surface);
 }
 
 .search-bar {
   padding: 16px;
-  border-bottom: 1px solid rgba(129, 140, 248, 0.18);
+  border-bottom: 1px solid var(--tl-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .search-bar :deep(.el-input__wrapper) {
   border-radius: 12px;
-  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.2) inset, 0 8px 16px rgba(67, 80, 154, 0.1);
+  box-shadow: 0 0 0 1px var(--tl-border) inset;
+}
+
+.search-actions :deep(.el-button) {
+  width: 100%;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 700;
 }
 
 .conversations-list {
   flex: 1;
   overflow-y: auto;
+  padding: 10px;
 }
 
 .conversation-item {
   display: flex;
   align-items: center;
-  padding: 13px 16px;
-  border-bottom: 1px solid rgba(129, 140, 248, 0.14);
+  padding: 9px 10px;
+  border: 1px solid var(--tl-border);
+  border-radius: 10px;
+  margin-bottom: 8px;
   cursor: pointer;
-  transition: background-color 0.25s, transform 0.25s;
+  transition: background-color 0.25s, border-color 0.25s;
 }
 
 .conversation-item:hover {
-  background-color: rgba(99, 102, 241, 0.12);
-  transform: translateX(2px);
+  background: color-mix(in srgb, var(--el-color-primary) 7%, var(--tl-surface));
+  border-color: var(--el-color-primary);
 }
 
 .conversation-item.active {
-  background-color: rgba(99, 102, 241, 0.2);
-  box-shadow: inset 3px 0 0 rgba(79, 70, 229, 0.7);
+  background: color-mix(in srgb, var(--el-color-primary) 12%, var(--tl-surface));
+  border-color: var(--el-color-primary);
+  box-shadow: none;
 }
 
 .conversation-info {
@@ -1236,30 +1250,30 @@ const createGroupConversation = () => {
 .conversation-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   margin-bottom: 4px;
 }
 
 .conversation-name {
   margin: 0;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1.3;
-  color: #1e2952;
+  color: var(--tl-text);
 }
 
 .conversation-time {
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.3;
   white-space: nowrap;
-  color: #6f78a8;
+  color: var(--tl-text-muted);
 }
 
 .conversation-preview {
   margin: 0;
-  font-size: 17px;
-  color: #5d678f;
+  font-size: 14px;
+  color: var(--tl-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
