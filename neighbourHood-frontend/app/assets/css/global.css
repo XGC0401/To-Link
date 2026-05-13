@@ -786,3 +786,163 @@ html.dark body #__nuxt #app .file-download-btn {
   color: #ffffff !important;
 }
 
+/* ============ FORCE DARK COVERAGE (ALL PAGES/CONTAINERS/BUTTONS) ============ */
+html.dark body #__nuxt #app,
+html.dark body #__nuxt #app .el-container,
+html.dark body #__nuxt #app .el-main,
+html.dark body #__nuxt #app .el-header,
+html.dark body #__nuxt #app .el-footer,
+html.dark body #__nuxt #app main,
+html.dark body #__nuxt #app section,
+html.dark body #__nuxt #app article,
+html.dark body #__nuxt #app aside,
+html.dark body #__nuxt #app nav,
+html.dark body #__nuxt #app form,
+html.dark body #__nuxt #app [class*='page'],
+html.dark body #__nuxt #app [class*='shell'],
+html.dark body #__nuxt #app [class*='container'],
+html.dark body #__nuxt #app [class*='wrapper'],
+html.dark body #__nuxt #app [class*='panel'],
+html.dark body #__nuxt #app [class*='card'],
+html.dark body #__nuxt #app [class*='section'],
+html.dark body #__nuxt #app [class*='content'],
+html.dark body #__nuxt #app [class*='toolbar'],
+html.dark body #__nuxt #app [class*='sidebar'],
+html.dark body #__nuxt #app [class*='header'],
+html.dark body #__nuxt #app [class*='footer'],
+html.dark body #__nuxt #app [class*='list'],
+html.dark body #__nuxt #app [class*='item'],
+html.dark body #__nuxt #app [class*='box'],
+html.dark body #__nuxt #app [class*='dialog'],
+html.dark body #__nuxt #app [class*='modal'] {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html.dark body #__nuxt #app button,
+html.dark body #__nuxt #app .el-button,
+html.dark body #__nuxt #app [class*='btn'],
+html.dark body #__nuxt #app [class*='button'] {
+  background: var(--theme-surface-soft) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+  box-shadow: none !important;
+}
+
+html.dark body #__nuxt #app button:hover,
+html.dark body #__nuxt #app .el-button:hover,
+html.dark body #__nuxt #app [class*='btn']:hover,
+html.dark body #__nuxt #app [class*='button']:hover {
+  background: var(--theme-hover) !important;
+  color: var(--theme-text) !important;
+  border-color: #475569 !important;
+}
+
+html.dark body #__nuxt #app button:active,
+html.dark body #__nuxt #app .el-button:active,
+html.dark body #__nuxt #app [class*='btn']:active,
+html.dark body #__nuxt #app [class*='button']:active {
+  background: #1b2940 !important;
+  color: var(--theme-text) !important;
+}
+
+html.dark body #__nuxt #app .el-button--primary,
+html.dark body #__nuxt #app .el-button--success,
+html.dark body #__nuxt #app .el-button--warning,
+html.dark body #__nuxt #app .el-button--danger,
+html.dark body #__nuxt #app .message.sent .message-bubble,
+html.dark body #__nuxt #app .file-download-btn {
+  color: #ffffff !important;
+}
+
+html.dark body #__nuxt #app input,
+html.dark body #__nuxt #app textarea,
+html.dark body #__nuxt #app select,
+html.dark body #__nuxt #app .el-input__inner,
+html.dark body #__nuxt #app .el-textarea__inner,
+html.dark body #__nuxt #app .el-select__wrapper {
+  background: var(--theme-input) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html.dark body #__nuxt #app input::placeholder,
+html.dark body #__nuxt #app textarea::placeholder,
+html.dark body #__nuxt #app .el-input__inner::placeholder,
+html.dark body #__nuxt #app .el-textarea__inner::placeholder {
+  color: var(--theme-text-muted) !important;
+}
+
+/* Explicit overrides for remaining light selectors from page/component CSS */
+html.dark body #__nuxt #app .top-nav-button,
+html.dark body #__nuxt #app .top-nav-more-dots,
+html.dark body #__nuxt #app .top-nav-icon-button,
+html.dark body #__nuxt #app .top-nav-icon-active,
+html.dark body #__nuxt #app .top-nav-active,
+html.dark body #__nuxt #app .app-sidebar,
+html.dark body #__nuxt #app .sidebar-menu,
+html.dark body #__nuxt #app .sidebar-menu .el-menu,
+html.dark body #__nuxt #app .sidebar-menu .el-menu-item,
+html.dark body #__nuxt #app .create-post-btn,
+html.dark body #__nuxt #app .hamburger-menu-btn,
+html.dark body #__nuxt #app .mobile-nav-button,
+html.dark body #__nuxt #app .mobile-nav-action-btn,
+html.dark body #__nuxt #app .home-header,
+html.dark body #__nuxt #app .home-sidebar,
+html.dark body #__nuxt #app .cc-panel,
+html.dark body #__nuxt #app .cc-search-input,
+html.dark body #__nuxt #app .map-section,
+html.dark body #__nuxt #app .history-panel,
+html.dark body #__nuxt #app .font-size-slider-container,
+html.dark body #__nuxt #app .sample-text,
+html.dark body #__nuxt #app .avatar-uploader-wrapper,
+html.dark body #__nuxt #app .day-schedule,
+html.dark body #__nuxt #app .address-item,
+html.dark body #__nuxt #app .location-link,
+html.dark body #__nuxt #app .location-header,
+html.dark body #__nuxt #app .document-icon {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html.dark body #__nuxt #app .top-nav-button:hover,
+html.dark body #__nuxt #app .top-nav-more-dots:hover,
+html.dark body #__nuxt #app .sidebar-menu .el-menu-item:hover,
+html.dark body #__nuxt #app .mobile-nav-button:hover,
+html.dark body #__nuxt #app .mobile-nav-action-btn:hover,
+html.dark body #__nuxt #app .create-post-btn:hover,
+html.dark body #__nuxt #app .create-post-btn:focus {
+  background: var(--theme-hover) !important;
+  color: var(--theme-text) !important;
+  border-color: #475569 !important;
+}
+
+html.dark body #__nuxt #app .sidebar-menu .el-menu-item.is-active,
+html.dark body #__nuxt #app .sidebar-menu .el-menu-item.menu-active,
+html.dark body #__nuxt #app .top-nav-active,
+html.dark body #__nuxt #app .top-nav-icon-active,
+html.dark body #__nuxt #app .mobile-nav-button.mobile-nav-active {
+  background: #1b2940 !important;
+  color: #cbd5e1 !important;
+  border-color: #475569 !important;
+}
+
+html.dark body #__nuxt #app .cc-search-input,
+html.dark body #__nuxt #app .el-time-select,
+html.dark body #__nuxt #app .el-input-number .el-input__inner,
+html.dark body #__nuxt #app .el-radio-button__inner,
+html.dark body #__nuxt #app .el-select__wrapper,
+html.dark body #__nuxt #app .el-input__wrapper,
+html.dark body #__nuxt #app .el-textarea__inner {
+  background: var(--theme-input) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html.dark body #__nuxt #app .el-slider__button {
+  background: var(--theme-surface-soft) !important;
+  border-color: var(--theme-border) !important;
+}
+
