@@ -11,6 +11,7 @@
 
                 <div class="cover-content">
                     <div class="cover-card">
+                        <img class="cover-logo" src="/to-link-logo.svg" alt="To-Link logo" />
                         <div class="brand-mark">🔗</div>
                         <h1>{{ t('appName') }}</h1>
 
@@ -69,9 +70,9 @@
     align-items: center;
     justify-content: center;
     background:
-        radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.18), transparent 38%),
-        radial-gradient(circle at 82% 78%, rgba(240, 101, 0, 0.2), transparent 42%),
-        linear-gradient(145deg, rgba(15, 23, 42, 0.42), rgba(15, 23, 42, 0.62));
+        radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.24), transparent 40%),
+        radial-gradient(circle at 82% 78%, rgba(240, 101, 0, 0.24), transparent 44%),
+        linear-gradient(145deg, rgba(15, 23, 42, 0.28), rgba(15, 23, 42, 0.5));
     overflow: hidden;
 }
 
@@ -116,6 +117,14 @@
         0 28px 56px rgba(2, 6, 23, 0.45),
         inset 0 1px 0 rgba(255, 255, 255, 0.45);
     backdrop-filter: blur(10px);
+}
+
+.cover-logo {
+    width: clamp(170px, 34vw, 240px);
+    height: auto;
+    margin: 0 auto 10px;
+    display: block;
+    filter: drop-shadow(0 8px 20px rgba(15, 23, 42, 0.24));
 }
 
 .brand-mark {

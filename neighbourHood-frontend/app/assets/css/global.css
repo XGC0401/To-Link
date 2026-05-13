@@ -109,7 +109,7 @@ html.dark .el-descriptions__label.el-descriptions__cell.is-bordered-label {
 
 html.dark .el-descriptions__content,
 html.dark .el-descriptions__content.el-descriptions__cell.is-bordered-content {
-  color: #d1d5db !important;
+  color: #e2e8f0 !important;
   background-color: #1a1a1a !important;
 }
 
@@ -139,7 +139,7 @@ html.dark .el-empty__image svg path {
 }
 
 html.dark .el-empty__description {
-  color: #9ca3af !important;
+  color: #cbd5e1 !important;
 }
 
 /* Global dark surfaces for Element Plus and common page shells/cards. */
@@ -199,7 +199,7 @@ html.dark .el-form-item__label,
 html.dark .el-tabs__item,
 html.dark .el-dropdown-menu__item,
 html.dark .el-select-dropdown__item {
-  color: #d1d5db !important;
+  color: #e2e8f0 !important;
 }
 
 html.dark .el-dropdown-menu__item:hover,
@@ -613,8 +613,8 @@ html[data-theme='dark'] {
   --theme-bg: #0f172a;
   --theme-surface: #182235;
   --theme-surface-soft: #1f2c44;
-  --theme-text: #e5e7eb;
-  --theme-text-muted: #b8c3ed;
+  --theme-text: #e7edf7;
+  --theme-text-muted: #c3cedf;
   --theme-border: #334155;
   --theme-input: #0b1220;
   --theme-hover: #24324a;
@@ -944,5 +944,135 @@ html.dark body #__nuxt #app .el-textarea__inner {
 html.dark body #__nuxt #app .el-slider__button {
   background: var(--theme-surface-soft) !important;
   border-color: var(--theme-border) !important;
+}
+
+/* Unified control styling: make input wrappers and inner fields look like one merged component. */
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner,
+.el-input-number .el-input__wrapper,
+.el-date-editor.el-input__wrapper {
+  border-radius: 10px !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
+  border: none !important;
+  min-height: 40px;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused,
+.el-textarea__inner:focus,
+.el-input-number .el-input__wrapper.is-focus,
+.el-date-editor.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1.5px var(--el-color-primary) inset !important;
+}
+
+.el-input__inner,
+.el-select__placeholder,
+.el-textarea__inner::placeholder,
+.el-input__inner::placeholder {
+  line-height: 1.35;
+}
+
+.el-input__inner {
+  background: transparent !important;
+}
+
+html.dark .el-input__wrapper,
+html.dark .el-select__wrapper,
+html.dark .el-input-number .el-input__wrapper,
+html.dark .el-date-editor.el-input__wrapper {
+  background: var(--tl-bg) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
+}
+
+html.dark .el-input__inner,
+html.dark .el-input__inner::placeholder,
+html.dark .el-textarea__inner::placeholder,
+html.dark .el-select__placeholder {
+  color: var(--tl-text-muted) !important;
+}
+
+/* Settings/posts tabs nav bar should be one consistent surface. */
+.settings-tabs .el-tabs__nav-scroll,
+.tabs-container .el-tabs__nav-scroll {
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--tl-surface);
+  box-shadow: 0 0 0 1px var(--tl-border) inset;
+}
+
+.settings-tabs .el-tabs__nav-wrap::after,
+.tabs-container .el-tabs__nav-wrap::after {
+  display: none !important;
+}
+
+html.dark .settings-tabs .el-tabs__nav-scroll,
+html.dark .tabs-container .el-tabs__nav-scroll {
+  background: var(--tl-bg) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
+}
+
+/* Dialog title readability (Backpack and shared dialogs). */
+.el-dialog__title {
+  font-weight: 700;
+  color: var(--tl-text);
+}
+
+html.dark .el-dialog__title {
+  color: var(--tl-text-strong) !important;
+}
+
+/* Balanced dark-mode readability: clearer than default, but not stark white. */
+html.dark .el-empty__description,
+html.dark .el-form-item__label,
+html.dark .post-time,
+html.dark .message-time,
+html.dark .conversation-time,
+html.dark .conversation-preview,
+html.dark .friend-status,
+html.dark .notification-item-message,
+html.dark .notification-item-time,
+html.dark [class*='hint'],
+html.dark [class*='meta'] {
+  color: var(--theme-text-muted) !important;
+}
+
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6,
+html.dark .author-name,
+html.dark .el-dialog__title,
+html.dark .notification-label {
+  color: var(--theme-text) !important;
+}
+
+/* Text polish for recent-post cards/listings. */
+.author-name {
+  color: var(--tl-text) !important;
+  font-weight: 600;
+}
+
+.post-content h4 {
+  color: var(--tl-text) !important;
+  font-weight: 650;
+}
+
+html.dark .post-content p,
+html.dark .post-time {
+  color: var(--tl-text-muted) !important;
+}
+
+/* Tag/button visual consistency. */
+.el-tag {
+  border-radius: 999px;
+}
+
+.el-button.is-plain,
+.el-button--default {
+  box-shadow: 0 0 0 1px var(--tl-border) inset;
 }
 

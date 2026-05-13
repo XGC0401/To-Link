@@ -2,6 +2,7 @@
   <div class="login-container" :class="{ 'dark-mode': isDarkMode }">
     <div class="brand-side">
       <div class="brand-content">
+        <img class="brand-logo" src="/to-link-logo.svg" alt="To-Link logo" />
         <h1 class="brand-title">{{ t('brandTitle') }}</h1>
         <p class="brand-description">{{ t('brandDescription') }}</p>
       </div>
@@ -968,7 +969,16 @@ onMounted(() => {
   justify-content: flex-start;
   align-items: flex-start;
   min-height: 100%;
-  padding-top: 380px;
+  padding-top: 300px;
+}
+
+.brand-logo {
+  width: clamp(170px, 25vw, 250px);
+  max-width: 100%;
+  height: auto;
+  margin: 0 0 14px 0;
+  display: block;
+  filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.24));
 }
 
 .brand-title {
@@ -1634,7 +1644,8 @@ onMounted(() => {
   .brand-content {
     max-width: 560px;
     text-align: center;
-    padding-top: 120px;
+    padding-top: 90px;
+    align-items: center;
   }
 
   .brand-description {

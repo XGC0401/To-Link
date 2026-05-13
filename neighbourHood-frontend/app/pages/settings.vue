@@ -547,6 +547,17 @@ const deleteAllPostsFromSecret = () => {
   margin-bottom: 18px;
 }
 
+.settings-tabs :deep(.el-tabs__nav-scroll) {
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--tl-surface);
+  box-shadow: 0 0 0 1px var(--tl-border) inset;
+}
+
+.settings-tabs :deep(.el-tabs__nav-wrap::after) {
+  display: none;
+}
+
 .settings-tabs :deep(.el-tabs__item) {
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -740,7 +751,7 @@ const deleteAllPostsFromSecret = () => {
 }
 
 .notification-settings :deep(.el-switch__label.is-active) {
-  color: #409eff !important;
+  color: var(--el-color-primary) !important;
 }
 
 /* Dark mode styles */
@@ -761,7 +772,7 @@ const deleteAllPostsFromSecret = () => {
 }
 
 :global(.dark) .notification-settings :deep(.el-switch__label.is-active) {
-  color: #409eff !important;
+  color: var(--el-color-primary) !important;
 }
 
 .form-actions {
@@ -847,7 +858,7 @@ const deleteAllPostsFromSecret = () => {
 }
 
 :global(.dark) .notification-settings :deep(.el-switch__label.is-active) {
-  color: #409eff !important;
+  color: var(--el-color-primary) !important;
 }
 
 :global(.dark) .notification-item {
@@ -1037,6 +1048,11 @@ const deleteAllPostsFromSecret = () => {
 
 :global(.dark) .settings-tabs :deep(.el-tabs__item.is-active) {
   color: #ff9f52 !important;
+}
+
+:global(.dark) .settings-tabs :deep(.el-tabs__nav-scroll) {
+  background: var(--tl-bg) !important;
+  box-shadow: 0 0 0 1px var(--tl-border) inset !important;
 }
 
 :global(.dark) .settings-tabs :deep(.el-tabs__active-bar) {

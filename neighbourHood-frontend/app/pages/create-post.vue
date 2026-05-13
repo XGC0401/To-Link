@@ -410,6 +410,26 @@ const handleCancel = () => {
   max-width: 520px;
 }
 
+.tag-input-row :deep(.el-input-group__append) {
+  border: none;
+  background: var(--tl-surface);
+  border-radius: 0 10px 10px 0;
+  box-shadow: 0 0 0 1px var(--tl-border) inset;
+}
+
+.tag-input-row :deep(.el-input-group__append .el-button) {
+  border: none !important;
+  background: transparent !important;
+  color: var(--tl-text-muted);
+  padding-inline: 12px;
+  min-height: 38px;
+  box-shadow: none !important;
+}
+
+.tag-input-row :deep(.el-input-group__append .el-button:hover) {
+  color: var(--el-color-primary);
+}
+
 .selected-tags {
   display: flex;
   gap: 8px;
@@ -424,6 +444,15 @@ const handleCancel = () => {
 :global(.dark) .post-form :deep(.el-input__wrapper) {
   background-color: #3d3d3d;
   box-shadow: 0 0 0 1px #555 inset;
+}
+
+:global(.dark) .tag-input-row :deep(.el-input-group__append) {
+  background: var(--tl-bg);
+  box-shadow: 0 0 0 1px var(--tl-border) inset;
+}
+
+:global(.dark) .tag-input-row :deep(.el-input-group__append .el-button) {
+  color: var(--tl-text-muted);
 }
 
 :global(.dark) .post-form :deep(.el-input__inner) {
