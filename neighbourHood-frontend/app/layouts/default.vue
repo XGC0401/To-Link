@@ -36,7 +36,10 @@
               trigger="click"
               @command="handleMoreMenuCommand"
             >
-              <span class="top-nav-more-dots" :class="{ 'top-nav-active': isMoreMenuActive }">...</span>
+              <span class="top-nav-more-dots" :class="{ 'top-nav-active': isMoreMenuActive }">
+                <span class="top-nav-more-icon" aria-hidden="true">...</span>
+                <span class="top-nav-more-label">{{ t('topNavMore') }}</span>
+              </span>
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item
@@ -66,7 +69,10 @@
                 </el-icon>
                 <span>{{ t(item.labelKey) }}</span>
               </el-button>
-              <span class="top-nav-more-dots">...</span>
+              <span class="top-nav-more-dots">
+                <span class="top-nav-more-icon">...</span>
+                <span class="top-nav-more-label">{{ t('topNavMore') }}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -2111,7 +2117,9 @@ const handleEmergencyCommand = (command: string) => {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
+  flex: 1 1 auto;
   gap: 6px;
+  width: 0;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -2164,16 +2172,30 @@ const handleEmergencyCommand = (command: string) => {
 }
 
 .top-nav-more-dots {
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  line-height: 1;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
   color: #4b5563;
   cursor: pointer;
   padding: 6px 8px;
   border-radius: 6px;
   transition: all 0.3s ease;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.top-nav-more-icon {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.top-nav-more-label {
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .top-nav-more-dots:hover {
@@ -2521,6 +2543,7 @@ const handleEmergencyCommand = (command: string) => {
   }
 
   .top-nav {
+    flex: 0 1 auto;
     max-width: 260px;
   }
 
