@@ -12,8 +12,10 @@
             text
             :icon="mobileMenuOpen ? Close : Menu"
             @click="mobileMenuOpen = !mobileMenuOpen"
-            :aria-label="$t('menu')"
-          />
+            :aria-label="$t('menuTitle').replace('\n', ' ')"
+          >
+            <span class="hamburger-menu-label">{{ t('menuShort') }}</span>
+          </el-button>
 
           <div class="top-nav" :class="{ 'top-nav--collapsed': shouldUseHamburgerOnly }">
             <!-- Visible nav buttons -->
@@ -221,7 +223,7 @@
     <!-- Mobile Menu Drawer (phone only) -->
     <el-drawer
       v-model="mobileMenuOpen"
-      :title="$t('menu')"
+      :title="$t('menuTitle')"
       direction="ltr"
       :size="260"
       class="mobile-nav-drawer"
@@ -450,6 +452,8 @@ const shouldShowHamburger = computed(() => {
   return viewportWidth.value <= 480 || shouldUseHamburgerOnly.value
 })
 
+const MIN_VISIBLE_WITH_MORE = 2
+
 // Calculate visible items based on actual rendered widths.
 const calculateVisibleItems = () => {
   if (typeof window === 'undefined') return
@@ -488,7 +492,8 @@ const calculateVisibleItems = () => {
   }
 
   visibleCount = Math.min(Math.max(1, visibleCount), navItems.length)
-  shouldUseHamburgerOnly.value = viewportWidth.value > 480 && visibleCount < navItems.length
+  const hasHiddenItems = visibleCount < navItems.length
+  shouldUseHamburgerOnly.value = viewportWidth.value > 480 && hasHiddenItems && visibleCount < MIN_VISIBLE_WITH_MORE
   visibleNavItems.value = navItems.slice(0, visibleCount)
   hiddenNavItems.value = navItems.slice(visibleCount)
 }
@@ -1924,8 +1929,11 @@ const handleEmergencyCommand = (command: string) => {
 .hamburger-menu-btn {
   display: none;
   margin-left: 8px;
-  width: 38px;
+  width: auto;
+  min-width: 38px;
   height: 38px;
+  padding: 0 10px;
+  gap: 6px;
   border-radius: 10px;
   border: 1px solid rgba(255, 111, 0, 0.22);
   background: #fff6f0;
@@ -1936,6 +1944,12 @@ const handleEmergencyCommand = (command: string) => {
 
 .hamburger-menu-btn--visible {
   display: inline-flex;
+}
+
+.hamburger-menu-label {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .hamburger-menu-btn:hover {
@@ -1954,6 +1968,11 @@ const handleEmergencyCommand = (command: string) => {
   border-bottom: 1px solid #f1e6db;
   color: #1f2937;
   font-weight: 700;
+}
+
+.mobile-nav-drawer :deep(.el-drawer__title) {
+  white-space: pre-line;
+  line-height: 1.2;
 }
 
 .mobile-nav-drawer :deep(.el-drawer__body) {
@@ -2131,7 +2150,7 @@ const handleEmergencyCommand = (command: string) => {
     display: inline-flex;
     min-width: 40px;
     height: 40px;
-    padding: 8px;
+    padding: 0 10px;
   }
 
   /* Adjust header layout */
