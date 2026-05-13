@@ -635,7 +635,7 @@ onUnmounted(() => {
 }
 
 /* Dark mode styles for el-descriptions */
-html.dark :deep(.el-descriptions) {
+:global(html.dark) :deep(.el-descriptions) {
   --el-descriptions-item-bordered-label-background: #262727 !important;
   --el-descriptions-item-bordered-content-background: #1a1a1a !important;
   --el-border-color: #404040 !important;
@@ -644,64 +644,64 @@ html.dark :deep(.el-descriptions) {
   --el-bg-color: #1a1a1a !important;
 }
 
-html.dark :deep(.el-descriptions__label),
-html.dark :deep(.el-descriptions__label.el-descriptions__cell.is-bordered-label) {
+:global(html.dark) :deep(.el-descriptions__label),
+:global(html.dark) :deep(.el-descriptions__label.el-descriptions__cell.is-bordered-label) {
   color: #e5e7eb !important;
   background-color: #262727 !important;
 }
 
-html.dark :deep(.el-descriptions__content),
-html.dark :deep(.el-descriptions__content.el-descriptions__cell.is-bordered-content) {
+:global(html.dark) :deep(.el-descriptions__content),
+:global(html.dark) :deep(.el-descriptions__content.el-descriptions__cell.is-bordered-content) {
   color: #d1d5db !important;
   background-color: #1a1a1a !important;
 }
 
-html.dark :deep(.el-descriptions__cell) {
+:global(html.dark) :deep(.el-descriptions__cell) {
   border-color: #404040 !important;
 }
 
-html.dark :deep(.el-descriptions .el-descriptions__body) {
+:global(html.dark) :deep(.el-descriptions .el-descriptions__body) {
   background-color: transparent !important;
 }
 
-html.dark :deep(.el-descriptions tr) {
+:global(html.dark) :deep(.el-descriptions tr) {
   background-color: transparent !important;
 }
 
-html.dark :deep(.el-descriptions__table) {
+:global(html.dark) :deep(.el-descriptions__table) {
   background-color: transparent !important;
 }
 
 /* Dark mode for empty state */
-html.dark :deep(.el-empty__image svg) {
+:global(html.dark) :deep(.el-empty__image svg) {
   fill: #4b5563 !important;
 }
 
-html.dark :deep(.el-empty__image svg path) {
+:global(html.dark) :deep(.el-empty__image svg path) {
   fill: #4b5563 !important;
 }
 
-html.dark :deep(.el-empty__description) {
+:global(html.dark) :deep(.el-empty__description) {
   color: #9ca3af !important;
 }
 
-html.dark .map-section {
+:global(html.dark) .map-section {
   background: #1f2937;
 }
 
-html.dark .map-loading {
+:global(html.dark) .map-loading {
   background: rgba(15, 23, 42, 0.92);
 }
 
-html.dark .map-loading p,
-html.dark .shops-toolbar h2,
-html.dark .shop-announcements h3,
-html.dark .announcement-card h4 {
+:global(html.dark) .map-loading p,
+:global(html.dark) .shops-toolbar h2,
+:global(html.dark) .shop-announcements h3,
+:global(html.dark) .announcement-card h4 {
   color: #e5e7eb;
 }
 
-html.dark .announcement-card p,
-html.dark .announcement-date {
+:global(html.dark) .announcement-card p,
+:global(html.dark) .announcement-date {
   color: #9ca3af;
 }
 </style>
@@ -800,21 +800,21 @@ html.dark .announcement-date {
   pointer-events: none;
 }
 
-html.dark .shop-marker-icon {
+:global(html.dark) .shop-marker-icon {
   background: #1f2937;
   border-color: #475569;
 }
 
-html.dark .shop-marker-icon.has-announcements {
+:global(html.dark) .shop-marker-icon.has-announcements {
   background: #1f3b34;
   border-color: #34d399;
 }
 
-html.dark .announcement-badge {
+:global(html.dark) .announcement-badge {
   border-color: #111827;
 }
 
-html.dark .shop-marker-label {
+:global(html.dark) .shop-marker-label {
   background: #1f2937;
   color: #e5e7eb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);

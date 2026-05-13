@@ -592,134 +592,134 @@ const handleCancel = () => {
 
 <style>
 /* Global dark mode styles for date picker popper (teleported to body) */
-html.dark .el-picker-panel {
+:global(html.dark) .el-picker-panel {
   background-color: #2d2d2d !important;
   border-color: #555 !important;
 }
 
-html.dark .el-picker-panel__body {
+:global(html.dark) .el-picker-panel__body {
   background-color: #2d2d2d !important;
 }
 
-html.dark .el-date-picker__header {
+:global(html.dark) .el-date-picker__header {
   background-color: #2d2d2d !important;
   border-bottom-color: #555 !important;
 }
 
-html.dark .el-date-picker__header-label,
-html.dark .el-date-table th {
+:global(html.dark) .el-date-picker__header-label,
+:global(html.dark) .el-date-table th {
   color: #e5e5e5 !important;
 }
 
-html.dark .el-picker-panel__icon-btn {
+:global(html.dark) .el-picker-panel__icon-btn {
   color: #e5e5e5 !important;
 }
 
-html.dark .el-picker-panel__icon-btn:hover {
+:global(html.dark) .el-picker-panel__icon-btn:hover {
   color: var(--el-color-primary) !important;
 }
 
 /* All date cells - current month */
-html.dark .el-date-table td.available {
+:global(html.dark) .el-date-table td.available {
   color: #e5e5e5 !important;
 }
 
-html.dark .el-date-table td.available .el-date-table-cell__text {
+:global(html.dark) .el-date-table td.available .el-date-table-cell__text {
   color: #e5e5e5 !important;
   background-color: transparent !important;
 }
 
-html.dark .el-date-table td.available:hover .el-date-table-cell__text {
+:global(html.dark) .el-date-table td.available:hover .el-date-table-cell__text {
   background-color: #3d3d3d !important;
   color: #e5e5e5 !important;
 }
 
 /* Previous and next month dates */
-html.dark .el-date-table td.prev-month,
-html.dark .el-date-table td.next-month {
+:global(html.dark) .el-date-table td.prev-month,
+:global(html.dark) .el-date-table td.next-month {
   color: #999 !important;
 }
 
-html.dark .el-date-table td.prev-month .el-date-table-cell__text,
-html.dark .el-date-table td.next-month .el-date-table-cell__text {
+:global(html.dark) .el-date-table td.prev-month .el-date-table-cell__text,
+:global(html.dark) .el-date-table td.next-month .el-date-table-cell__text {
   color: #999 !important;
 }
 
 /* Disabled dates */
-html.dark .el-date-table td.disabled {
+:global(html.dark) .el-date-table td.disabled {
   background-color: transparent !important;
 }
 
-html.dark .el-date-table td.disabled .el-date-table-cell__text {
+:global(html.dark) .el-date-table td.disabled .el-date-table-cell__text {
   color: #555 !important;
   background-color: transparent !important;
 }
 
 /* Today's date */
-html.dark .el-date-table td.today .el-date-table-cell__text {
+:global(html.dark) .el-date-table td.today .el-date-table-cell__text {
   color: var(--el-color-primary) !important;
   font-weight: bold !important;
 }
 
 /* Selected dates */
-html.dark .el-date-table td.current:not(.disabled) .el-date-table-cell__text {
+:global(html.dark) .el-date-table td.current:not(.disabled) .el-date-table-cell__text {
   background-color: var(--el-color-primary) !important;
   color: #fff !important;
 }
 
 /* Date range selection */
-html.dark .el-date-table td.in-range .el-date-table-cell__text {
+:global(html.dark) .el-date-table td.in-range .el-date-table-cell__text {
   background-color: #3d3d3d !important;
   color: #e5e5e5 !important;
 }
 
-html.dark .el-date-table td.start-date .el-date-table-cell__text,
-html.dark .el-date-table td.end-date .el-date-table-cell__text {
+:global(html.dark) .el-date-table td.start-date .el-date-table-cell__text,
+:global(html.dark) .el-date-table td.end-date .el-date-table-cell__text {
   background-color: var(--el-color-primary) !important;
   color: #fff !important;
 }
 
 /* Footer buttons */
-html.dark .el-picker-panel__footer {
+:global(html.dark) .el-picker-panel__footer {
   background-color: #2d2d2d !important;
   border-top-color: #555 !important;
 }
 
-html.dark .el-picker-panel__footer .el-button {
+:global(html.dark) .el-picker-panel__footer .el-button {
   background-color: #3d3d3d !important;
   border-color: #555 !important;
   color: #e5e5e5 !important;
 }
 
-html.dark .el-picker-panel__footer .el-button:hover {
+:global(html.dark) .el-picker-panel__footer .el-button:hover {
   background-color: #4d4d4d !important;
 }
 
 /* Time panel */
-html.dark .el-time-panel {
+:global(html.dark) .el-time-panel {
   background-color: #2d2d2d !important;
   border-color: #555 !important;
 }
 
-html.dark .el-time-spinner__item {
+:global(html.dark) .el-time-spinner__item {
   color: #e5e5e5 !important;
 }
 
-html.dark .el-time-spinner__item:hover {
+:global(html.dark) .el-time-spinner__item:hover {
   background-color: #3d3d3d !important;
 }
 
 /* Date range picker */
-html.dark .el-date-range-picker__content {
+:global(html.dark) .el-date-range-picker__content {
   background-color: #2d2d2d !important;
 }
 
-html.dark .el-date-range-picker__time-header {
+:global(html.dark) .el-date-range-picker__time-header {
   border-color: #555 !important;
   color: #e5e5e5 !important;
 }
 
-html.dark .el-date-range-picker .el-picker-panel__content {
+:global(html.dark) .el-date-range-picker .el-picker-panel__content {
   background-color: #2d2d2d !important;
 }
 

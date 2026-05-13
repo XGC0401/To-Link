@@ -691,7 +691,7 @@ onUnmounted(() => {
 }
 
 /* Dark mode styles for el-descriptions */
-html.dark :deep(.el-descriptions) {
+:global(html.dark) :deep(.el-descriptions) {
   --el-descriptions-item-bordered-label-background: #262727 !important;
   --el-descriptions-item-bordered-content-background: #1a1a1a !important;
   --el-border-color: #404040 !important;
@@ -700,64 +700,64 @@ html.dark :deep(.el-descriptions) {
   --el-bg-color: #1a1a1a !important;
 }
 
-html.dark :deep(.el-descriptions__label),
-html.dark :deep(.el-descriptions__label.el-descriptions__cell.is-bordered-label) {
+:global(html.dark) :deep(.el-descriptions__label),
+:global(html.dark) :deep(.el-descriptions__label.el-descriptions__cell.is-bordered-label) {
   color: #e5e7eb !important;
   background-color: #262727 !important;
 }
 
-html.dark :deep(.el-descriptions__content),
-html.dark :deep(.el-descriptions__content.el-descriptions__cell.is-bordered-content) {
+:global(html.dark) :deep(.el-descriptions__content),
+:global(html.dark) :deep(.el-descriptions__content.el-descriptions__cell.is-bordered-content) {
   color: #d1d5db !important;
   background-color: #1a1a1a !important;
 }
 
-html.dark :deep(.el-descriptions__cell) {
+:global(html.dark) :deep(.el-descriptions__cell) {
   border-color: #404040 !important;
 }
 
-html.dark :deep(.el-descriptions .el-descriptions__body) {
+:global(html.dark) :deep(.el-descriptions .el-descriptions__body) {
   background-color: transparent !important;
 }
 
-html.dark :deep(.el-descriptions tr) {
+:global(html.dark) :deep(.el-descriptions tr) {
   background-color: transparent !important;
 }
 
-html.dark :deep(.el-descriptions__table) {
+:global(html.dark) :deep(.el-descriptions__table) {
   background-color: transparent !important;
 }
 
 /* Dark mode for empty state */
-html.dark :deep(.el-empty__image svg) {
+:global(html.dark) :deep(.el-empty__image svg) {
   fill: #4b5563 !important;
 }
 
-html.dark :deep(.el-empty__image svg path) {
+:global(html.dark) :deep(.el-empty__image svg path) {
   fill: #4b5563 !important;
 }
 
-html.dark :deep(.el-empty__description) {
+:global(html.dark) :deep(.el-empty__description) {
   color: #9ca3af !important;
 }
 
-html.dark .map-section {
+:global(html.dark) .map-section {
   background: #1f2937;
 }
 
-html.dark .map-loading {
+:global(html.dark) .map-loading {
   background: rgba(15, 23, 42, 0.92);
 }
 
-html.dark .map-loading p,
-html.dark .community-toolbar h2,
-html.dark .community-events h3,
-html.dark .event-card h4 {
+:global(html.dark) .map-loading p,
+:global(html.dark) .community-toolbar h2,
+:global(html.dark) .community-events h3,
+:global(html.dark) .event-card h4 {
   color: #e5e7eb;
 }
 
-html.dark .event-card p,
-html.dark .event-date {
+:global(html.dark) .event-card p,
+:global(html.dark) .event-date {
   color: #9ca3af;
 }
 </style>
@@ -856,21 +856,21 @@ html.dark .event-date {
   pointer-events: none;
 }
 
-html.dark .community-marker-icon {
+:global(html.dark) .community-marker-icon {
   background: #1f2937;
   border-color: #475569;
 }
 
-html.dark .community-marker-icon.has-events {
+:global(html.dark) .community-marker-icon.has-events {
   background: #243247;
   border-color: #7c8bff;
 }
 
-html.dark .event-badge {
+:global(html.dark) .event-badge {
   border-color: #111827;
 }
 
-html.dark .community-marker-label {
+:global(html.dark) .community-marker-label {
   background: #1f2937;
   color: #e5e7eb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);

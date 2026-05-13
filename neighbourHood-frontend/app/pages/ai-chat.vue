@@ -899,81 +899,81 @@ const sendMessage = async () => {
 }
 
 /* Dark mode styles */
-html.dark .chat-container {
+:global(html.dark) .chat-container {
   background-color: #1a1a1a;
 }
 
-html.dark .chat-panel {
+:global(html.dark) .chat-panel {
   background-color: #1a1a1a;
 }
 
-html.dark .history-panel {
+:global(html.dark) .history-panel {
   background-color: #1a1a1a;
   border-right-color: #404040;
 }
 
-html.dark .history-header {
+:global(html.dark) .history-header {
   border-bottom-color: #404040;
 }
 
-html.dark .history-header h4 {
+:global(html.dark) .history-header h4 {
   color: #e5e7eb;
 }
 
-html.dark .history-item {
+:global(html.dark) .history-item {
   border-color: #404040;
 }
 
-html.dark .history-item-title {
+:global(html.dark) .history-item-title {
   color: #e5e7eb;
 }
 
-html.dark .history-item-time,
-html.dark .history-empty {
+:global(html.dark) .history-item-time,
+:global(html.dark) .history-empty {
   color: #9ca3af;
 }
 
-html.dark .history-item.active {
+:global(html.dark) .history-item.active {
   background: color-mix(in srgb, var(--el-color-primary) 20%, #1a1a1a);
 }
 
-html.dark .chat-header {
+:global(html.dark) .chat-header {
   background-color: #1a1a1a;
   border-bottom-color: #404040;
 }
 
-html.dark .chat-header-info h3 {
+:global(html.dark) .chat-header-info h3 {
   color: #e5e7eb;
 }
 
-html.dark .status {
+:global(html.dark) .status {
   color: #9ca3af;
 }
 
-html.dark .welcome-text {
+:global(html.dark) .welcome-text {
   color: #9ca3af;
 }
 
-html.dark .example-questions h4 {
+:global(html.dark) .example-questions h4 {
   color: #e5e7eb;
 }
 
-html.dark .example-btn {
+:global(html.dark) .example-btn {
   border-color: #404040;
   color: #d1d5db;
 }
 
-html.dark .example-btn:hover {
+:global(html.dark) .example-btn:hover {
   background-color: #262727;
   border-color: var(--el-color-primary);
 }
 
-html.dark .message.received .message-bubble {
+:global(html.dark) .message.received .message-bubble {
   background-color: #262727;
   color: #e5e7eb;
 }
 
-html.dark .message-input-area {
+:global(html.dark) .message-input-area {
   border-top-color: #404040;
   background-color: #1a1a1a;
 }
@@ -1001,7 +1001,7 @@ html.dark .message-input-area {
     border-bottom: 1px solid #e5e5e5;
   }
 
-  html.dark .history-panel {
+  :global(html.dark) .history-panel {
     border-bottom-color: #404040;
   }
 }
