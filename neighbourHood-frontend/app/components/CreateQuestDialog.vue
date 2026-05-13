@@ -346,44 +346,44 @@ function handleCreate() {
   color: var(--el-color-primary);
 }
 
-.dark :deep(.el-input-number__decrease),
-.dark :deep(.el-input-number__increase) {
+:global(.dark) :deep(.el-input-number__decrease),
+:global(.dark) :deep(.el-input-number__increase) {
   color: #e5e5e5 !important;
   background-color: transparent !important;
 }
 
-.dark :deep(.el-input-number__decrease:hover),
-.dark :deep(.el-input-number__increase:hover) {
+:global(.dark) :deep(.el-input-number__decrease:hover),
+:global(.dark) :deep(.el-input-number__increase:hover) {
   color: var(--el-color-primary) !important;
 }
 
-.dark :deep(.el-input-number .el-input__wrapper) {
+:global(.dark) :deep(.el-input-number .el-input__wrapper) {
   background-color: #3d3d3d;
   box-shadow: 0 0 0 1px #555 inset;
 }
 
-.dark :deep(.el-input-number .el-input__inner) {
+:global(.dark) :deep(.el-input-number .el-input__inner) {
   color: #e5e5e5;
 }
 
-.dark :deep(.el-slider__button) {
+:global(.dark) :deep(.el-slider__button) {
   border-color: var(--el-color-primary);
   background-color: #fff;
 }
 
-.dark :deep(.el-slider__bar) {
+:global(.dark) :deep(.el-slider__bar) {
   background-color: var(--el-color-primary);
 }
 
-.dark :deep(.el-slider__runway) {
+:global(.dark) :deep(.el-slider__runway) {
   background-color: #4c4d4f;
 }
 
-.dark :deep(.el-slider__stop) {
+:global(.dark) :deep(.el-slider__stop) {
   background-color: #6c6d6f;
 }
 
-.dark :deep(.el-slider__marks-text) {
+:global(.dark) :deep(.el-slider__marks-text) {
   color: #a8abb2;
 }
 </style>

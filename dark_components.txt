@@ -1,0 +1,3 @@
+neighbourHood-frontend/app/components/CreateQuestDialog.vue
+neighbourHood-frontend/app/components/FeedbackDialog.vue
+neighbourHood-frontend/app/components/SelfIntroductionDialog.vue

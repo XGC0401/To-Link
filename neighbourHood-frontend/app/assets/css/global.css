@@ -142,6 +142,165 @@ html.dark .el-empty__description {
   color: #9ca3af !important;
 }
 
+/* Global dark surfaces for Element Plus and common page shells/cards. */
+html.dark body,
+html.dark #__nuxt,
+html.dark #app {
+  background-color: #111827 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .el-card,
+html.dark .el-dialog,
+html.dark .el-drawer,
+html.dark .el-dropdown-menu,
+html.dark .el-select-dropdown,
+html.dark .el-popover,
+html.dark .el-tooltip__popper {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .el-card__header,
+html.dark .el-card__body,
+html.dark .el-dialog__header,
+html.dark .el-dialog__body,
+html.dark .el-dialog__footer,
+html.dark .el-drawer__header,
+html.dark .el-drawer__body,
+html.dark .el-dropdown-menu__item,
+html.dark .el-select-dropdown__item,
+html.dark .el-popover__title {
+  color: #e5e7eb !important;
+  border-color: #374151 !important;
+}
+
+html.dark .el-input__wrapper,
+html.dark .el-textarea__inner,
+html.dark .el-select__wrapper,
+html.dark .el-radio-button__inner,
+html.dark .el-tabs__item,
+html.dark .el-table,
+html.dark .el-table__inner-wrapper,
+html.dark .el-table tr,
+html.dark .el-table th,
+html.dark .el-table td {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .el-input__inner,
+html.dark .el-textarea__inner::placeholder,
+html.dark .el-input__inner::placeholder,
+html.dark .el-select__placeholder,
+html.dark .el-form-item__label,
+html.dark .el-tabs__item,
+html.dark .el-dropdown-menu__item,
+html.dark .el-select-dropdown__item {
+  color: #d1d5db !important;
+}
+
+html.dark .el-dropdown-menu__item:hover,
+html.dark .el-select-dropdown__item.hover,
+html.dark .el-select-dropdown__item:hover {
+  background: #374151 !important;
+  color: #ffffff !important;
+}
+
+html.dark .post-page-shell,
+html.dark .friends-page-shell,
+html.dark .settings-page-shell,
+html.dark .profile-page-shell,
+html.dark .chat-page-shell,
+html.dark .chat-container,
+html.dark .tabs-container,
+html.dark .posts-section,
+html.dark .quests-section,
+html.dark .friend-card,
+html.dark .profile-card,
+html.dark .settings-card {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+/* High-specificity overrides for page-scoped white backgrounds. */
+html.dark .chat-full,
+html.dark .conversations-panel,
+html.dark .chat-panel,
+html.dark .chat-header,
+html.dark .message-input-area,
+html.dark .posts-header,
+html.dark .quests-header,
+html.dark .friends-toolbar,
+html.dark .avatar-uploader-wrapper,
+html.dark .address-item,
+html.dark .day-schedule,
+html.dark .notification-item,
+html.dark .font-size-slider-container,
+html.dark .sample-text {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .message.received .message-bubble {
+  background: #243043 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .conversation-item {
+  border-bottom-color: #374151 !important;
+}
+
+html.dark .conversation-item:hover {
+  background: #253247 !important;
+}
+
+html.dark .conversation-item.active {
+  background: #2a3448 !important;
+}
+
+html.dark .chat-page-shell .el-input__wrapper,
+html.dark .chat-page-shell .el-select__wrapper,
+html.dark .post-page-shell .el-input__wrapper,
+html.dark .post-page-shell .el-select__wrapper,
+html.dark .friends-page-shell .el-input__wrapper,
+html.dark .friends-page-shell .el-select__wrapper,
+html.dark .profile-form .el-input__wrapper,
+html.dark .profile-form .el-textarea__inner,
+html.dark .profile-form .el-select__wrapper,
+html.dark .settings-form .el-input__wrapper,
+html.dark .settings-form .el-select__wrapper,
+html.dark .settings-form .el-radio-button__inner,
+html.dark .search-bar .el-input__wrapper {
+  background: #111827 !important;
+  box-shadow: 0 0 0 1px #334155 inset !important;
+  border-color: #334155 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .card-header h2,
+html.dark .profile-form .el-form-item__label,
+html.dark .settings-form .el-form-item__label,
+html.dark .header-toggle-label {
+  color: #e5e7eb !important;
+}
+
+html.dark .header-toggle {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+html.dark .posts-list .el-card,
+html.dark .quests-list .el-card {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
 /* ============ TOUCH-FRIENDLY SIZING FOR MOBILE/TABLET ============ */
 
 /* Tablet breakpoint (481-1024px) - increase touch targets */

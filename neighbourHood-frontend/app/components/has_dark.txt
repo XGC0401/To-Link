@@ -1,0 +1,10 @@
+/workspaces/To-Link/neighbourHood-frontend/app/pages/ai-chat.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/nearbyShops.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/settings.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/home.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/profile.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/nearbyCommunity.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/posts.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/create-post.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/friends.vue
+/workspaces/To-Link/neighbourHood-frontend/app/pages/chat.vue

@@ -684,6 +684,26 @@ html.dark :deep(.el-empty__image svg path) {
 html.dark :deep(.el-empty__description) {
   color: #9ca3af !important;
 }
+
+html.dark .map-section {
+  background: #1f2937;
+}
+
+html.dark .map-loading {
+  background: rgba(15, 23, 42, 0.92);
+}
+
+html.dark .map-loading p,
+html.dark .shops-toolbar h2,
+html.dark .shop-announcements h3,
+html.dark .announcement-card h4 {
+  color: #e5e7eb;
+}
+
+html.dark .announcement-card p,
+html.dark .announcement-date {
+  color: #9ca3af;
+}
 </style>
 
 <style>
@@ -778,6 +798,26 @@ html.dark :deep(.el-empty__description) {
   white-space: nowrap;
   color: #333;
   pointer-events: none;
+}
+
+html.dark .shop-marker-icon {
+  background: #1f2937;
+  border-color: #475569;
+}
+
+html.dark .shop-marker-icon.has-announcements {
+  background: #1f3b34;
+  border-color: #34d399;
+}
+
+html.dark .announcement-badge {
+  border-color: #111827;
+}
+
+html.dark .shop-marker-label {
+  background: #1f2937;
+  color: #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
 /* Override Leaflet default styles */

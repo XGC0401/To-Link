@@ -1743,12 +1743,12 @@ const createGroupConversation = () => {
   background: #9aa7d9;
 }
 
-.dark .chat-full {
+:global(.dark) .chat-full {
   border-color: rgba(129, 140, 248, 0.36);
   box-shadow: 0 34px 64px rgba(1, 5, 17, 0.68);
 }
 
-.dark .chat-page-shell {
+:global(.dark) .chat-page-shell {
   border-color: rgba(129, 140, 248, 0.45);
   background:
     radial-gradient(145% 125% at 0% 0%, rgba(79, 70, 229, 0.46), rgba(10, 16, 34, 0.08) 58%),
@@ -1757,121 +1757,121 @@ const createGroupConversation = () => {
   box-shadow: 0 44px 80px rgba(1, 5, 15, 0.72), inset 0 1px 0 rgba(169, 188, 255, 0.2);
 }
 
-.dark .chat-pattern {
+:global(.dark) .chat-pattern {
   background-image: linear-gradient(rgba(129, 140, 248, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(129, 140, 248, 0.08) 1px, transparent 1px);
 }
 
-.dark .chat-container {
+:global(.dark) .chat-container {
   background:
     radial-gradient(130% 130% at 0% 0%, rgba(79, 70, 229, 0.34), rgba(16, 22, 45, 0.08) 58%),
     radial-gradient(130% 145% at 100% 0%, rgba(14, 165, 233, 0.18), rgba(16, 22, 45, 0.08) 62%),
     linear-gradient(160deg, #11162d, #1a2345) !important;
 }
 
-.dark .conversations-panel {
+:global(.dark) .conversations-panel {
   background: linear-gradient(160deg, rgba(24, 31, 61, 0.95), rgba(18, 24, 49, 0.92)) !important;
   border-right-color: rgba(129, 140, 248, 0.34) !important;
 }
 
-.dark .search-bar {
+:global(.dark) .search-bar {
   border-bottom-color: rgba(129, 140, 248, 0.3) !important;
 }
 
-.dark .search-bar :deep(.el-input__wrapper) {
+:global(.dark) .search-bar :deep(.el-input__wrapper) {
   background: rgba(16, 22, 44, 0.88) !important;
   box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.36) inset, 0 8px 16px rgba(1, 5, 15, 0.52) !important;
 }
 
-.dark .conversation-item {
+:global(.dark) .conversation-item {
   border-bottom-color: rgba(129, 140, 248, 0.24) !important;
 }
 
-.dark .conversation-item:hover {
+:global(.dark) .conversation-item:hover {
   background-color: rgba(79, 70, 229, 0.24) !important;
 }
 
-.dark .conversation-item.active {
+:global(.dark) .conversation-item.active {
   background-color: rgba(79, 70, 229, 0.32) !important;
   box-shadow: inset 3px 0 0 rgba(165, 180, 252, 0.85);
 }
 
-.dark .conversation-name,
-.dark .chat-header-info h3 {
+:global(.dark) .conversation-name,
+:global(.dark) .chat-header-info h3 {
   color: #e8eeff !important;
 }
 
-.dark .conversation-time,
-.dark .conversation-preview,
-.dark .chat-header-info .status,
-.dark .empty-chat,
-.dark .location-coords,
-.dark .file-size,
-.dark .message-time {
+:global(.dark) .conversation-time,
+:global(.dark) .conversation-preview,
+:global(.dark) .chat-header-info .status,
+:global(.dark) .empty-chat,
+:global(.dark) .location-coords,
+:global(.dark) .file-size,
+:global(.dark) .message-time {
   color: #b8c3ed !important;
 }
 
-.dark .chat-panel {
+:global(.dark) .chat-panel {
   background: linear-gradient(160deg, rgba(21, 28, 57, 0.95), rgba(16, 22, 45, 0.92)) !important;
 }
 
-.dark .chat-header {
+:global(.dark) .chat-header {
   background: linear-gradient(150deg, rgba(24, 31, 61, 0.95), rgba(18, 24, 49, 0.92)) !important;
   border-bottom-color: rgba(129, 140, 248, 0.32) !important;
 }
 
-.dark .message.received .message-bubble,
-.dark .document-message,
-.dark .location-message {
+:global(.dark) .message.received .message-bubble,
+:global(.dark) .document-message,
+:global(.dark) .location-message {
   background: linear-gradient(150deg, rgba(36, 42, 74, 0.88), rgba(24, 31, 58, 0.84)) !important;
   border-color: rgba(129, 140, 248, 0.3);
   color: #e5e5e5 !important;
 }
 
-.dark .message.sent .message-bubble,
-.dark .message.sent .document-message {
+:global(.dark) .message.sent .message-bubble,
+:global(.dark) .message.sent .document-message {
   background: linear-gradient(145deg, #4f46e5, #6366f1) !important;
   color: #fff !important;
 }
 
-.dark .message-input-area {
+:global(.dark) .message-input-area {
   background: linear-gradient(150deg, rgba(24, 31, 61, 0.92), rgba(18, 24, 49, 0.9)) !important;
   border-top-color: rgba(129, 140, 248, 0.32) !important;
 }
 
-.dark .message-input-area :deep(.el-input__wrapper) {
+:global(.dark) .message-input-area :deep(.el-input__wrapper) {
   background: rgba(16, 22, 44, 0.88) !important;
   box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.38) inset, 0 8px 16px rgba(1, 5, 15, 0.52) !important;
 }
 
-.dark .message-input-area :deep(.el-input__inner),
-.dark .message-input-area :deep(.el-button--text),
-.dark .file-name {
+:global(.dark) .message-input-area :deep(.el-input__inner),
+:global(.dark) .message-input-area :deep(.el-button--text),
+:global(.dark) .file-name {
   color: #e5e5e5 !important;
 }
 
-.dark .message-input-area :deep(.el-button--text:hover),
-.dark .location-link,
-.dark .location-header,
-.dark .file-download,
-.dark .document-icon {
+:global(.dark) .message-input-area :deep(.el-button--text:hover),
+:global(.dark) .location-link,
+:global(.dark) .location-header,
+:global(.dark) .file-download,
+:global(.dark) .document-icon {
   color: #a5b4fc !important;
 }
 
-.dark .location-link:hover,
-.dark .file-download:hover {
+:global(.dark) .location-link:hover,
+:global(.dark) .file-download:hover {
   color: #c7d2fe !important;
 }
 
-.dark .message-image,
-.dark .message-video {
+:global(.dark) .message-image,
+:global(.dark) .message-video {
   border: 1px solid rgba(129, 140, 248, 0.28);
 }
 
-.dark .clickable-quest:hover {
+:global(.dark) .clickable-quest:hover {
   box-shadow: 0 10px 20px rgba(102, 126, 234, 0.62);
 }
 
-.dark .click-to-view {
+:global(.dark) .click-to-view {
   border-top-color: rgba(255, 255, 255, 0.2);
 }
 

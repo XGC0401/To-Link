@@ -1,0 +1,9 @@
+neighbourHood-frontend/app/pages/ai-chat.vue
+neighbourHood-frontend/app/pages/nearbyShops.vue
+neighbourHood-frontend/app/pages/settings.vue
+neighbourHood-frontend/app/pages/nearbyCommunity.vue
+neighbourHood-frontend/app/pages/create-post.vue
+neighbourHood-frontend/app/pages/chat.vue
+neighbourHood-frontend/app/components/CreateQuestDialog.vue
+neighbourHood-frontend/app/components/FeedbackDialog.vue
+neighbourHood-frontend/app/components/SelfIntroductionDialog.vue

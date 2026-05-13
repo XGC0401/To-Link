@@ -147,7 +147,7 @@ const handleClose = () => {
 }
 
 /* Dark Mode Styles */
-.dark .upload-tip {
+:global(.dark) .upload-tip {
   color: #b0b0b0 !important;
 }
 </style>

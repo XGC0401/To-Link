@@ -839,7 +839,7 @@ const deleteAllPostsFromSecret = () => {
 }
 
 /* Dark Mode Styles */
-.dark .settings-card {
+:global(.dark) .settings-card {
   background:
     radial-gradient(130% 130% at 0% 0%, rgba(79, 70, 229, 0.35), rgba(16, 22, 45, 0.1) 60%),
     radial-gradient(130% 145% at 100% 0%, rgba(14, 165, 233, 0.2), rgba(16, 22, 45, 0.08) 62%),
@@ -849,7 +849,7 @@ const deleteAllPostsFromSecret = () => {
   box-shadow: 0 30px 58px rgba(2, 6, 20, 0.64), inset 0 1px 0 rgba(168, 186, 255, 0.16);
 }
 
-.dark .settings-page-shell {
+:global(.dark) .settings-page-shell {
   border-color: rgba(129, 140, 248, 0.45);
   background:
     radial-gradient(145% 125% at 0% 0%, rgba(79, 70, 229, 0.46), rgba(10, 16, 34, 0.08) 58%),
@@ -858,62 +858,62 @@ const deleteAllPostsFromSecret = () => {
   box-shadow: 0 44px 80px rgba(1, 5, 15, 0.72), inset 0 1px 0 rgba(169, 188, 255, 0.2);
 }
 
-.dark .settings-pattern {
+:global(.dark) .settings-pattern {
   background-image: linear-gradient(rgba(129, 140, 248, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(129, 140, 248, 0.08) 1px, transparent 1px);
 }
 
-.dark .card-header h2 {
+:global(.dark) .card-header h2 {
   color: #e5e5e5 !important;
 }
 
-.dark .sample-text {
+:global(.dark) .sample-text {
   background: linear-gradient(150deg, rgba(36, 42, 74, 0.88), rgba(24, 31, 58, 0.84)) !important;
   border-color: rgba(129, 140, 248, 0.32) !important;
   color: #e5e5e5 !important;
 }
 
-.dark .slider-label {
+:global(.dark) .slider-label {
   color: #b8c3ed;
 }
 
-.dark .theme-preview-text {
+:global(.dark) .theme-preview-text {
   opacity: 0.9;
 }
 
-.dark .notification-settings :deep(.el-switch__label) {
+:global(.dark) .notification-settings :deep(.el-switch__label) {
   color: #e5e5e5 !important;
 }
 
-.dark .notification-settings :deep(.el-switch__label.is-active) {
+:global(.dark) .notification-settings :deep(.el-switch__label.is-active) {
   color: #409eff !important;
 }
 
-.dark .notification-item {
+:global(.dark) .notification-item {
   background: linear-gradient(150deg, rgba(36, 42, 74, 0.88), rgba(24, 31, 58, 0.84)) !important;
   border-color: rgba(129, 140, 248, 0.32) !important;
   box-shadow: 0 12px 22px rgba(2, 6, 20, 0.5);
 }
 
-.dark .notification-item:hover {
+:global(.dark) .notification-item:hover {
   background: linear-gradient(150deg, rgba(45, 52, 92, 0.9), rgba(31, 39, 70, 0.88)) !important;
 }
 
-.dark .notification-label {
+:global(.dark) .notification-label {
   color: #e8eeff !important;
 }
 
-.dark .form-actions {
+:global(.dark) .form-actions {
   border-top-color: rgba(129, 140, 248, 0.3) !important;
 }
 
-.dark .settings-form :deep(.el-input__wrapper),
-.dark .settings-form :deep(.el-select__wrapper),
-.dark .settings-form :deep(.el-radio-button__inner) {
+:global(.dark) .settings-form :deep(.el-input__wrapper),
+:global(.dark) .settings-form :deep(.el-select__wrapper),
+:global(.dark) .settings-form :deep(.el-radio-button__inner) {
   background: rgba(16, 22, 44, 0.88) !important;
   box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.38) inset, 0 10px 18px rgba(1, 5, 15, 0.54) !important;
 }
 
-.dark .font-size-slider-container {
+:global(.dark) .font-size-slider-container {
   border-color: rgba(129, 140, 248, 0.32);
   background: linear-gradient(150deg, rgba(36, 42, 74, 0.84), rgba(24, 31, 58, 0.8));
 }

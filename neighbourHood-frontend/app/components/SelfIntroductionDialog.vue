@@ -168,23 +168,23 @@ function handleSend() {
 }
 
 /* Dark Mode Styles */
-.dark .quest-summary h4 {
+:global(.dark) .quest-summary h4 {
   color: #fff !important;
 }
 
-.dark .quest-info {
+:global(.dark) .quest-info {
   background: #3a3a3a !important;
 }
 
-.dark .quest-title {
+:global(.dark) .quest-title {
   color: #e5e5e5 !important;
 }
 
-.dark .intro-form h4 {
+:global(.dark) .intro-form h4 {
   color: #fff !important;
 }
 
-.dark .intro-hint {
+:global(.dark) .intro-hint {
   color: #b0b0b0 !important;
 }
 </style>

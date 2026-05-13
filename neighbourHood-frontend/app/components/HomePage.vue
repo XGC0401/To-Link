@@ -636,4 +636,39 @@ const goToCreatePost = () => {
     width: 100%;
   }
 }
+
+:global(.dark) .home-container {
+  background: #111827;
+}
+
+:global(.dark) .home-header,
+:global(.dark) .home-sidebar,
+:global(.dark) .post-card,
+:global(.dark) .post-card :deep(.el-card__footer) {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+:global(.dark) .sidebar-footer {
+  background: #111827;
+  border-top-color: #374151;
+}
+
+:global(.dark) .app-title,
+:global(.dark) .section-header h3,
+:global(.dark) .author-name,
+:global(.dark) .post-content h4 {
+  color: #e5e7eb;
+}
+
+:global(.dark) .post-content p,
+:global(.dark) .post-time {
+  color: #9ca3af;
+}
+
+:global(.dark) .home-main::-webkit-scrollbar-thumb,
+:global(.dark) .home-sidebar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
 </style>

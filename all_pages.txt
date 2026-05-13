@@ -1,0 +1,11 @@
+neighbourHood-frontend/app/pages/ai-chat.vue
+neighbourHood-frontend/app/pages/nearbyShops.vue
+neighbourHood-frontend/app/pages/settings.vue
+neighbourHood-frontend/app/pages/home.vue
+neighbourHood-frontend/app/pages/profile.vue
+neighbourHood-frontend/app/pages/index.vue
+neighbourHood-frontend/app/pages/nearbyCommunity.vue
+neighbourHood-frontend/app/pages/posts.vue
+neighbourHood-frontend/app/pages/create-post.vue
+neighbourHood-frontend/app/pages/friends.vue
+neighbourHood-frontend/app/pages/chat.vue
