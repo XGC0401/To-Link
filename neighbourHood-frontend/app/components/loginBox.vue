@@ -95,7 +95,7 @@
                 <template #suffix>
                   <el-button text @click="togglePasswordVisibility">
                     <el-icon>
-                      <component :is="passwordVisible ? TurnOff : View" />
+                      <component :is="passwordVisible ? Hide : View" />
                     </el-icon>
                   </el-button>
                 </template>
@@ -225,7 +225,7 @@
                 <template #suffix>
                   <el-button text @click="toggleRegisterPasswordVisibility">
                     <el-icon>
-                      <component :is="registerPasswordVisible ? TurnOff : View" />
+                      <component :is="registerPasswordVisible ? Hide : View" />
                     </el-icon>
                   </el-button>
                 </template>
@@ -262,7 +262,7 @@ import type { FormInstance } from 'element-plus'
 import type { loginParams, registerParams } from '../api/types/common'
 import { useI18n } from 'vue-i18n'
 import { login, register } from '~/api/auth'
-import { ArrowDown, Moon, Sunny, View, TurnOff } from '@element-plus/icons-vue'
+import { ArrowDown, Moon, Sunny, View, Hide } from '@element-plus/icons-vue'
 import { Storage } from '~/utils/storage'
 import { ElMessage } from 'element-plus'
 
@@ -1031,6 +1031,18 @@ onMounted(() => {
 
 .login-container.dark-mode .brand-side {
   background: linear-gradient(140deg, #3b1708 0%, #7c2d12 40%, #b45309 68%, #f06500 100%);
+}
+
+/* brand-side and brand-content always stay original — exempt from dark mode */
+:global(html.dark) .brand-side {
+  background: linear-gradient(135deg, #7c2d12 0%, #c2410c 36%, #ff6f00 64%, #f06500 100%) !important;
+}
+:global(html.dark) .brand-content {
+  color: white !important;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0.04)) !important;
+}
+:global(html.dark) .brand-content * {
+  color: white !important;
 }
 
 .theme-switcher-left {

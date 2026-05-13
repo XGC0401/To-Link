@@ -208,6 +208,19 @@
         font-size: 28px;
     }
 }
+
+/* Cover page is always light — exempt from dark mode */
+:global(html.dark) .cover-content,
+:global(html.dark) .cover-card {
+    color: #fff !important;
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08)) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+}
+:global(html.dark) .cover-content h1,
+:global(html.dark) .cover-content p,
+:global(html.dark) .cover-content span {
+    color: #fff !important;
+}
 </style>
 
 <script setup lang="ts">

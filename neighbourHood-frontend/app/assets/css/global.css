@@ -660,12 +660,19 @@ html.dark .el-switch__core {
 
 html.dark .el-input__wrapper,
 html.dark .el-textarea__inner,
-html.dark .el-select__wrapper,
-html.dark .el-input__inner {
+html.dark .el-select__wrapper {
   background: var(--theme-input) !important;
   color: var(--theme-text) !important;
   border-color: var(--theme-border) !important;
   box-shadow: 0 0 0 1px var(--theme-border) inset !important;
+}
+
+/* el-input__inner must be transparent so only the wrapper background shows — no double border */
+html.dark .el-input__inner {
+  background: transparent !important;
+  color: var(--theme-text) !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 html.dark .el-input__inner::placeholder,
@@ -859,12 +866,19 @@ html.dark body #__nuxt #app .file-download-btn {
 html.dark body #__nuxt #app input,
 html.dark body #__nuxt #app textarea,
 html.dark body #__nuxt #app select,
-html.dark body #__nuxt #app .el-input__inner,
 html.dark body #__nuxt #app .el-textarea__inner,
 html.dark body #__nuxt #app .el-select__wrapper {
   background: var(--theme-input) !important;
   color: var(--theme-text) !important;
   border-color: var(--theme-border) !important;
+}
+
+/* el-input__inner must be transparent — wrapper already provides the background/border */
+html.dark body #__nuxt #app .el-input__inner {
+  background: transparent !important;
+  color: var(--theme-text) !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 html.dark body #__nuxt #app input::placeholder,
