@@ -17,9 +17,6 @@
         <el-button plain @click="showHistory = !showHistory">
           {{ showHistory ? $t('backpackItems') : $t('history') }}
         </el-button>
-        <el-button plain type="danger" :disabled="items.length === 0" @click="$emit('clear')">
-          {{ $t('clearBackpack') }}
-        </el-button>
       </div>
 
       <el-empty v-if="filteredItems.length === 0" :description="$t('noRedeemedRewards')" />
@@ -27,8 +24,8 @@
       <div v-else class="backpack-list">
         <div v-for="item in filteredItems" :key="item.id" class="backpack-item" :class="itemClass(item)" @click="handleItemClick(item)">
           <div class="item-main">
-            <div class="item-name">{{ item.name }}</div>
-            <div class="item-desc">{{ item.description }}</div>
+            <div class="item-name">{{ item.nameKey ? $t(item.nameKey) : item.name }}</div>
+            <div class="item-desc">{{ item.descriptionKey ? $t(item.descriptionKey) : item.description }}</div>
           </div>
           <div class="item-meta">
             <el-tag :type="itemTagType(item)">{{ item.points }} {{ $t('points') }}</el-tag>
@@ -51,6 +48,8 @@ interface RedeemedRewardItem {
   id: string
   name: string
   description: string
+  nameKey?: string
+  descriptionKey?: string
   points: number
   redeemedAt: string
   usedAt?: string | null
@@ -60,13 +59,14 @@ interface RedeemedRewardItem {
 const props = defineProps<{
   modelValue: boolean
   items: RedeemedRewardItem[]
+  historyItems?: RedeemedRewardItem[]
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'clear'): void
+  (e: 'use-item', value: RedeemedRewardItem): void
   (e: 'update:items', value: RedeemedRewardItem[]): void
 }>()
 
@@ -102,7 +102,7 @@ const itemClass = (item: RedeemedRewardItem) => {
 const filteredItems = computed(() => {
   const q = searchText.value.trim().toLowerCase()
   const source = showHistory.value
-    ? props.items.filter((item) => getStatus(item) !== 'active')
+    ? (props.historyItems || []).filter((item) => getStatus(item) !== 'active')
     : props.items
   if (!q) return source
   return source.filter((item) => {
@@ -117,7 +117,7 @@ const handleItemClick = async (item: RedeemedRewardItem) => {
 
   try {
     await ElMessageBox.confirm(
-      `${item.name}\n${String(item.description || '')}\n\n${t('useItemConfirm')}`,
+      `${item.nameKey ? t(item.nameKey) : item.name}\n${item.descriptionKey ? t(item.descriptionKey) : String(item.description || '')}\n\n${t('useItemConfirm')}`,
       t('confirm'),
       {
         confirmButtonText: t('yes'),
@@ -126,7 +126,7 @@ const handleItemClick = async (item: RedeemedRewardItem) => {
       }
     )
 
-    item.usedAt = new Date().toISOString()
+    emit('use-item', item)
     ElMessage.success(t('used'))
   } catch {
     // user cancelled
@@ -136,7 +136,7 @@ const handleItemClick = async (item: RedeemedRewardItem) => {
 function formatDate(isoDate: string) {
   const dt = new Date(isoDate)
   if (Number.isNaN(dt.getTime())) return '-'
-  return dt.toLocaleString()
+  return dt.toLocaleString(locale.value === 'zh' ? 'zh-HK' : 'en-US')
 }
 </script>
 

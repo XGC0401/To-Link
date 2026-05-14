@@ -77,6 +77,8 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Star, MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { likePost } from '~/api/post'
 import type { Post } from '../api/types/post'
 
 const { t } = useI18n()
@@ -127,7 +129,10 @@ watch(() => props.post.id, () => {
     : Number((props.post as any).likes || 0)
 })
 
-function handleLike() {
+async function handleLike() {
+  const previousLiked = isLiked.value
+  const previousCount = likeCount.value
+
   if (isLiked.value) {
     isLiked.value = false
     likeCount.value = Math.max(0, likeCount.value - 1)
@@ -138,6 +143,17 @@ function handleLike() {
     localStorage.setItem(likeStorageKey.value, '1')
   }
   localStorage.setItem(likeCountStorageKey.value, String(likeCount.value))
+
+  if (typeof props.post.id === 'number') {
+    const [error] = await likePost(props.post.id)
+    if (error) {
+      isLiked.value = previousLiked
+      likeCount.value = previousCount
+      localStorage.setItem(likeStorageKey.value, previousLiked ? '1' : '0')
+      localStorage.setItem(likeCountStorageKey.value, String(previousCount))
+      ElMessage.error(t('likeUpdateFailed'))
+    }
+  }
 }
 
 // Display name: use profile display name for own posts, otherwise use username from post
@@ -173,11 +189,15 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 function formatDateTime(dateTime: Date | undefined): string {
-  if (!dateTime) return ''
+  if (!dateTime) return t('justNow')
   try {
-    return new Date(dateTime).toLocaleString('en-US')
+    const dt = new Date(dateTime)
+    if (Number.isNaN(dt.getTime())) {
+      return t('justNow')
+    }
+    return dt.toLocaleString(props.language === 'zh' ? 'zh-HK' : 'en-US')
   } catch {
-    return ''
+    return t('justNow')
   }
 }
 
@@ -255,9 +275,9 @@ const tagValue = computed(() => {
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border-radius: 8px;
-  min-width: 600px;
-  width: 600px;
-  max-width: 600px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .post-header {

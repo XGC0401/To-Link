@@ -673,8 +673,12 @@ const handleCcClickOutside = (e: MouseEvent) => {
   }
 }
 
-const handleLanguageChange = () => {
-  const newLocale = locale.value === 'en' ? 'zh' : 'en'
+const handleLanguageChange = (value: string) => {
+  const newLocale = value === 'zh' ? 'zh' : 'en'
+  if (locale.value === newLocale) {
+    localStorage.setItem('userLanguage', newLocale)
+    return
+  }
   setLocale(newLocale)
   localStorage.setItem('userLanguage', newLocale)
 }

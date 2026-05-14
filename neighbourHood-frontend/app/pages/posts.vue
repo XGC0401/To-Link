@@ -143,10 +143,15 @@
 
     <!-- Redeem Rewards Dialog -->
     <RedeemRewardsDialog v-model="showRedeemDialog" :language="language" :current-points="currentUserRewardPoints"
-      :rewards-catalog="rewardsCatalog" @redeem="redeemReward" />
+      :rewards-catalog="localizedRewardsCatalog" @redeem="redeemReward" />
 
     <!-- Backpack Dialog -->
-    <BackpackDialog v-model="showBackpackDialog" :items="redeemedRewards" @clear="clearBackpack" />
+    <BackpackDialog
+      v-model="showBackpackDialog"
+      :items="redeemedRewards"
+      :history-items="redeemedRewardsHistory"
+      @use-item="handleUseBackpackItem"
+    />
 
     <!-- Post Detail Dialog -->
     <PostDetailDialog v-model="showPostDetailDialog" :post="selectedPost" :language="language" />
@@ -304,7 +309,16 @@ const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
     postMap.set(post.id, post)
   })
 
-  return Array.from(postMap.values()).sort((a, b) => {
+  const deduped = Array.from(postMap.values()).reduce<Post[]>((acc, item) => {
+    const signature = buildSignature(item)
+    if (acc.some((post) => buildSignature(post) === signature)) {
+      return acc
+    }
+    acc.push(item)
+    return acc
+  }, [])
+
+  return deduped.sort((a, b) => {
     const left = a.createTime ? new Date(a.createTime).getTime() : a.id
     const right = b.createTime ? new Date(b.createTime).getTime() : b.id
     return right - left
@@ -423,67 +437,131 @@ const redeemedRewards = ref<Array<{
   id: string
   name: string
   description: string
+  nameKey?: string
+  descriptionKey?: string
   points: number
   redeemedAt: string
   usedAt?: string | null
   expiresAt?: string | null
 }>>([])
+const redeemedRewardsHistory = ref<Array<{
+  id: string
+  name: string
+  description: string
+  nameKey?: string
+  descriptionKey?: string
+  points: number
+  redeemedAt: string
+  usedAt?: string | null
+  expiresAt?: string | null
+}>>([])
+
+const REWARD_EXPIRY_MS = 1000 * 60 * 15
+
 const rewardsCatalog = ref([
   {
     id: 1,
+    nameKey: 'rewardCoffeeName',
+    descriptionKey: 'rewardCoffeeDescription',
     name: 'Coffee Shop Voucher',
     description: '$5 voucher at local coffee shop',
     points: 50
   },
   {
     id: 2,
+    nameKey: 'rewardRestaurantName',
+    descriptionKey: 'rewardRestaurantDescription',
     name: 'Restaurant Discount',
     description: '10% off at partner restaurants',
     points: 100
   },
   {
     id: 3,
+    nameKey: 'rewardMovieName',
+    descriptionKey: 'rewardMovieDescription',
     name: 'Free Movie Ticket',
     description: 'One free movie ticket at local cinema',
     points: 150
   },
   {
     id: 4,
+    nameKey: 'rewardGymName',
+    descriptionKey: 'rewardGymDescription',
     name: 'Gym Day Pass',
     description: 'One day pass to community gym',
     points: 80
   },
   {
     id: 5,
+    nameKey: 'rewardGiftCardName',
+    descriptionKey: 'rewardGiftCardDescription',
     name: 'Gift Card',
     description: '$25 gift card for online shopping',
     points: 250
   }
 ])
 
+const localizedRewardsCatalog = computed(() => {
+  return rewardsCatalog.value.map((reward: any) => ({
+    ...reward,
+    name: reward.nameKey ? t(reward.nameKey) : reward.name,
+    description: reward.descriptionKey ? t(reward.descriptionKey) : reward.description
+  }))
+})
+
 const loadRedeemedRewards = () => {
   try {
-    const raw = localStorage.getItem('redeemedRewardsBackpack')
-    if (!raw) {
-      redeemedRewards.value = []
-      return
+    const rawActive = localStorage.getItem('redeemedRewardsBackpack')
+    const rawHistory = localStorage.getItem('redeemedRewardsBackpackHistory')
+    const activeParsed = rawActive ? JSON.parse(rawActive) : []
+    const historyParsed = rawHistory ? JSON.parse(rawHistory) : []
+
+    const active = Array.isArray(activeParsed) ? activeParsed : []
+    const history = Array.isArray(historyParsed) ? historyParsed : []
+    const now = Date.now()
+
+    const nextActive: typeof active = []
+    const nextHistory: typeof history = [...history]
+
+    for (const item of active) {
+      const expiresAt = item?.expiresAt ? new Date(item.expiresAt).getTime() : Infinity
+      if (Number.isFinite(expiresAt) && expiresAt < now) {
+        nextHistory.unshift({
+          ...item,
+          usedAt: item.usedAt || null
+        })
+      } else {
+        nextActive.push(item)
+      }
     }
-    const parsed = JSON.parse(raw)
-    redeemedRewards.value = Array.isArray(parsed) ? parsed : []
+
+    redeemedRewards.value = nextActive
+    redeemedRewardsHistory.value = nextHistory.slice(0, 200)
+    localStorage.setItem('redeemedRewardsBackpack', JSON.stringify(redeemedRewards.value))
+    localStorage.setItem('redeemedRewardsBackpackHistory', JSON.stringify(redeemedRewardsHistory.value))
   } catch {
     redeemedRewards.value = []
+    redeemedRewardsHistory.value = []
   }
 }
 
 const saveRedeemedRewards = () => {
   localStorage.setItem('redeemedRewardsBackpack', JSON.stringify(redeemedRewards.value))
+  localStorage.setItem('redeemedRewardsBackpackHistory', JSON.stringify(redeemedRewardsHistory.value))
   window.dispatchEvent(new CustomEvent('app:backpack-updated'))
 }
 
-const clearBackpack = () => {
-  redeemedRewards.value = []
+const handleUseBackpackItem = (item: any) => {
+  const index = redeemedRewards.value.findIndex((it) => it.id === item.id)
+  if (index < 0) {
+    return
+  }
+  const [usedItem] = redeemedRewards.value.splice(index, 1)
+  redeemedRewardsHistory.value.unshift({
+    ...usedItem,
+    usedAt: new Date().toISOString()
+  })
   saveRedeemedRewards()
-  ElMessage.success(t('backpackCleared'))
 }
 
 const loadRewardPoints = () => {
@@ -917,10 +995,12 @@ function redeemReward(reward: any) {
       id: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
       name: String(reward.name || ''),
       description: String(reward.description || ''),
+      nameKey: reward.nameKey,
+      descriptionKey: reward.descriptionKey,
       points: Number(reward.points || 0),
       redeemedAt: new Date().toISOString(),
       usedAt: null,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString()
+      expiresAt: new Date(Date.now() + REWARD_EXPIRY_MS).toISOString()
     },
     ...redeemedRewards.value
   ].slice(0, 100)
@@ -937,7 +1017,7 @@ function editPost(post: any) {
   showEditPostDialog.value = true
 }
 
-function saveEditedPost(data: { id: number, title: string, content: string, request_type: number, custom_category?: string, photos: string[] }) {
+function saveEditedPost(data: { id: number, title: string, content: string, request_type: number, custom_category?: string, tags: string[], photos: string[] }) {
   const postIndex = posts.value.findIndex(p => p.id === data.id)
   if (postIndex > -1) {
     posts.value[postIndex] = {
@@ -946,6 +1026,7 @@ function saveEditedPost(data: { id: number, title: string, content: string, requ
       content: data.content,
       request_type: data.request_type,
       custom_category: data.custom_category,
+      tags: [...(data.tags || [])],
       postPhotos: data.photos.map((url, idx) => ({ id: `${data.id}-${idx}`, url }))
     }
 
@@ -959,6 +1040,7 @@ function saveEditedPost(data: { id: number, title: string, content: string, requ
         content: data.content,
         request_type: data.request_type,
         custom_category: data.custom_category,
+        tags: [...(data.tags || [])],
         postPhotos: data.photos.map((url, idx) => ({ id: `${data.id}-${idx}`, url }))
       }
       localStorage.setItem('userPosts', JSON.stringify(userPosts))

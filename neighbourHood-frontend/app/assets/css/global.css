@@ -262,6 +262,9 @@ html.dark .conversation-item:hover {
 
 /* Keep all Element Plus dialogs centered and visible regardless of page scroll position. */
 .el-overlay-dialog {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 3000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -270,6 +273,10 @@ html.dark .conversation-item:hover {
 }
 
 .el-dialog {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
   margin: 0 !important;
   max-width: min(96vw, var(--el-dialog-width, 700px));
   max-height: calc(100vh - 32px);
@@ -693,6 +700,20 @@ html.dark .el-switch__core {
   background: var(--theme-surface) !important;
   color: var(--theme-text) !important;
   border-color: var(--theme-border) !important;
+}
+
+html.dark .el-message-box__title,
+html.dark .el-message-box__message,
+html.dark .el-message-box__content,
+html.dark .el-message-box__headerbtn .el-icon,
+html.dark .el-message-box .el-button,
+html.dark .el-message-box .el-button span {
+  color: #e5e7eb !important;
+}
+
+html.dark .el-message-box .el-button--primary,
+html.dark .el-message-box .el-button--danger {
+  color: #ffffff !important;
 }
 
 html.dark .el-input__wrapper,

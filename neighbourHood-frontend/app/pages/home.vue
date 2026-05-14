@@ -78,6 +78,7 @@
         </div>
         <el-empty
           v-else-if="recentPosts.length === 0"
+          class="home-empty-state"
           :description="$t('noPosts')"
         />
         <div v-else class="posts-list">
@@ -132,6 +133,7 @@
 
         <el-empty
           v-if="pendingQuests.length === 0"
+          class="home-empty-state"
           :description="$t('noPendingQuests')"
         />
         <div v-else class="quests-list pending-list">
@@ -183,6 +185,7 @@
 
         <el-empty
           v-if="acceptedQuests.length === 0"
+          class="home-empty-state"
           :description="$t('noAcceptedQuests')"
         />
         <div v-else class="quests-list accepted-list">
@@ -559,7 +562,16 @@ const mergePosts = (localPosts: Post[], remotePosts: Post[]) => {
     postMap.set(post.id, post)
   })
 
-  return Array.from(postMap.values()).sort((a, b) => {
+  const deduped = Array.from(postMap.values()).reduce<Post[]>((acc, item) => {
+    const signature = buildSignature(item)
+    if (acc.some((post) => buildSignature(post) === signature)) {
+      return acc
+    }
+    acc.push(item)
+    return acc
+  }, [])
+
+  return deduped.sort((a, b) => {
     const left = a.createTime ? new Date(a.createTime).getTime() : a.id
     const right = b.createTime ? new Date(b.createTime).getTime() : b.id
     return right - left
@@ -625,8 +637,10 @@ const isMyPost = (post: Post) => {
 
 // Format date helper
 const formatDate = (date: Date | undefined) => {
-  if (!date) return 'Unknown'
-  return new Date(date).toLocaleString()
+  if (!date) return t('justNow')
+  const dt = new Date(date)
+  if (Number.isNaN(dt.getTime())) return t('justNow')
+  return dt.toLocaleString(locale.value === 'zh' ? 'zh-HK' : 'en-US')
 }
 
 // Get category label
@@ -855,7 +869,7 @@ const editPost = (post: Post) => {
   showEditPostDialog.value = true
 }
 
-const saveEditedPost = (data: { id: number, title: string, content: string, request_type: number, custom_category?: string, photos: string[] }) => {
+const saveEditedPost = (data: { id: number, title: string, content: string, request_type: number, custom_category?: string, tags: string[], photos: string[] }) => {
   const index = allPosts.value.findIndex((post) => post.id === data.id)
   if (index > -1) {
     allPosts.value[index] = {
@@ -864,6 +878,7 @@ const saveEditedPost = (data: { id: number, title: string, content: string, requ
       content: data.content,
       request_type: data.request_type,
       custom_category: data.custom_category || allPosts.value[index].custom_category,
+      tags: [...(data.tags || [])],
       postPhotos: data.photos.map((url, idx) => ({ id: `${data.id}-${idx}`, url }))
     }
   }
@@ -877,6 +892,7 @@ const saveEditedPost = (data: { id: number, title: string, content: string, requ
       content: data.content,
       request_type: data.request_type,
       custom_category: data.custom_category || userPosts[userPostIndex].custom_category,
+      tags: [...(data.tags || [])],
       postPhotos: data.photos.map((url, idx) => ({ id: `${data.id}-${idx}`, url }))
     }
     localStorage.setItem('userPosts', JSON.stringify(userPosts))
@@ -1189,11 +1205,21 @@ const deletePost = (post: Post) => {
   border: 1px solid rgba(177, 188, 255, 0.55) !important;
 }
 
-.home-page-shell :deep(.el-empty) {
-  border-radius: 14px;
-  border: 1px dashed rgba(129, 140, 248, 0.3);
-  background: rgba(255, 255, 255, 0.52);
-  padding: 10px;
+.home-empty-state {
+  margin: 0;
+  padding: 8px 2px 12px;
+}
+
+.home-empty-state :deep(.el-empty) {
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.home-empty-state :deep(.el-empty__description p) {
+  color: var(--tl-text-muted);
+  font-weight: 600;
 }
 
 .post-header {
@@ -1242,6 +1268,23 @@ const deletePost = (post: Post) => {
 
 .post-tag {
   margin-top: 8px;
+}
+
+.post-tag.el-tag--info {
+  color: #1f3b8f !important;
+  background: rgba(124, 156, 255, 0.2) !important;
+  border-color: rgba(89, 124, 237, 0.45) !important;
+}
+
+:global(.dark) .post-tag.el-tag--info {
+  color: #dbeafe !important;
+  background: rgba(37, 99, 235, 0.32) !important;
+  border-color: rgba(96, 165, 250, 0.5) !important;
+}
+
+:global(.dark) .post-footer .el-button--danger,
+:global(.dark) .post-footer .el-button--danger span {
+  color: #fecaca !important;
 }
 
 .post-tags {

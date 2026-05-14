@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Message, Phone } from '@element-plus/icons-vue'
@@ -96,7 +96,7 @@ const filterStatus = ref('')
 const discoverQuery = ref('')
 
 interface Friend {
-  id: number
+  id: number | string
   name: string
   avatar: string
   status: 'online' | 'offline'
@@ -172,33 +172,146 @@ const discoverUsers = ref<Friend[]>([
   }
 ])
 
+const buildGeneratedUsers = (): Friend[] => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const toStableId = (seed: string) => {
+    let hash = 0
+    for (let i = 0; i < seed.length; i += 1) {
+      hash = ((hash << 5) - hash) + seed.charCodeAt(i)
+      hash |= 0
+    }
+    return Math.abs(hash) + 10000
+  }
+
+  const users: Friend[] = []
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i)
+    if (!key || !key.startsWith('userProfile:')) {
+      continue
+    }
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || '{}')
+      const email = String(parsed?.email || '').trim()
+      const name = String(parsed?.name || parsed?.username || email || '').trim()
+      if (!name) {
+        continue
+      }
+      users.push({
+        id: toStableId(email || key),
+        name,
+        avatar: String(parsed?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg'),
+        status: 'offline',
+        bio: String(parsed?.bio || parsed?.status || 'To-Link user')
+      })
+    } catch {
+      // Ignore malformed entries.
+    }
+  }
+  return users
+}
+
+const persistFriendsState = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  localStorage.setItem('friendsList', JSON.stringify(friends.value))
+  localStorage.setItem('friendSuggestions', JSON.stringify(discoverUsers.value))
+  localStorage.setItem('friendDirectory', JSON.stringify([...friends.value, ...discoverUsers.value]))
+}
+
+const loadFriendsState = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    const savedFriends = JSON.parse(localStorage.getItem('friendsList') || '[]')
+    if (Array.isArray(savedFriends) && savedFriends.length > 0) {
+      friends.value = savedFriends
+    }
+  } catch {
+    // Ignore malformed storage.
+  }
+
+  try {
+    const savedSuggestions = JSON.parse(localStorage.getItem('friendSuggestions') || '[]')
+    if (Array.isArray(savedSuggestions) && savedSuggestions.length > 0) {
+      discoverUsers.value = savedSuggestions
+    }
+  } catch {
+    // Ignore malformed storage.
+  }
+
+  const generatedUsers = buildGeneratedUsers()
+  const knownIds = new Set([...friends.value, ...discoverUsers.value].map((item) => String(item.id)))
+  for (const user of generatedUsers) {
+    if (!knownIds.has(String(user.id))) {
+      discoverUsers.value.push(user)
+      knownIds.add(String(user.id))
+    }
+  }
+
+  persistFriendsState()
+}
+
 const filteredFriends = computed(() => {
+  const query = searchQuery.value.toLowerCase().trim()
   return friends.value.filter(friend => {
-    const matchesSearch = friend.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const matchesSearch = !query || friend.name.toLowerCase().includes(query) || friend.bio.toLowerCase().includes(query)
     const matchesStatus = !filterStatus.value || friend.status === filterStatus.value
     return matchesSearch && matchesStatus
   })
 })
 
 const filteredDiscoverUsers = computed(() => {
-  const friendIds = new Set(friends.value.map((friend) => friend.id))
+  const query = discoverQuery.value.toLowerCase().trim()
+  const friendIds = new Set(friends.value.map((friend) => String(friend.id)))
   return discoverUsers.value
-    .filter((user) => !friendIds.has(user.id))
-    .filter((user) => user.name.toLowerCase().includes(discoverQuery.value.toLowerCase()))
+    .filter((user) => !friendIds.has(String(user.id)))
+    .filter((user) => !query || user.name.toLowerCase().includes(query) || user.bio.toLowerCase().includes(query))
 })
 
 const addFriend = (user: Friend) => {
-  if (friends.value.some((friend) => friend.id === user.id)) {
+  if (friends.value.some((friend) => String(friend.id) === String(user.id))) {
     ElMessage.info(t('alreadyFriends'))
     return
   }
   friends.value.unshift({ ...user, status: user.status || 'offline' })
+  discoverUsers.value = discoverUsers.value.filter((item) => String(item.id) !== String(user.id))
+  persistFriendsState()
   ElMessage.success(t('friendAdded'))
 }
 
 const sendMessage = (friend: Friend) => {
-  router.push({ path: '/chat', query: { userId: friend.id } })
+  if (typeof window !== 'undefined') {
+    const conversations = JSON.parse(localStorage.getItem('chatConversations') || '[]')
+    const existing = conversations.find((item: any) => String(item.id) === String(friend.id))
+    if (!existing) {
+      conversations.unshift({
+        id: friend.id,
+        name: friend.name,
+        avatar: friend.avatar,
+        unread: 0,
+        lastMessage: '',
+        lastMessageTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        messages: []
+      })
+      localStorage.setItem('chatConversations', JSON.stringify(conversations))
+    }
+  }
+  router.push({ path: '/chat', query: { userId: String(friend.id) } })
 }
+
+onMounted(() => {
+  loadFriendsState()
+})
+
+watch([friends, discoverUsers], () => {
+  persistFriendsState()
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -328,17 +441,20 @@ const sendMessage = (friend: Friend) => {
 .discover-main {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  min-width: 0;
 }
 
 .discover-name {
   font-weight: 700;
   color: #1d2850;
+  line-height: 1.3;
 }
 
 .discover-bio {
   font-size: 14px;
   color: #5c6590;
+  line-height: 1.4;
 }
 
 .friend-card {
@@ -482,6 +598,14 @@ const sendMessage = (friend: Friend) => {
 
 :global(.dark) .friend-bio {
   color: #d2dcff;
+}
+
+:global(.dark) .discover-name {
+  color: #eff6ff;
+}
+
+:global(.dark) .discover-bio {
+  color: #cbd5e1;
 }
 
 :global(.dark) .online-indicator {

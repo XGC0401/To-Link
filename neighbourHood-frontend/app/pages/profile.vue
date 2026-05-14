@@ -75,7 +75,6 @@
               v-model="profileForm.profession"
               :placeholder="$t('profession')"
               size="large"
-              readonly
             />
           </el-form-item>
 
@@ -259,6 +258,7 @@
         v-model="showChangePasswordDialog"
         :title="t('changePassword')"
         width="520px"
+        align-center
       >
         <el-form :model="passwordForm" label-position="top">
           <el-form-item :label="t('currentPassword')">

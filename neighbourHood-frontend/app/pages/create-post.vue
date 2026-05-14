@@ -100,7 +100,7 @@
       </el-card>
     </div>
 
-    <el-dialog v-model="dialogVisible">
+    <el-dialog v-model="dialogVisible" width="640px" align-center>
       <img w-full :src="dialogImageUrl" :alt="$t('imagePreview')" />
     </el-dialog>
   </NuxtLayout>
@@ -224,7 +224,7 @@ const removeTag = (tag: string) => {
 }
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
-  dialogImageUrl.value = uploadFile.url!
+  dialogImageUrl.value = uploadFile.url || (uploadFile.raw ? URL.createObjectURL(uploadFile.raw) : '')
   dialogVisible.value = true
 }
 

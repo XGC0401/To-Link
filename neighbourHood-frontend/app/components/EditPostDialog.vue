@@ -53,6 +53,25 @@
         />
       </el-form-item>
 
+      <el-form-item :label="$t('tagsOptional')">
+        <div class="post-tags-editor">
+          <div class="tag-input-row">
+            <el-input
+              v-model="tagInput"
+              :placeholder="$t('addTags')"
+              @keyup.enter.prevent="addTag"
+            />
+            <el-button :icon="Plus" @click="addTag" />
+          </div>
+          <div v-if="formData.tags.length > 0" class="selected-tags">
+            <el-tag v-for="tag in formData.tags" :key="tag" closable @close="removeTag(tag)">
+              {{ tag }}
+            </el-tag>
+          </div>
+          <p v-else class="tag-hint">{{ $t('tagHint') }}</p>
+        </div>
+      </el-form-item>
+
       <el-form-item :label="$t('content')" prop="content">
         <el-input
           v-model="formData.content"
@@ -110,6 +129,7 @@ interface Post {
   id: number
   request_type: number
   custom_category?: string
+  tags?: string[]
   postPhotos?: Array<{ id?: string; url: string }>
   title: string
   content: string
@@ -122,7 +142,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'save', data: { id: number, title: string, content: string, request_type: number, custom_category?: string, photos: string[] }): void
+  (e: 'save', data: { id: number, title: string, content: string, request_type: number, custom_category?: string, tags: string[], photos: string[] }): void
 }>()
 
 const postFormRef = ref<FormInstance>()
@@ -132,12 +152,14 @@ const formData = reactive({
   title: '',
   request_type: 0,
   custom_category: '',
+  tags: [] as string[],
   content: ''
 })
 
 const fileList = ref<UploadUserFile[]>([])
 const imagePreviewVisible = ref(false)
 const previewImageUrl = ref('')
+const tagInput = ref('')
 
 const postRules = reactive<FormRules>({
   title: [
@@ -198,12 +220,25 @@ watch(() => props.modelValue, (newVal) => {
     formData.content = props.post.content
     formData.request_type = Number(props.post.request_type ?? 0)
     formData.custom_category = String(props.post.custom_category || '')
+    formData.tags = Array.isArray(props.post.tags) ? [...props.post.tags] : []
     fileList.value = (props.post.postPhotos || []).map((photo, index) => ({
       name: `photo-${index + 1}`,
       url: photo.url
     }))
   }
 })
+
+const addTag = () => {
+  const value = tagInput.value.trim()
+  if (!value) return
+  if (!value.startsWith('#') || /\s/.test(value) || formData.tags.includes(value)) return
+  formData.tags.push(value)
+  tagInput.value = ''
+}
+
+const removeTag = (tag: string) => {
+  formData.tags = formData.tags.filter((item) => item !== tag)
+}
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
   previewImageUrl.value = uploadFile.url || ''
@@ -223,6 +258,7 @@ async function handleSave() {
         content: formData.content,
         request_type: formData.request_type,
         custom_category: formData.request_type === 4 ? formData.custom_category.trim() : undefined,
+        tags: [...formData.tags],
         photos: fileList.value
           .map((file) => {
             if (file.url) {
@@ -246,5 +282,28 @@ async function handleSave() {
 <style scoped>
 .el-form {
   padding: 8px 0;
+}
+
+.post-tags-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.tag-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-hint {
+  margin: 0;
+  color: var(--tl-text-muted);
 }
 </style>

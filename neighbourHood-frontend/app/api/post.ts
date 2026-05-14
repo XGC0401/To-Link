@@ -68,7 +68,18 @@ export async function getPost(): Promise<APIResponse<BasicResponse<Post[]>>> {
 
 export async function publishPost(formdata: FormData): Promise<APIResponse<BasicResponse<Boolean>>> {
   try {
-    const { data, headers } = await createAxiosInstance().post<BasicResponse<Boolean>>(`/post/create-post`, formdata, getConfig());
+    const authConfig = getConfig()
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<Boolean>>(
+      `/post/create-post`,
+      formdata,
+      {
+        ...authConfig,
+        headers: {
+          ...(authConfig.headers || {}),
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);

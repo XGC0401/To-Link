@@ -40,6 +40,15 @@
               </div>
               <p class="conversation-preview">{{ conversation.lastMessage }}</p>
             </div>
+            <el-dropdown trigger="click" @command="(cmd) => handleConversationCommand(cmd, conversation)">
+              <el-button text :icon="MoreFilled" circle class="conversation-menu-btn" @click.stop />
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="rename">{{ $t('renameChatTitle') }}</el-dropdown-item>
+                  <el-dropdown-item command="delete">{{ $t('deleteChatTitle') }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
             <el-badge :value="conversation.unread" v-if="conversation.unread > 0" />
           </div>
         </div>
@@ -302,6 +311,22 @@
       <el-button type="primary" @click="createGroupConversation">{{ $t('createGroupChat') }}</el-button>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="showRenameDialog" :title="$t('renameChatTitle')" width="460px" align-center>
+    <el-input v-model="renameValue" :placeholder="$t('renameChatPlaceholder')" maxlength="60" />
+    <template #footer>
+      <el-button @click="showRenameDialog = false">{{ $t('cancel') }}</el-button>
+      <el-button type="primary" @click="confirmRenameConversation">{{ $t('save') }}</el-button>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="showDeleteDialog" :title="$t('deleteChatTitle')" width="460px" align-center>
+    <p class="chat-delete-text">{{ $t('deleteChatConfirm') }}</p>
+    <template #footer>
+      <el-button @click="showDeleteDialog = false">{{ $t('cancel') }}</el-button>
+      <el-button type="danger" @click="confirmDeleteConversation">{{ $t('delete') }}</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -399,6 +424,10 @@ const blockedPeople = ref<BlockedPerson[]>([])
 const showCreateGroupDialog = ref(false)
 const groupChatName = ref('')
 const selectedGroupMembers = ref<number[]>([])
+const showRenameDialog = ref(false)
+const showDeleteDialog = ref(false)
+const renameValue = ref('')
+const selectedManageConversationId = ref<string | number | null>(null)
 
 const conversations = ref<Conversation[]>([
   {
@@ -665,20 +694,32 @@ const selectConversation = (conversation: Conversation) => {
 
 
 const createNewConversation = (userId: number) => {
-  // Friend data mapping (should match friends.vue)
-  const friendsData: Record<number, { name: string, avatar: string }> = {
-    1: { name: 'John Doe', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
-    2: { name: 'Jane Smith', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' },
-    3: { name: 'Mike Johnson', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
-    4: { name: 'Sarah Williams', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' },
-    5: { name: 'David Brown', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
-    6: { name: 'Emily Davis', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' }
+  const storedDirectory = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('friendDirectory') || '[]')
+    } catch {
+      return []
+    }
+  })
+
+  const mappedDirectory = Array.isArray(storedDirectory)
+    ? Object.fromEntries(storedDirectory.map((item: any) => [String(item.id), { name: item.name, avatar: item.avatar }]))
+    : {}
+
+  const friendsData: Record<string, { name: string, avatar: string }> = {
+    '1': { name: 'John Doe', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
+    '2': { name: 'Jane Smith', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' },
+    '3': { name: 'Mike Johnson', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
+    '4': { name: 'Sarah Williams', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' },
+    '5': { name: 'David Brown', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
+    '6': { name: 'Emily Davis', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' },
+    ...mappedDirectory
   }
-  
-  const friendData = friendsData[userId]
+
+  const friendData = friendsData[String(userId)]
   if (friendData) {
     const newConversation: Conversation = {
-      id: userId,
+      id: Number.isNaN(userId) ? Date.now() : userId,
       name: friendData.name,
       avatar: friendData.avatar,
       lastMessage: '',
@@ -689,6 +730,47 @@ const createNewConversation = (userId: number) => {
     conversations.value.unshift(newConversation)
     selectConversation(newConversation)
   }
+}
+
+const handleConversationCommand = (command: string, conversation: Conversation) => {
+  selectedManageConversationId.value = conversation.id
+  if (command === 'rename') {
+    renameValue.value = conversation.name
+    showRenameDialog.value = true
+    return
+  }
+  if (command === 'delete') {
+    showDeleteDialog.value = true
+  }
+}
+
+const confirmRenameConversation = () => {
+  const name = renameValue.value.trim()
+  if (!name) {
+    ElMessage.warning(t('renameChatRequired'))
+    return
+  }
+
+  const current = conversations.value.find((item) => item.id === selectedManageConversationId.value)
+  if (!current) {
+    return
+  }
+
+  current.name = name
+  showRenameDialog.value = false
+  ElMessage.success(t('save'))
+}
+
+const confirmDeleteConversation = () => {
+  const index = conversations.value.findIndex((item) => item.id === selectedManageConversationId.value)
+  if (index < 0) {
+    return
+  }
+  const [removed] = conversations.value.splice(index, 1)
+  if (removed && selectedConversationId.value === removed.id) {
+    selectedConversationId.value = null
+  }
+  showDeleteDialog.value = false
 }
 
 const sendMessage = () => {
@@ -1228,6 +1310,15 @@ const createGroupConversation = () => {
   margin-bottom: 8px;
   cursor: pointer;
   transition: background-color 0.25s, border-color 0.25s;
+}
+
+.conversation-menu-btn {
+  color: var(--tl-text-muted);
+}
+
+.chat-delete-text {
+  margin: 4px 0;
+  color: var(--tl-text);
 }
 
 .conversation-item:hover {
@@ -1773,6 +1864,11 @@ const createGroupConversation = () => {
     radial-gradient(135% 150% at 100% 0%, rgba(6, 182, 212, 0.24), rgba(10, 16, 34, 0.08) 62%),
     linear-gradient(165deg, rgba(12, 18, 38, 0.98), rgba(20, 28, 56, 0.95));
   box-shadow: 0 44px 80px rgba(1, 5, 15, 0.72), inset 0 1px 0 rgba(169, 188, 255, 0.2);
+}
+
+:global(.dark) .conversation-menu-btn,
+:global(.dark) .chat-delete-text {
+  color: #e5e7eb !important;
 }
 
 :global(.dark) .chat-pattern {
