@@ -1150,8 +1150,11 @@ html.dark .tabs-container .el-tabs__item.is-top.is-active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1.2;
+  height: 36px;
+  padding: 0 18px;
+  line-height: 1;
   text-align: center;
+  box-sizing: border-box;
 }
 
 /* Center the tab bar itself so top tabs sit in the middle of the header row. */
@@ -1200,9 +1203,11 @@ html.dark .el-dropdown-menu__item.is-selected {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  line-height: 1.2 !important;
+  height: 36px;
   min-height: 36px;
-  padding: 6px 18px;
+  padding: 0 18px !important;
+  line-height: 1 !important;
   text-align: center;
+  box-sizing: border-box;
 }
 

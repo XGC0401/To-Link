@@ -1336,10 +1336,12 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1.2;
+  height: 36px;
   min-height: 36px;
-  padding: 6px 18px;
+  padding: 0 18px;
+  line-height: 1;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .tabs-container :deep(.el-tabs__item.is-active) {
@@ -1856,6 +1858,11 @@ onUnmounted(() => {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 18px !important;
+  line-height: 1 !important;
+  box-sizing: border-box;
 }
 
 .tabs-container :deep(.el-tabs__item.is-active) {
@@ -2078,6 +2085,8 @@ onUnmounted(() => {
   }
 
   .tabs-container :deep(.el-tabs__item) {
+    height: 32px;
+    min-height: 32px;
     padding: 0 12px;
     font-size: 13px;
   }
@@ -2117,6 +2126,8 @@ onUnmounted(() => {
   }
 
   .tabs-container :deep(.el-tabs__item) {
+    height: 30px;
+    min-height: 30px;
     padding: 0 8px;
     font-size: 12px;
   }
