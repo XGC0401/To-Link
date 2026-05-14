@@ -1316,6 +1316,16 @@ onUnmounted(() => {
   margin-bottom: 20px;
 }
 
+.tabs-container :deep(.el-tabs__nav-scroll) {
+  display: flex;
+  justify-content: center;
+}
+
+.tabs-container :deep(.el-tabs__nav) {
+  display: inline-flex;
+  justify-content: center;
+}
+
 .tabs-container :deep(.el-tabs__nav-wrap::after) {
   background: rgba(99, 102, 241, 0.16);
 }
@@ -1323,6 +1333,13 @@ onUnmounted(() => {
 .tabs-container :deep(.el-tabs__item) {
   font-weight: 600;
   letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  min-height: 36px;
+  padding: 6px 18px;
+  text-align: center;
 }
 
 .tabs-container :deep(.el-tabs__item.is-active) {
@@ -1836,6 +1853,9 @@ onUnmounted(() => {
   text-transform: none !important;
   letter-spacing: normal !important;
   font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .tabs-container :deep(.el-tabs__item.is-active) {

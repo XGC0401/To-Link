@@ -1154,6 +1154,21 @@ html.dark .tabs-container .el-tabs__item.is-top.is-active {
   text-align: center;
 }
 
+/* Center the tab bar itself so top tabs sit in the middle of the header row. */
+.el-tabs--top .el-tabs__nav-scroll,
+.tabs-container .el-tabs__nav-scroll,
+.settings-tabs .el-tabs__nav-scroll {
+  display: flex;
+  justify-content: center;
+}
+
+.el-tabs--top .el-tabs__nav,
+.tabs-container .el-tabs__nav,
+.settings-tabs .el-tabs__nav {
+  display: inline-flex;
+  justify-content: center;
+}
+
 /* Dropdown/select item state fix: prevent white text from sticking after hover-out. */
 html.dark .el-dropdown-menu__item,
 html.dark .el-select-dropdown__item {
@@ -1187,7 +1202,7 @@ html.dark .el-dropdown-menu__item.is-selected {
   justify-content: center;
   line-height: 1.2 !important;
   min-height: 36px;
-  padding-top: 6px;
-  padding-bottom: 6px;
+  padding: 6px 18px;
+  text-align: center;
 }
 

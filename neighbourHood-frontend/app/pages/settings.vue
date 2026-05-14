@@ -549,9 +549,16 @@ const deleteAllPostsFromSecret = () => {
 
 .settings-tabs :deep(.el-tabs__nav-scroll) {
   padding: 6px 8px;
+  display: flex;
+  justify-content: center;
   border-radius: 10px;
   background: var(--tl-surface);
   box-shadow: 0 0 0 1px var(--tl-border) inset;
+}
+
+.settings-tabs :deep(.el-tabs__nav) {
+  display: inline-flex;
+  justify-content: center;
 }
 
 .settings-tabs :deep(.el-tabs__nav-wrap::after) {
@@ -561,6 +568,8 @@ const deleteAllPostsFromSecret = () => {
 .settings-tabs :deep(.el-tabs__item) {
   font-weight: 600;
   letter-spacing: 0.01em;
+  text-align: center;
+  padding: 6px 18px;
 }
 
 .settings-form {

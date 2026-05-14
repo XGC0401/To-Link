@@ -11,7 +11,6 @@
 
                 <div class="cover-content">
                     <div class="cover-card">
-                        <img class="cover-logo" src="/to-link-logo.svg" alt="To-Link logo" />
                         <div class="brand-mark">🔗</div>
                         <h1>{{ t('appName') }}</h1>
 

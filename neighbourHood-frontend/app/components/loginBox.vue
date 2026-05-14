@@ -1,7 +1,8 @@
 <template>
   <div class="login-container" :class="{ 'dark-mode': isDarkMode }">
     <div class="brand-side">
-      <img class="brand-logo" src="/to-link-logo.svg" alt="To-Link logo" />
+      <h1 class="brand-title">{{ t('brandTitle') }}</h1>
+      <p class="brand-description">{{ t('brandDescription') }}</p>
     </div>
 
     <div class="form-side">
@@ -963,6 +964,20 @@ onMounted(() => {
   margin: 0;
   display: block;
   filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.24));
+}
+
+.brand-side {
+  text-align: left;
+  color: white;
+  z-index: 1;
+  max-width: 460px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  min-height: auto;
+  padding: clamp(120px, 18vh, 220px) 22px 22px;
 }
 
 .brand-title {

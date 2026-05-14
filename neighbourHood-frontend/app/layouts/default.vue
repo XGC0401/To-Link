@@ -1886,7 +1886,7 @@ const handleEmergencyCommand = (command: string) => {
 
 .mobile-nav-drawer :deep(.el-drawer__header) {
   margin-bottom: 0;
-  padding: 20px 20px 16px;
+  padding: 22px 22px 18px;
   border-bottom: 1px solid var(--tl-border);
   color: var(--tl-text-strong);
   font-weight: 700;
@@ -1907,17 +1907,17 @@ const handleEmergencyCommand = (command: string) => {
 .mobile-drawer-brand-row {
   display: flex;
   align-items: center;
-  min-height: 36px;
+  min-height: 44px;
 }
 
 .mobile-drawer-logo {
-  height: 30px;
+  height: 38px;
   width: auto;
   display: block;
 }
 
 .mobile-drawer-menu-label {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--tl-text-strong);
