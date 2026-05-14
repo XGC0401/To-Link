@@ -9,11 +9,13 @@
             "projectName": "neighbourHood-backend",
             "cwd": "${workspaceFolder}/neighbourHood-backend",
             "env": {
-                "SPRING_DATASOURCE_URL": "jdbc:postgresql://ep-noisy-block-ao0y8qj7-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_WqU6AwaD3ojc&sslmode=require&channelBinding=require",
-                "supabase.endpoint": "https://oenfvtbsyogshoiurduh.supabase.co",
-                "supabase.access-key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lbmZ2dGJzeW9nc2hvaXVyZHVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTg0MzEsImV4cCI6MjA5MjI3NDQzMX0.Gsl7G31HkRQKEr_LpTN45k6zFTyBqXcDQNA2irDmVTY",
-                "supabase.secret-key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lbmZ2dGJzeW9nc2hvaXVyZHVoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjY5ODQzMSwiZXhwIjoyMDkyMjc0NDMxfQ.l2NaRz1SpXS9o0O0Zh0r_3tCkYHuPLODfgKDGnnh_Fs",
-                "SUPABASE_BUCKET": "uploads"
+                "SPRING_DATASOURCE_URL": "${env:SPRING_DATASOURCE_URL}",
+                "SPRING_DATASOURCE_USERNAME": "${env:SPRING_DATASOURCE_USERNAME}",
+                "SPRING_DATASOURCE_PASSWORD": "${env:SPRING_DATASOURCE_PASSWORD}",
+                "SUPABASE_ENDPOINT": "${env:SUPABASE_ENDPOINT}",
+                "SUPABASE_ACCESS_KEY": "${env:SUPABASE_ACCESS_KEY}",
+                "SUPABASE_SECRET_KEY": "${env:SUPABASE_SECRET_KEY}",
+                "SUPABASE_BUCKET": "${env:SUPABASE_BUCKET}"
             }
         }
     ]
