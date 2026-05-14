@@ -79,7 +79,7 @@
 
           <el-form-item :label="$t('imagesOptional')">
             <el-upload v-model:file-list="fileList" list-type="picture-card" :on-preview="handlePictureCardPreview"
-              :on-remove="handleRemove" :limit="5" accept="image/*">
+              :on-remove="handleRemove" :limit="5" accept="image/*" :auto-upload="false">
               <el-icon>
                 <Plus />
               </el-icon>
@@ -115,7 +115,6 @@ import {
   Plus,
   Check,
 } from '@element-plus/icons-vue'
-import type { Post } from '~/api/types/post'
 import { publishPost } from '~/api/post'
 
 const router = useRouter()
@@ -246,6 +245,9 @@ const handleSubmit = async () => {
 }
 
 const createPost = async () => {
+  if (submitting.value) {
+    return
+  }
   submitting.value = true
 
   try {
@@ -272,36 +274,6 @@ const createPost = async () => {
     if (error || !response?.success) {
       throw new Error(response?.message || t('postFailed'))
     }
-
-    const savedProfileRaw = localStorage.getItem('userProfile')
-    const savedProfile = savedProfileRaw ? JSON.parse(savedProfileRaw) : null
-    const localPostsRaw = localStorage.getItem('userPosts')
-    const localPosts = localPostsRaw ? JSON.parse(localPostsRaw) : []
-
-    const createdPostId = Number(response?.data)
-    const optimisticPost: Post & { isLocalOnly?: boolean } = {
-      id: Number.isFinite(createdPostId) && createdPostId > 0 ? createdPostId : Date.now(),
-      type: postForm.type,
-      user: {
-        uuid: String(savedProfile?.uuid || savedProfile?.email || Date.now()),
-        username: savedProfile?.name || savedProfile?.username || 'You',
-        email: savedProfile?.email || undefined
-      },
-      title: postForm.title,
-      content: postForm.content,
-      request_type: postForm.request_type,
-      custom_category: postForm.request_type === 4 ? postForm.custom_category.trim() : undefined,
-      tags: [...postForm.tags],
-      share_count: 0,
-      is_important: postForm.is_important,
-      redeemPoints: postForm.redeemPoints ?? 0,
-      paymentMethod: postForm.paymentMethod,
-      createTime: new Date(),
-      isLocalOnly: true
-    }
-
-    localStorage.setItem('userPosts', JSON.stringify([optimisticPost, ...localPosts]))
-    localStorage.removeItem('deletedAllPosts')
 
     ElMessage.success(t('postSuccess'))
 

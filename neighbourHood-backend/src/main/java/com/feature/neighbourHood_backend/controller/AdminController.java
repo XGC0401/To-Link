@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import com.feature.neighbourHood_backend.model.CustomUserDetails;
 import com.feature.neighbourHood_backend.model.DTO.ApiResponse;
 import com.feature.neighbourHood_backend.model.DTO.BlockUserRequestDTO;
+import com.feature.neighbourHood_backend.model.DTO.ChangePasswordRequestDTO;
 import com.feature.neighbourHood_backend.model.DTO.UpdateEmailRequestDTO;
 import com.feature.neighbourHood_backend.model.entity.User;
 import com.feature.neighbourHood_backend.service.UserService;
@@ -55,6 +56,18 @@ public class AdminController {
             return new ApiResponse(true, token, "email updated");
         } catch (IllegalArgumentException ex) {
             return new ApiResponse(false, ex.getMessage());
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/user/password")
+    public ApiResponse<String> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody ChangePasswordRequestDTO request) {
+        try {
+            userService.updatePassword(userDetails.getUuid(), request.getCurrentPassword(), request.getNewPassword());
+            return new ApiResponse<>(true, null, "password updated");
+        } catch (IllegalArgumentException ex) {
+            return new ApiResponse<>(false, ex.getMessage());
         }
     }
 

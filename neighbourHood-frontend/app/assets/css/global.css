@@ -260,6 +260,43 @@ html.dark .conversation-item:hover {
   background: #253247 !important;
 }
 
+/* Keep all Element Plus dialogs centered and visible regardless of page scroll position. */
+.el-overlay-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.el-dialog {
+  margin: 0 !important;
+  max-width: min(96vw, var(--el-dialog-width, 700px));
+  max-height: calc(100vh - 32px);
+  overflow: hidden;
+}
+
+.el-dialog__body {
+  max-height: calc(100vh - 210px);
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .el-overlay-dialog {
+    padding: 10px;
+  }
+
+  .el-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100vh - 20px);
+  }
+
+  .el-dialog__body {
+    max-height: calc(100vh - 180px);
+  }
+}
+
 html.dark .conversation-item.active {
   background: #2a3448 !important;
 }

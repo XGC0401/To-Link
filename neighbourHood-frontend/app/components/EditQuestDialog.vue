@@ -4,6 +4,7 @@
     @update:model-value="$emit('update:modelValue', $event)"
     :title="$t('edit') + ' ' + $t('questRequests')"
     width="700px"
+    align-center
   >
     <el-form
       v-if="quest"
@@ -128,7 +129,7 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="imagePreviewVisible" width="560px">
+  <el-dialog v-model="imagePreviewVisible" width="560px" align-center>
     <img style="width: 100%;" :src="previewImageUrl" :alt="$t('imagePreview')" />
   </el-dialog>
 </template>

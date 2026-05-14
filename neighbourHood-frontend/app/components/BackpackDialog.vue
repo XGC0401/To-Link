@@ -4,6 +4,7 @@
     @update:model-value="$emit('update:modelValue', $event)"
     :title="$t('myBackpack')"
     width="560px"
+    align-center
   >
     <div class="backpack-content">
       <div class="backpack-toolbar">
@@ -13,6 +14,9 @@
           :placeholder="$t('searchBackpack')"
           class="backpack-search"
         />
+        <el-button plain @click="showHistory = !showHistory">
+          {{ showHistory ? $t('backpackItems') : $t('history') }}
+        </el-button>
         <el-button plain type="danger" :disabled="items.length === 0" @click="$emit('clear')">
           {{ $t('clearBackpack') }}
         </el-button>
@@ -21,13 +25,15 @@
       <el-empty v-if="filteredItems.length === 0" :description="$t('noRedeemedRewards')" />
 
       <div v-else class="backpack-list">
-        <div v-for="item in filteredItems" :key="item.id" class="backpack-item">
+        <div v-for="item in filteredItems" :key="item.id" class="backpack-item" :class="itemClass(item)" @click="handleItemClick(item)">
           <div class="item-main">
             <div class="item-name">{{ item.name }}</div>
             <div class="item-desc">{{ item.description }}</div>
           </div>
           <div class="item-meta">
-            <el-tag type="warning">{{ item.points }} {{ $t('points') }}</el-tag>
+            <el-tag :type="itemTagType(item)">{{ item.points }} {{ $t('points') }}</el-tag>
+            <span v-if="getStatus(item) === 'used'" class="item-status item-status-used">{{ $t('used') }}</span>
+            <span v-else-if="getStatus(item) === 'expired'" class="item-status item-status-expired">{{ $t('expired') }}</span>
             <span class="item-time">{{ $t('redeemedAt') }}: {{ formatDate(item.redeemedAt) }}</span>
           </div>
         </div>
@@ -38,6 +44,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
 interface RedeemedRewardItem {
   id: string
@@ -45,6 +53,8 @@ interface RedeemedRewardItem {
   description: string
   points: number
   redeemedAt: string
+  usedAt?: string | null
+  expiresAt?: string | null
 }
 
 const props = defineProps<{
@@ -52,20 +62,76 @@ const props = defineProps<{
   items: RedeemedRewardItem[]
 }>()
 
+const { t } = useI18n()
+
 defineEmits<{
   (e: 'update:modelValue', value: boolean): void
   (e: 'clear'): void
+  (e: 'update:items', value: RedeemedRewardItem[]): void
 }>()
 
 const searchText = ref('')
+const showHistory = ref(false)
+
+const getStatus = (item: RedeemedRewardItem) => {
+  if (item.usedAt) {
+    return 'used'
+  }
+  const expiresAt = item.expiresAt || ''
+  if (expiresAt && new Date(expiresAt).getTime() < Date.now()) {
+    return 'expired'
+  }
+  return 'active'
+}
+
+const itemTagType = (item: RedeemedRewardItem) => {
+  const status = getStatus(item)
+  if (status === 'used') return 'success'
+  if (status === 'expired') return 'danger'
+  return 'warning'
+}
+
+const itemClass = (item: RedeemedRewardItem) => {
+  const status = getStatus(item)
+  return {
+    'is-clickable': status === 'active' && !showHistory.value,
+    'is-disabled': status !== 'active' || showHistory.value
+  }
+}
 
 const filteredItems = computed(() => {
   const q = searchText.value.trim().toLowerCase()
-  if (!q) return props.items
-  return props.items.filter((item) => {
+  const source = showHistory.value
+    ? props.items.filter((item) => getStatus(item) !== 'active')
+    : props.items
+  if (!q) return source
+  return source.filter((item) => {
     return [item.name, item.description].some((v) => String(v || '').toLowerCase().includes(q))
   })
 })
+
+const handleItemClick = async (item: RedeemedRewardItem) => {
+  if (showHistory.value || getStatus(item) !== 'active') {
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `${item.name}\n${String(item.description || '')}\n\n${t('useItemConfirm')}`,
+      t('confirm'),
+      {
+        confirmButtonText: t('yes'),
+        cancelButtonText: t('no'),
+        type: 'warning'
+      }
+    )
+
+    item.usedAt = new Date().toISOString()
+    ElMessage.success(t('used'))
+  } catch {
+    // user cancelled
+  }
+}
 
 function formatDate(isoDate: string) {
   const dt = new Date(isoDate)
@@ -108,6 +174,20 @@ function formatDate(isoDate: string) {
   gap: 10px;
 }
 
+.backpack-item.is-clickable {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.backpack-item.is-clickable:hover {
+  border-color: #67a4ff;
+  box-shadow: 0 8px 20px rgba(103, 164, 255, 0.2);
+}
+
+.backpack-item.is-disabled {
+  opacity: 0.86;
+}
+
 .item-main {
   min-width: 0;
 }
@@ -134,5 +214,18 @@ function formatDate(isoDate: string) {
 .item-time {
   color: #909399;
   font-size: 12px;
+}
+
+.item-status {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.item-status-used {
+  color: #15803d;
+}
+
+.item-status-expired {
+  color: #dc2626;
 }
 </style>

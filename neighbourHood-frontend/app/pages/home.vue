@@ -99,7 +99,6 @@
               <p>{{ post.content }}</p>
               <div class="post-tags">
                 <el-tag v-if="isMyPost(post)" type="info" class="post-tag">{{ $t('yourPost') }}</el-tag>
-                <el-tag v-if="isAdmin && !isMyPost(post)" type="danger" size="small" class="post-tag">{{ $t('admin') }}</el-tag>
                 <el-tag class="post-tag">{{ getCategoryLabel(post) }}</el-tag>
                 <el-tag v-if="post.is_important" type="danger" class="post-tag">{{ $t('important') }}</el-tag>
                 <el-tag v-if="post.redeemPoints" type="warning" class="post-tag">
@@ -856,14 +855,16 @@ const editPost = (post: Post) => {
   showEditPostDialog.value = true
 }
 
-const saveEditedPost = (data: { id: number, title: string, content: string, category: string }) => {
+const saveEditedPost = (data: { id: number, title: string, content: string, request_type: number, custom_category?: string, photos: string[] }) => {
   const index = allPosts.value.findIndex((post) => post.id === data.id)
   if (index > -1) {
     allPosts.value[index] = {
       ...allPosts.value[index],
       title: data.title,
       content: data.content,
-      custom_category: data.category || allPosts.value[index].custom_category
+      request_type: data.request_type,
+      custom_category: data.custom_category || allPosts.value[index].custom_category,
+      postPhotos: data.photos.map((url, idx) => ({ id: `${data.id}-${idx}`, url }))
     }
   }
 
@@ -874,7 +875,9 @@ const saveEditedPost = (data: { id: number, title: string, content: string, cate
       ...userPosts[userPostIndex],
       title: data.title,
       content: data.content,
-      custom_category: data.category || userPosts[userPostIndex].custom_category
+      request_type: data.request_type,
+      custom_category: data.custom_category || userPosts[userPostIndex].custom_category,
+      postPhotos: data.photos.map((url, idx) => ({ id: `${data.id}-${idx}`, url }))
     }
     localStorage.setItem('userPosts', JSON.stringify(userPosts))
     myPostIds.value = userPosts

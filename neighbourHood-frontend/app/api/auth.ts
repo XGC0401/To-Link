@@ -92,6 +92,20 @@ export async function updateEmail(email: string): Promise<APIResponse<BasicRespo
   }
 }
 
+export async function changePassword(currentPassword: string, newPassword: string): Promise<APIResponse<BasicResponse<String>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<String>>(
+      `/admin/user/password`,
+      { currentPassword, newPassword },
+      getConfig()
+    );
+    return [null, data, { headers }];
+  } catch (error: any) {
+    console.error(error);
+    return [error, error.response?.status];
+  }
+}
+
 export async function getBlacklist(): Promise<APIResponse<BasicResponse<User[]>>> {
   try {
     const { data, headers } = await createAxiosInstance().get<BasicResponse<User[]>>(`/admin/user/blacklist`, getConfig())

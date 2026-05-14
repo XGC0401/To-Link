@@ -112,7 +112,7 @@
               <el-switch v-model="showOnlyMyRequests" size="large" />
               <span class="header-toggle-label">{{ $t('showHideYourRequests') }}</span>
             </div>
-            <el-button type="primary" @click="showCreateQuestDialog = true">
+            <el-button type="primary" @click="goToCreateQuestPage">
               {{ $t('createQuestRequest') }}
             </el-button>
             <el-tag type="success" size="large">
@@ -140,10 +140,6 @@
       </el-tab-pane>
       </el-tabs>
     </div>
-
-    <!-- Create Quest Dialog -->
-    <CreateQuestDialog v-if="showCreateQuestDialog || questFormDraft.title || questFormDraft.detail"
-      v-model="showCreateQuestDialog" :language="language" :available-tags="availableTags" @create="createQuest" />
 
     <!-- Redeem Rewards Dialog -->
     <RedeemRewardsDialog v-model="showRedeemDialog" :language="language" :current-points="currentUserRewardPoints"
@@ -193,7 +189,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import PostCard from '~/components/PostCard.vue'
 import QuestCard from '~/components/QuestCard.vue'
-import CreateQuestDialog from '~/components/CreateQuestDialog.vue'
 import RedeemRewardsDialog from '~/components/RedeemRewardsDialog.vue'
 import BackpackDialog from '~/components/BackpackDialog.vue'
 import PostDetailDialog from '~/components/PostDetailDialog.vue'
@@ -430,6 +425,8 @@ const redeemedRewards = ref<Array<{
   description: string
   points: number
   redeemedAt: string
+  usedAt?: string | null
+  expiresAt?: string | null
 }>>([])
 const rewardsCatalog = ref([
   {
@@ -708,6 +705,10 @@ function goToCreatePost() {
   router.push('/create-post')
 }
 
+function goToCreateQuestPage() {
+  router.push('/create-quest')
+}
+
 function scrollToTop() {
   if (typeof window !== 'undefined') {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -917,7 +918,9 @@ function redeemReward(reward: any) {
       name: String(reward.name || ''),
       description: String(reward.description || ''),
       points: Number(reward.points || 0),
-      redeemedAt: new Date().toISOString()
+      redeemedAt: new Date().toISOString(),
+      usedAt: null,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString()
     },
     ...redeemedRewards.value
   ].slice(0, 100)
@@ -934,14 +937,16 @@ function editPost(post: any) {
   showEditPostDialog.value = true
 }
 
-function saveEditedPost(data: { id: number, title: string, content: string, category: string }) {
+function saveEditedPost(data: { id: number, title: string, content: string, request_type: number, custom_category?: string, photos: string[] }) {
   const postIndex = posts.value.findIndex(p => p.id === data.id)
   if (postIndex > -1) {
     posts.value[postIndex] = {
       ...posts.value[postIndex],
       title: data.title,
       content: data.content,
-      category: data.category
+      request_type: data.request_type,
+      custom_category: data.custom_category,
+      postPhotos: data.photos.map((url, idx) => ({ id: `${data.id}-${idx}`, url }))
     }
 
     // Update localStorage
@@ -952,7 +957,9 @@ function saveEditedPost(data: { id: number, title: string, content: string, cate
         ...userPosts[userPostIndex],
         title: data.title,
         content: data.content,
-        category: data.category
+        request_type: data.request_type,
+        custom_category: data.custom_category,
+        postPhotos: data.photos.map((url, idx) => ({ id: `${data.id}-${idx}`, url }))
       }
       localStorage.setItem('userPosts', JSON.stringify(userPosts))
     }

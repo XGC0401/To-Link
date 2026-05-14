@@ -967,17 +967,17 @@ onMounted(() => {
 }
 
 .brand-side {
-  text-align: left;
+  text-align: center;
   color: white;
   z-index: 1;
   max-width: 460px;
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
+  justify-content: center;
+  align-items: center;
   min-height: auto;
-  padding: clamp(120px, 18vh, 220px) 22px 22px;
+  padding: clamp(40px, 12vh, 120px) 22px 22px;
 }
 
 .brand-title {
@@ -996,6 +996,7 @@ onMounted(() => {
   line-height: 1.55;
   margin-top: 8px;
   max-width: 420px;
+  text-align: center;
 }
 
 @keyframes floatIn {
@@ -1074,12 +1075,13 @@ onMounted(() => {
 }
 
 .locale-switcher-right :deep(.el-button) {
-  background: rgba(255, 255, 255, 0.9);
-  color: #24324d;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(30, 36, 68, 0.14);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(241, 247, 255, 0.92));
+  color: #15213d;
+  border: 1px solid rgba(114, 130, 196, 0.35);
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgba(30, 36, 68, 0.16);
   font-weight: 600;
+  padding: 0 14px;
 }
 
 .login-container.dark-mode .locale-switcher-right :deep(.el-button) {

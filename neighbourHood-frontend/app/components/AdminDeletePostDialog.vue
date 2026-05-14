@@ -3,6 +3,7 @@
     v-model="visible"
     :title="$t('adminDeletePostTitle')"
     width="500px"
+    align-center
     :close-on-click-modal="false"
     @close="handleClose"
   >

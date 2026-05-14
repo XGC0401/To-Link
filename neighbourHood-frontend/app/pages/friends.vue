@@ -22,6 +22,29 @@
       </div>
     </div>
 
+    <div class="friends-discover-panel">
+      <div class="section-inline-header">
+        <h3>{{ $t('discoverPeople') }}</h3>
+        <el-input v-model="discoverQuery" :placeholder="$t('searchUsersToAdd')" clearable style="width: 320px;" />
+      </div>
+
+      <el-empty v-if="filteredDiscoverUsers.length === 0" :description="$t('noUsersFound')" />
+      <div v-else class="discover-grid">
+        <el-card v-for="user in filteredDiscoverUsers" :key="`discover-${user.id}`" class="discover-card">
+          <div class="discover-content">
+            <div class="discover-main">
+              <el-avatar :size="52" :src="user.avatar" />
+              <div>
+                <div class="discover-name">{{ user.name }}</div>
+                <div class="discover-bio">{{ user.bio }}</div>
+              </div>
+            </div>
+            <el-button type="primary" plain @click="addFriend(user)">{{ $t('addFriend') }}</el-button>
+          </div>
+        </el-card>
+      </div>
+    </div>
+
     <div class="friends-grid">
       <el-card v-for="friend in filteredFriends" :key="friend.id" class="friend-card">
         <div class="friend-content">
@@ -70,6 +93,7 @@ const { t, locale } = useI18n()
 const language = computed(() => locale.value as 'en' | 'zh')
 const searchQuery = ref('')
 const filterStatus = ref('')
+const discoverQuery = ref('')
 
 interface Friend {
   id: number
@@ -124,6 +148,30 @@ const friends = ref<Friend[]>([
   }
 ])
 
+const discoverUsers = ref<Friend[]>([
+  {
+    id: 11,
+    name: 'Kevin Lau',
+    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+    status: 'offline',
+    bio: 'Community volunteer and language buddy'
+  },
+  {
+    id: 12,
+    name: 'Wendy Ng',
+    avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
+    status: 'online',
+    bio: 'UI designer, loves neighborhood events'
+  },
+  {
+    id: 13,
+    name: 'Alex Wong',
+    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+    status: 'online',
+    bio: 'Guitar player and pet lover'
+  }
+])
+
 const filteredFriends = computed(() => {
   return friends.value.filter(friend => {
     const matchesSearch = friend.name.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -131,6 +179,22 @@ const filteredFriends = computed(() => {
     return matchesSearch && matchesStatus
   })
 })
+
+const filteredDiscoverUsers = computed(() => {
+  const friendIds = new Set(friends.value.map((friend) => friend.id))
+  return discoverUsers.value
+    .filter((user) => !friendIds.has(user.id))
+    .filter((user) => user.name.toLowerCase().includes(discoverQuery.value.toLowerCase()))
+})
+
+const addFriend = (user: Friend) => {
+  if (friends.value.some((friend) => friend.id === user.id)) {
+    ElMessage.info(t('alreadyFriends'))
+    return
+  }
+  friends.value.unshift({ ...user, status: user.status || 'offline' })
+  ElMessage.success(t('friendAdded'))
+}
 
 const sendMessage = (friend: Friend) => {
   router.push({ path: '/chat', query: { userId: friend.id } })
@@ -217,6 +281,64 @@ const sendMessage = (friend: Friend) => {
   gap: 22px;
   position: relative;
   z-index: 1;
+}
+
+.friends-discover-panel {
+  margin-bottom: 20px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(244, 248, 255, 0.92));
+  box-shadow: 0 16px 30px rgba(47, 60, 137, 0.14);
+  position: relative;
+  z-index: 1;
+}
+
+.section-inline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.section-inline-header h3 {
+  margin: 0;
+  color: #1d2850;
+}
+
+.discover-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 12px;
+}
+
+.discover-card {
+  border-radius: 14px;
+  border: 1px solid rgba(129, 140, 248, 0.18);
+}
+
+.discover-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.discover-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.discover-name {
+  font-weight: 700;
+  color: #1d2850;
+}
+
+.discover-bio {
+  font-size: 14px;
+  color: #5c6590;
 }
 
 .friend-card {

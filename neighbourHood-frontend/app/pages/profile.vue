@@ -70,6 +70,21 @@
             />
           </el-form-item>
 
+          <el-form-item :label="$t('profession')">
+            <el-input
+              v-model="profileForm.profession"
+              :placeholder="$t('profession')"
+              size="large"
+              readonly
+            />
+          </el-form-item>
+
+          <el-form-item :label="$t('changePassword')">
+            <el-button type="warning" plain @click="showChangePasswordDialog = true">
+              {{ $t('changePassword') }}
+            </el-button>
+          </el-form-item>
+
           <!-- Bio -->
           <el-form-item :label="$t('bio')">
             <el-input
@@ -239,6 +254,44 @@
           </el-button>
         </template>
       </el-dialog>
+
+      <el-dialog
+        v-model="showChangePasswordDialog"
+        :title="t('changePassword')"
+        width="520px"
+      >
+        <el-form :model="passwordForm" label-position="top">
+          <el-form-item :label="t('currentPassword')">
+            <el-input
+              v-model="passwordForm.currentPassword"
+              type="password"
+              show-password
+              :placeholder="t('currentPassword')"
+            />
+          </el-form-item>
+          <el-form-item :label="t('newPassword')">
+            <el-input
+              v-model="passwordForm.newPassword"
+              type="password"
+              show-password
+              :placeholder="t('newPassword')"
+            />
+          </el-form-item>
+          <el-form-item :label="t('confirmPassword')">
+            <el-input
+              v-model="passwordForm.confirmPassword"
+              type="password"
+              show-password
+              :placeholder="t('confirmPassword')"
+            />
+          </el-form-item>
+        </el-form>
+
+        <template #footer>
+          <el-button @click="showChangePasswordDialog = false">{{ t('cancel') }}</el-button>
+          <el-button type="primary" :loading="changingPassword" @click="handleChangePassword">{{ t('save') }}</el-button>
+        </template>
+      </el-dialog>
     </div>
     </div>
   </NuxtLayout>
@@ -250,7 +303,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Upload, View, InfoFilled } from '@element-plus/icons-vue'
-import { updateEmail } from '~/api/auth'
+import { changePassword, updateEmail } from '~/api/auth'
 import { Storage } from '~/utils/storage'
 
 type CscType = typeof import('countries-states-cities').default
@@ -461,6 +514,7 @@ const selectedAddressLabel = computed(() => {
 const profileForm = reactive({
   username: 'Current User',
   email: 'user@example.com',
+  profession: '',
   avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
   bio: '',
   address: createEmptyAddress(),
@@ -475,6 +529,14 @@ const profileForm = reactive({
     saturday: { enabled: false, fullDay: false, start: '', end: '' },
     sunday: { enabled: false, fullDay: false, start: '', end: '' }
   }
+})
+
+const showChangePasswordDialog = ref(false)
+const changingPassword = ref(false)
+const passwordForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
 })
 
 const profileRules = reactive<FormRules>({
@@ -521,6 +583,10 @@ onMounted(() => {
   } else {
     // Set translated default value if no profile exists
     profileForm.username = t('username')
+  }
+
+  if (!profileForm.profession && (globalProfile?.status || scopedProfile?.status)) {
+    profileForm.profession = String(scopedProfile?.status || globalProfile?.status || '')
   }
 
   currentEmail.value = profileForm.email
@@ -738,6 +804,42 @@ const saveProfile = async () => {
   }
 }
 
+const handleChangePassword = async () => {
+  if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+    ElMessage.warning(t('fillRequired'))
+    return
+  }
+
+  if (passwordForm.newPassword.length < 6) {
+    ElMessage.warning(t('passwordLengthHint'))
+    return
+  }
+
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    ElMessage.error(t('passwordMismatch'))
+    return
+  }
+
+  changingPassword.value = true
+  try {
+    const [err, resp] = await changePassword(passwordForm.currentPassword, passwordForm.newPassword)
+    if (err || !resp?.success) {
+      ElMessage.error(String(resp?.message || t('profileSaveFailed')))
+      return
+    }
+
+    ElMessage.success(t('passwordChanged'))
+    passwordForm.currentPassword = ''
+    passwordForm.newPassword = ''
+    passwordForm.confirmPassword = ''
+    showChangePasswordDialog.value = false
+  } catch (error) {
+    ElMessage.error(t('profileSaveFailed'))
+  } finally {
+    changingPassword.value = false
+  }
+}
+
 const handleCancel = () => {
   router.back()
 }
@@ -834,6 +936,18 @@ const handleCancel = () => {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.2) inset, 0 10px 18px rgba(67, 80, 154, 0.1);
+}
+
+.profile-form :deep(.el-input__count),
+.profile-form :deep(.el-textarea__count) {
+  background: transparent;
+  color: #5a648e;
+}
+
+:global(.dark) .profile-form :deep(.el-input__count),
+:global(.dark) .profile-form :deep(.el-textarea__count) {
+  background: transparent;
+  color: #cdd8ff;
 }
 
 .avatar-uploader-wrapper {

@@ -66,7 +66,7 @@
     <template #footer>
       <div class="post-footer">
         <el-space>
-          <el-button text :icon="Star" @click="">{{ 0 }}</el-button>
+          <el-button text :icon="Star" :class="{ 'is-liked': isLiked }" @click="handleLike">{{ likeCount }}</el-button>
         </el-space>
       </div>
     </template>
@@ -74,11 +74,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Star, MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
 import type { Post } from '../api/types/post'
-import { likePost } from '~/api/post';
 
 const { t } = useI18n()
 
@@ -100,6 +99,46 @@ const emit = defineEmits<{
 const isOwnPost = computed(() => {
   return props.currentUserEmail && props.post.user?.email === props.currentUserEmail
 })
+
+const isLiked = ref(false)
+const likeCount = ref(Number((props.post as any).likes || 0))
+
+const likeStorageKey = computed(() => `postLike:${props.post.id}`)
+const likeCountStorageKey = computed(() => `postLikeCount:${props.post.id}`)
+
+onMounted(() => {
+  const likedRaw = localStorage.getItem(likeStorageKey.value)
+  isLiked.value = likedRaw === '1'
+
+  const storedCountRaw = localStorage.getItem(likeCountStorageKey.value)
+  const storedCount = Number(storedCountRaw)
+  if (!Number.isNaN(storedCount) && storedCount >= 0) {
+    likeCount.value = storedCount
+  }
+})
+
+watch(() => props.post.id, () => {
+  const likedRaw = localStorage.getItem(likeStorageKey.value)
+  isLiked.value = likedRaw === '1'
+  const storedCountRaw = localStorage.getItem(likeCountStorageKey.value)
+  const storedCount = Number(storedCountRaw)
+  likeCount.value = !Number.isNaN(storedCount) && storedCount >= 0
+    ? storedCount
+    : Number((props.post as any).likes || 0)
+})
+
+function handleLike() {
+  if (isLiked.value) {
+    isLiked.value = false
+    likeCount.value = Math.max(0, likeCount.value - 1)
+    localStorage.setItem(likeStorageKey.value, '0')
+  } else {
+    isLiked.value = true
+    likeCount.value += 1
+    localStorage.setItem(likeStorageKey.value, '1')
+  }
+  localStorage.setItem(likeCountStorageKey.value, String(likeCount.value))
+}
 
 // Display name: use profile display name for own posts, otherwise use username from post
 const displayAuthorName = computed(() => {
@@ -297,5 +336,9 @@ const tagValue = computed(() => {
 .post-footer {
   display: flex;
   justify-content: space-between;
+}
+
+.is-liked {
+  color: #dc2626 !important;
 }
 </style>

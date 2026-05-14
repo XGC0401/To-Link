@@ -142,6 +142,34 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public void updatePassword(UUID userId, String currentPassword, String newPassword) {
+        if (currentPassword == null || currentPassword.isBlank()) {
+            throw new BusinessException(ErrorCode.VALIDATION_PASSWORD_WEAK, "Current password is required");
+        }
+
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new BusinessException(ErrorCode.VALIDATION_PASSWORD_WEAK, "New password is required");
+        }
+
+        if (newPassword.length() < 6) {
+            throw new BusinessException(ErrorCode.VALIDATION_PASSWORD_WEAK, "Password must be at least 6 characters");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));
+
+        if (!encoder.matches(currentPassword, user.getPassword())) {
+            throw new BusinessException(ErrorCode.AUTH_INVALID_CREDENTIALS, "Current password is incorrect");
+        }
+
+        if (encoder.matches(newPassword, user.getPassword())) {
+            throw new BusinessException(ErrorCode.VALIDATION_PASSWORD_WEAK, "New password must be different");
+        }
+
+        user.setPassword(encoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     public Set<UUID> getBlockedUserIds(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));

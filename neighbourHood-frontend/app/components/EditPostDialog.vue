@@ -4,6 +4,7 @@
     @update:model-value="$emit('update:modelValue', $event)"
     :title="$t('edit') + ' ' + $t('posts')"
     width="700px"
+    align-center
   >
     <el-form
       v-if="post"
@@ -21,17 +22,35 @@
         />
       </el-form-item>
 
-      <el-form-item :label="$t('category')" prop="category">
+      <el-form-item :label="$t('category')" prop="request_type">
         <el-select
-          v-model="formData.category"
+          v-model="formData.request_type"
           :placeholder="$t('selectCategory')"
           style="width: 100%;"
         >
-          <el-option :label="$t('news')" value="news" />
-          <el-option :label="$t('events')" value="events" />
-          <el-option :label="$t('help')" value="help" />
-          <el-option :label="$t('general')" value="general" />
+          <el-option :label="$t('shopping')" :value="0" />
+          <el-option :label="$t('repair')" :value="1" />
+          <el-option :label="$t('care')" :value="2" />
+          <el-option :label="$t('daily')" :value="3" />
+          <el-option :label="$t('eventOrganizing')" :value="5" />
+          <el-option :label="$t('studySupport')" :value="6" />
+          <el-option :label="$t('petSupport')" :value="7" />
+          <el-option :label="$t('sportsAndWellness')" :value="8" />
+          <el-option :label="$t('lostItem')" :value="9" />
+          <el-option :label="$t('foundItem')" :value="10" />
+          <el-option :label="$t('secondHandSell')" :value="11" />
+          <el-option :label="$t('secondHandWant')" :value="12" />
+          <el-option :label="$t('other')" :value="4" />
         </el-select>
+      </el-form-item>
+
+      <el-form-item v-if="formData.request_type === 4" :label="$t('customCategory')" prop="custom_category">
+        <el-input
+          v-model="formData.custom_category"
+          :placeholder="$t('customCategoryPlaceholder')"
+          maxlength="40"
+          show-word-limit
+        />
       </el-form-item>
 
       <el-form-item :label="$t('content')" prop="content">
@@ -43,6 +62,19 @@
           maxlength="2000"
           show-word-limit
         />
+      </el-form-item>
+
+      <el-form-item :label="$t('imagesOptional')">
+        <el-upload
+          v-model:file-list="fileList"
+          list-type="picture-card"
+          :limit="5"
+          :auto-upload="false"
+          accept="image/*"
+          :on-preview="handlePictureCardPreview"
+        >
+          <el-icon><Plus /></el-icon>
+        </el-upload>
       </el-form-item>
     </el-form>
 
@@ -59,26 +91,28 @@
       </el-button>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="imagePreviewVisible" width="560px" align-center>
+    <img style="width: 100%;" :src="previewImageUrl" :alt="$t('imagePreview')" />
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { FormInstance, FormRules } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import type { FormInstance, FormRules, UploadProps, UploadUserFile } from 'element-plus'
 
 const { t, locale } = useI18n()
 const language = computed(() => locale.value as 'en' | 'zh')
 
 interface Post {
   id: number
-  author: string
-  avatar: string
+  request_type: number
+  custom_category?: string
+  postPhotos?: Array<{ id?: string; url: string }>
   title: string
   content: string
-  time: string
-  category?: string
-  likes?: number
-  comments?: number
 }
 
 const props = defineProps<{
@@ -88,7 +122,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'save', data: { id: number, title: string, content: string, category: string }): void
+  (e: 'save', data: { id: number, title: string, content: string, request_type: number, custom_category?: string, photos: string[] }): void
 }>()
 
 const postFormRef = ref<FormInstance>()
@@ -96,9 +130,14 @@ const saving = ref(false)
 
 const formData = reactive({
   title: '',
-  category: '',
+  request_type: 0,
+  custom_category: '',
   content: ''
 })
+
+const fileList = ref<UploadUserFile[]>([])
+const imagePreviewVisible = ref(false)
+const previewImageUrl = ref('')
 
 const postRules = reactive<FormRules>({
   title: [
@@ -114,11 +153,27 @@ const postRules = reactive<FormRules>({
       trigger: 'blur'
     }
   ],
-  category: [
+  request_type: [
     {
       required: true,
       message: t('pleaseSelectCategory'),
       trigger: 'change'
+    }
+  ],
+  custom_category: [
+    {
+      validator: (_rule, value, callback) => {
+        if (formData.request_type !== 4) {
+          callback()
+          return
+        }
+        if (!value || !String(value).trim()) {
+          callback(new Error(t('pleaseEnterCustomCategory')))
+          return
+        }
+        callback()
+      },
+      trigger: 'blur'
     }
   ],
   content: [
@@ -141,9 +196,19 @@ watch(() => props.modelValue, (newVal) => {
   if (newVal && props.post) {
     formData.title = props.post.title
     formData.content = props.post.content
-    formData.category = props.post.category || ''
+    formData.request_type = Number(props.post.request_type ?? 0)
+    formData.custom_category = String(props.post.custom_category || '')
+    fileList.value = (props.post.postPhotos || []).map((photo, index) => ({
+      name: `photo-${index + 1}`,
+      url: photo.url
+    }))
   }
 })
+
+const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
+  previewImageUrl.value = uploadFile.url || ''
+  imagePreviewVisible.value = true
+}
 
 async function handleSave() {
   if (!postFormRef.value || !props.post) return
@@ -156,7 +221,19 @@ async function handleSave() {
         id: props.post!.id,
         title: formData.title,
         content: formData.content,
-        category: formData.category
+        request_type: formData.request_type,
+        custom_category: formData.request_type === 4 ? formData.custom_category.trim() : undefined,
+        photos: fileList.value
+          .map((file) => {
+            if (file.url) {
+              return file.url
+            }
+            if (file.raw) {
+              return URL.createObjectURL(file.raw)
+            }
+            return ''
+          })
+          .filter(Boolean)
       })
       
       saving.value = false
