@@ -17,6 +17,9 @@
         <el-select v-model="filterStatus" :placeholder="$t('status')" style="width: 150px;">
           <el-option :label="$t('all')" value="" />
           <el-option :label="$t('online')" value="online" />
+          <el-option :label="$t('activeNow')" value="active" />
+          <el-option :label="$t('busy')" value="busy" />
+          <el-option :label="$t('away')" value="inactive" />
           <el-option :label="$t('offline')" value="offline" />
         </el-select>
       </div>
@@ -62,7 +65,7 @@
           
           <div class="friend-info">
             <h3>{{ friend.name }}</h3>
-            <p class="friend-status">{{ friend.status === 'online' ? $t('online') : $t('offline') }}</p>
+            <p class="friend-status">{{ getStatusLabel(friend.status) }}</p>
           </div>
 
           <div class="friend-actions">
@@ -110,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Message, Phone, Close } from '@element-plus/icons-vue'
@@ -127,7 +130,7 @@ interface Friend {
   id: number | string
   name: string
   avatar: string
-  status: 'online' | 'offline'
+  status: 'active' | 'online' | 'inactive' | 'busy' | 'offline'
   bio: string
   profession?: string
   email?: string
@@ -138,7 +141,7 @@ const friends = ref<Friend[]>([
     id: 1,
     name: 'John Doe',
     avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    status: 'online',
+    status: 'active',
     bio: 'Love hiking and outdoor activities'
   },
   {
@@ -159,21 +162,21 @@ const friends = ref<Friend[]>([
     id: 4,
     name: 'Sarah Williams',
     avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
-    status: 'online',
+    status: 'active',
     bio: 'Yoga instructor and wellness coach'
   },
   {
     id: 5,
     name: 'David Brown',
     avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    status: 'offline',
+    status: 'inactive',
     bio: 'Photographer and travel blogger'
   },
   {
     id: 6,
     name: 'Emily Davis',
     avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
-    status: 'online',
+    status: 'busy',
     bio: 'Artist and creative designer'
   }
 ])
@@ -205,6 +208,59 @@ const getCurrentAccount = () => {
     }
   } catch {
     return { email: '', name: '' }
+  }
+}
+
+const resolvePresenceStatus = (email?: string) => {
+  const normalized = String(email || '').toLowerCase().trim()
+  if (!normalized || typeof window === 'undefined') return 'offline' as Friend['status']
+
+  try {
+    const raw = localStorage.getItem(`userPresence:${normalized}`)
+    const parsed = raw ? JSON.parse(raw) : null
+    const status = String(parsed?.status || 'offline') as Friend['status']
+    const lastActiveAt = Number(parsed?.lastActiveAt || 0)
+
+    if (status === 'busy' || status === 'offline') {
+      return status
+    }
+
+    if (!lastActiveAt) {
+      return status === 'online' ? 'inactive' : 'offline'
+    }
+
+    const elapsed = Date.now() - lastActiveAt
+    if (elapsed <= 1000 * 60 * 3) return 'active'
+    if (elapsed <= 1000 * 60 * 30) return 'online'
+    if (elapsed <= 1000 * 60 * 60 * 6) return 'inactive'
+    return 'offline'
+  } catch {
+    return 'offline'
+  }
+}
+
+const refreshFriendStatuses = () => {
+  friends.value = friends.value.map((friend) => {
+    const nextStatus = resolvePresenceStatus(friend.email)
+    return {
+      ...friend,
+      status: nextStatus
+    }
+  })
+}
+
+const getStatusLabel = (status: Friend['status']) => {
+  switch (status) {
+    case 'active':
+      return t('activeNow')
+    case 'online':
+      return t('online')
+    case 'inactive':
+      return language.value === 'zh' ? '暫時離開' : 'Away'
+    case 'busy':
+      return t('busy')
+    default:
+      return t('offline')
   }
 }
 
@@ -240,7 +296,7 @@ const buildGeneratedUsers = (): Friend[] => {
         name,
         email,
         avatar: String(parsed?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg'),
-        status: 'offline',
+        status: resolvePresenceStatus(email),
         profession: String(parsed?.profession || parsed?.status || ''),
         bio: String(parsed?.bio || '')
       })
@@ -303,6 +359,7 @@ const loadFriendsState = () => {
   })
 
   persistFriendsState()
+  refreshFriendStatuses()
 }
 
 const filteredFriends = computed(() => {
@@ -342,7 +399,7 @@ const addFriend = (user: Friend) => {
     ElMessage.info(t('alreadyFriends'))
     return
   }
-  friends.value.unshift({ ...user, status: user.status || 'offline' })
+  friends.value.unshift({ ...user, status: resolvePresenceStatus(user.email) })
   discoverUsers.value = discoverUsers.value.filter((item) => String(item.id) !== String(user.id))
   showDiscoverProfileDialog.value = false
   selectedDiscoverUser.value = null
@@ -395,9 +452,22 @@ const sendMessage = (friend: Friend) => {
         id: friend.id,
         name: friend.name,
         avatar: friend.avatar,
+        participantEmail: friend.email,
         unread: 0,
         lastMessage: '',
-        lastMessageTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        lastMessageTime: new Date().toLocaleTimeString(locale.value === 'zh' ? 'zh-HK' : 'en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: (() => {
+            try {
+              const raw = localStorage.getItem('userSettings')
+              const parsed = raw ? JSON.parse(raw) : null
+              return parsed?.timeFormat !== '24h'
+            } catch {
+              return true
+            }
+          })()
+        }),
         messages: []
       })
       localStorage.setItem('chatConversations', JSON.stringify(conversations))
@@ -408,11 +478,21 @@ const sendMessage = (friend: Friend) => {
 
 onMounted(() => {
   loadFriendsState()
+  refreshFriendStatuses()
+  window.addEventListener('storage', refreshFriendStatuses)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('storage', refreshFriendStatuses)
 })
 
 watch([friends, discoverUsers], () => {
   persistFriendsState()
 }, { deep: true })
+
+watch(filterStatus, () => {
+  refreshFriendStatuses()
+})
 </script>
 
 <style scoped>
@@ -518,7 +598,7 @@ watch([friends, discoverUsers], () => {
 
 .section-inline-header h3 {
   margin: 0;
-  color: #e7edf7;
+  color: #1f2a56;
 }
 
 .discover-grid {
@@ -568,13 +648,13 @@ watch([friends, discoverUsers], () => {
 
 .discover-name {
   font-weight: 700;
-  color: #e7edf7;
+  color: #1f2a56;
   line-height: 1.3;
 }
 
 .discover-bio {
   font-size: 14px;
-  color: #e7edf7;
+  color: #47507a;
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -621,16 +701,28 @@ watch([friends, discoverUsers], () => {
 }
 
 .online-indicator.online {
+  background: #22c55e;
+}
+
+.online-indicator.active {
   background: #67c23a;
 }
 
+.online-indicator.inactive {
+  background: #facc15;
+}
+
+.online-indicator.busy {
+  background: #ef4444;
+}
+
 .online-indicator.offline {
-  background: #999;
+  background: #9ca3af;
 }
 
 .friend-info h3 {
   margin: 12px 0 4px 0;
-  color: #e7edf7;
+  color: #1f2a56;
   font-size: 20px;
   letter-spacing: 0.01em;
 }
@@ -649,7 +741,7 @@ watch([friends, discoverUsers], () => {
 .discover-profile-name {
   font-size: 20px;
   font-weight: 700;
-  color: #e7edf7;
+  color: #1f2a56;
 }
 
 .discover-profile-email {
@@ -665,7 +757,7 @@ watch([friends, discoverUsers], () => {
 
 .discover-profile-text {
   margin: 0;
-  color: #e7edf7;
+  color: #27335f;
   white-space: pre-wrap;
 }
 
@@ -769,6 +861,11 @@ watch([friends, discoverUsers], () => {
 
 :global(.dark) .discover-bio {
   color: #cbd5e1;
+}
+
+:global(.dark) .discover-profile-name,
+:global(.dark) .discover-profile-text {
+  color: #e7edf7;
 }
 
 :global(.dark) .online-indicator {

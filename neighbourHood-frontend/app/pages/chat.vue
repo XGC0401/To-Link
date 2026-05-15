@@ -410,6 +410,7 @@ interface Conversation {
   id: number
   name: string
   avatar: string
+  participantEmail?: string
   lastMessage: string
   lastMessageTime: string
   unread: number
@@ -424,6 +425,9 @@ interface GroupMemberOption {
 }
 
 const blockedPeople = ref<BlockedPerson[]>([])
+const currentUserEmail = ref('')
+const currentUserName = ref('')
+const currentUserAvatar = ref('')
 const showCreateGroupDialog = ref(false)
 const groupChatName = ref('')
 const selectedGroupMembers = ref<number[]>([])
@@ -431,6 +435,99 @@ const showRenameDialog = ref(false)
 const showDeleteDialog = ref(false)
 const renameValue = ref('')
 const selectedManageConversationId = ref<string | number | null>(null)
+
+const getPreferredTimeFormat = () => {
+  try {
+    const raw = localStorage.getItem('userSettings')
+    const parsed = raw ? JSON.parse(raw) : null
+    return parsed?.timeFormat === '24h' ? '24h' : '12h'
+  } catch {
+    return '12h'
+  }
+}
+
+const formatClockTime = (date = new Date()) => {
+  const hour12 = getPreferredTimeFormat() !== '24h'
+  const localeCode = locale.value === 'zh' ? 'zh-HK' : 'en-US'
+  return date.toLocaleTimeString(localeCode, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12
+  })
+}
+
+const toStableConversationId = (seed: string) => {
+  const normalized = String(seed || '').trim().toLowerCase()
+  if (!normalized) {
+    return Date.now()
+  }
+  let hash = 0
+  for (let i = 0; i < normalized.length; i += 1) {
+    hash = ((hash << 5) - hash) + normalized.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash) + 10000
+}
+
+const getScopedConversationKey = (email: string) => {
+  const normalized = String(email || '').toLowerCase().trim()
+  return normalized ? `chatConversations:${normalized}` : 'chatConversations'
+}
+
+const moveConversationToTop = (id: number | string) => {
+  const index = conversations.value.findIndex((item) => String(item.id) === String(id))
+  if (index <= 0) return
+  const [picked] = conversations.value.splice(index, 1)
+  if (picked) {
+    conversations.value.unshift(picked)
+  }
+}
+
+const saveRecipientConversation = (recipientEmail: string, conv: Conversation, message: Message) => {
+  const key = getScopedConversationKey(recipientEmail)
+  const raw = localStorage.getItem(key)
+  const list = raw ? JSON.parse(raw) : []
+  const arr = Array.isArray(list) ? list : []
+
+  const senderName = currentUserName.value || 'User'
+  const senderAvatar = currentUserAvatar.value || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg'
+  const senderConversationId = toStableConversationId(currentUserEmail.value || senderName)
+
+  const recipientMessage: Message = {
+    ...message,
+    sender: 'other'
+  }
+
+  const existingIndex = arr.findIndex((item: Conversation) => String(item.id) === String(senderConversationId))
+  if (existingIndex >= 0) {
+    const existing = arr[existingIndex]
+    const nextMessages = Array.isArray(existing.messages) ? [...existing.messages, recipientMessage] : [recipientMessage]
+    arr[existingIndex] = {
+      ...existing,
+      name: senderName,
+      avatar: senderAvatar,
+      lastMessage: message.type === 'normal' || !message.type ? message.text : `${t(message.type)}: ${message.fileName || ''}`,
+      lastMessageTime: message.time,
+      unread: Number(existing.unread || 0) + 1,
+      messages: nextMessages
+    }
+    const [picked] = arr.splice(existingIndex, 1)
+    arr.unshift(picked)
+  } else {
+    arr.unshift({
+      id: senderConversationId,
+      name: senderName,
+      avatar: senderAvatar,
+      participantEmail: currentUserEmail.value,
+      unread: 1,
+      lastMessage: message.type === 'normal' || !message.type ? message.text : `${t(message.type)}: ${message.fileName || ''}`,
+      lastMessageTime: message.time,
+      messages: [recipientMessage]
+    })
+  }
+
+  localStorage.setItem(key, JSON.stringify(arr))
+}
 
 const conversations = ref<Conversation[]>([
   {
@@ -620,8 +717,26 @@ const conversations = ref<Conversation[]>([
 
 // Load conversations from localStorage on mount
 onMounted(() => {
+  try {
+    const profileRaw = localStorage.getItem('userProfile')
+    const profile = profileRaw ? JSON.parse(profileRaw) : {}
+    currentUserEmail.value = String(profile?.email || '').toLowerCase()
+    currentUserName.value = String(profile?.name || profile?.username || '')
+    currentUserAvatar.value = String(profile?.avatar || '')
+  } catch {
+    currentUserEmail.value = ''
+  }
+
+  if (currentUserEmail.value) {
+    localStorage.setItem(`userPresence:${currentUserEmail.value}`, JSON.stringify({
+      status: 'online',
+      lastActiveAt: Date.now()
+    }))
+  }
+
   blockedPeople.value = loadBlacklist()
-  const storedConversations = localStorage.getItem('chatConversations')
+  const scopedKey = getScopedConversationKey(currentUserEmail.value)
+  const storedConversations = localStorage.getItem(scopedKey) || localStorage.getItem('chatConversations')
   if (storedConversations) {
     const parsed = JSON.parse(storedConversations)
     // Merge with existing conversations, adding new ones
@@ -678,8 +793,8 @@ const showConversationWelcomeHint = computed(() => {
 
 const newChatWelcomeText = computed(() => {
   return language.value === 'zh'
-    ? '向新朋友打個招呼吧，保持禮貌交流。'
-    : 'Say "Hi" to them and be polite in your new conversation.'
+    ? '先打個招呼吧，友善交流會讓對話更順利。'
+    : 'Start with a friendly hello and keep the conversation respectful.'
 })
 
 const isConversationBlocked = (conversation?: Conversation) => {
@@ -716,7 +831,7 @@ const createNewConversation = (userId: number) => {
   })
 
   const mappedDirectory = Array.isArray(storedDirectory)
-    ? Object.fromEntries(storedDirectory.map((item: any) => [String(item.id), { name: item.name, avatar: item.avatar }]))
+    ? Object.fromEntries(storedDirectory.map((item: any) => [String(item.id), { name: item.name, avatar: item.avatar, email: item.email }]))
     : {}
 
   const friendsData: Record<string, { name: string, avatar: string }> = {
@@ -729,14 +844,15 @@ const createNewConversation = (userId: number) => {
     ...mappedDirectory
   }
 
-  const friendData = friendsData[String(userId)]
+  const friendData = friendsData[String(userId)] as { name: string; avatar: string; email?: string } | undefined
   if (friendData) {
     const newConversation: Conversation = {
       id: Number.isNaN(userId) ? Date.now() : userId,
       name: friendData.name,
       avatar: friendData.avatar,
       lastMessage: '',
-      lastMessageTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      participantEmail: (friendData as any).email,
+      lastMessageTime: formatClockTime(),
       unread: 0,
       messages: []
     }
@@ -797,12 +913,24 @@ const sendMessage = () => {
     id: (selectedConversation.value.messages.length || 0) + 1,
     text: messageInput.value,
     sender: 'user',
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    time: formatClockTime()
   }
 
   selectedConversation.value.messages.push(newMessage)
   selectedConversation.value.lastMessage = messageInput.value
-  selectedConversation.value.lastMessageTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  selectedConversation.value.lastMessageTime = newMessage.time
+  moveConversationToTop(selectedConversation.value.id)
+
+  if (selectedConversation.value.participantEmail) {
+    saveRecipientConversation(selectedConversation.value.participantEmail, selectedConversation.value, newMessage)
+  }
+
+  if (currentUserEmail.value) {
+    localStorage.setItem(`userPresence:${currentUserEmail.value}`, JSON.stringify({
+      status: 'online',
+      lastActiveAt: Date.now()
+    }))
+  }
 
   messageInput.value = ''
 
@@ -810,50 +938,6 @@ const sendMessage = () => {
     scrollToBottom()
   })
 
-  // Simulate auto-reply after a short delay and fire a notification event
-  const replyConversationId = selectedConversation.value.id
-  const replyConversationName = selectedConversation.value.name
-  const replyAvatar = selectedConversation.value.avatar
-  setTimeout(() => {
-    const conv = conversations.value.find(c => c.id === replyConversationId)
-    if (!conv) return
-    const autoReplies = [
-      t('chatAutoReply1'),
-      t('chatAutoReply2'),
-      t('chatAutoReply3'),
-      t('chatAutoReply4')
-    ]
-    const replyText = autoReplies[Math.floor(Math.random() * autoReplies.length)]
-    const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    const replyMsg: Message = {
-      id: (conv.messages.length || 0) + 1,
-      text: replyText,
-      sender: 'other',
-      time: replyTime
-    }
-    conv.messages.push(replyMsg)
-    conv.lastMessage = replyText
-    conv.lastMessageTime = replyTime
-    if (selectedConversationId.value !== replyConversationId) {
-      conv.unread = (conv.unread || 0) + 1
-    }
-    nextTick(() => {
-      if (selectedConversationId.value === replyConversationId) {
-        scrollToBottom()
-      }
-    })
-    // Fire global notification event so default.vue can pick it up
-    window.dispatchEvent(new CustomEvent('app:notification', {
-      detail: {
-        type: 'chat',
-        senderName: replyConversationName,
-        senderAvatar: replyAvatar,
-        conversationId: replyConversationId,
-        message: replyText,
-        time: new Date().toISOString()
-      }
-    }))
-  }, 1500 + Math.random() * 1000)
 }
 
 // Handle attachment type selection
@@ -921,7 +1005,7 @@ const handleFileSelect = (event: Event) => {
       id: (selectedConversation.value!.messages.length || 0) + 1,
       text: displayText,
       sender: 'user',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: formatClockTime(),
       type: fileType as 'photo' | 'video' | 'document' | 'audio',
       fileUrl: fileUrl,
       fileName: file.name,
@@ -930,7 +1014,12 @@ const handleFileSelect = (event: Event) => {
     
     selectedConversation.value!.messages.push(newMessage)
     selectedConversation.value!.lastMessage = `${t(fileType)}: ${file.name}`
-    selectedConversation.value!.lastMessageTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    selectedConversation.value!.lastMessageTime = newMessage.time
+    moveConversationToTop(selectedConversation.value!.id)
+
+    if (selectedConversation.value!.participantEmail) {
+      saveRecipientConversation(selectedConversation.value!.participantEmail, selectedConversation.value!, newMessage)
+    }
     
     ElMessage.success(t('fileSent'))
     
@@ -968,7 +1057,7 @@ const handleLocationShare = () => {
           id: (selectedConversation.value!.messages.length || 0) + 1,
           text: locationText,
           sender: 'user',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: formatClockTime(),
           type: 'location',
           latitude: latitude,
           longitude: longitude
@@ -976,7 +1065,12 @@ const handleLocationShare = () => {
         
         selectedConversation.value!.messages.push(newMessage)
         selectedConversation.value!.lastMessage = locationText
-        selectedConversation.value!.lastMessageTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        selectedConversation.value!.lastMessageTime = newMessage.time
+        moveConversationToTop(selectedConversation.value!.id)
+
+        if (selectedConversation.value!.participantEmail) {
+          saveRecipientConversation(selectedConversation.value!.participantEmail, selectedConversation.value!, newMessage)
+        }
         
         ElMessage.success(t('locationShared'))
         
@@ -1099,6 +1193,8 @@ watch(() => selectedConversationId.value, () => {
 
 // Save conversations to localStorage when they change
 watch(conversations, (newConversations) => {
+  const scopedKey = getScopedConversationKey(currentUserEmail.value)
+  localStorage.setItem(scopedKey, JSON.stringify(newConversations))
   localStorage.setItem('chatConversations', JSON.stringify(newConversations))
   // Reinitialize maps when messages change
   nextTick(() => {
@@ -1111,6 +1207,12 @@ watch(conversations, (newConversations) => {
 // Cleanup on unmount
 onBeforeUnmount(() => {
   cleanupMaps()
+  if (currentUserEmail.value) {
+    localStorage.setItem(`userPresence:${currentUserEmail.value}`, JSON.stringify({
+      status: 'offline',
+      lastActiveAt: Date.now()
+    }))
+  }
   window.removeEventListener('app:emergency-message-sent', handleEmergencyMessageSent)
 })
 
@@ -1180,7 +1282,7 @@ const createGroupConversation = () => {
   }
 
   const members = availableGroupMembers.value.filter((member) => selectedGroupMembers.value.includes(member.id))
-  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const now = formatClockTime()
   const newConversation: Conversation = {
     id: Date.now(),
     name,

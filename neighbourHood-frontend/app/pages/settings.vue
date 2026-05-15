@@ -397,6 +397,22 @@ const handleSave = async () => {
   saving.value = true
 
   try {
+    let currentEmail = ''
+    try {
+      const profileRaw = localStorage.getItem('userProfile')
+      const profile = profileRaw ? JSON.parse(profileRaw) : null
+      currentEmail = String(profile?.email || '').toLowerCase()
+    } catch {
+      currentEmail = ''
+    }
+
+    if (currentEmail) {
+      localStorage.setItem(`userPresence:${currentEmail}`, JSON.stringify({
+        status: settingsForm.onlineStatus === 'hidden' ? 'offline' : settingsForm.onlineStatus,
+        lastActiveAt: Date.now()
+      }))
+    }
+
     // Save to localStorage
     localStorage.setItem('userSettings', JSON.stringify(settingsForm))
 
