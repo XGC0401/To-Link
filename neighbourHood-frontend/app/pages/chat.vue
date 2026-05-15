@@ -311,7 +311,7 @@
     </el-form>
     <template #footer>
       <el-button @click="showCreateGroupDialog = false">{{ $t('cancel') }}</el-button>
-      <el-button type="primary" @click="createGroupConversation">{{ $t('createGroupChat') }}</el-button>
+      <el-button type="primary" :disabled="!canCreateGroupConversation" @click="createGroupConversation">{{ $t('createGroupChat') }}</el-button>
     </template>
   </el-dialog>
 
@@ -499,7 +499,11 @@ const toDisplayTime = (isoLike?: string) => {
 const loadConversationsFromServer = async () => {
   const [error, response] = await getChatConversations()
   if (error || !response?.success || !Array.isArray(response.data)) {
-    return
+    return false
+  }
+
+  if (response.data.length === 0) {
+    return false
   }
 
   conversations.value = response.data.map((item) => ({
@@ -512,6 +516,7 @@ const loadConversationsFromServer = async () => {
     unread: Number(item.unreadCount || 0),
     messages: []
   }))
+  return true
 }
 
 const loadMessagesFromServer = async (conversation: Conversation, sinceId?: number) => {
@@ -590,183 +595,36 @@ const conversations = ref<Conversation[]>([
     id: 1,
     name: 'John Doe',
     avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+    participantEmail: 'john.doe@example.com',
     lastMessage: 'Hey, how are you?',
     lastMessageTime: '10:30',
-    unread: 2,
+    unread: 1,
     messages: [
-      { id: 1, text: 'Hi there!', sender: 'other', time: '10:20' },
-      { id: 2, text: 'Hey, how are you?', sender: 'other', time: '10:30' },
-      { id: 3, text: 'I\'m doing great, thanks!', sender: 'user', time: '10:35' }
+      { id: 1, text: 'Hey, how are you?', sender: 'other', time: '10:30' }
     ]
   },
   {
     id: 2,
     name: 'Jane Smith',
     avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
+    participantEmail: 'jane.smith@example.com',
     lastMessage: 'See you tomorrow!',
     lastMessageTime: '09:15',
     unread: 0,
     messages: [
-      { id: 1, text: 'Don\'t forget about the meeting', sender: 'other', time: '09:00' },
-      { id: 2, text: 'I won\'t!', sender: 'user', time: '09:05' },
-      { id: 3, text: 'See you tomorrow!', sender: 'other', time: '09:15' },
-      { 
-        id: 4, 
-        text: 'Hi! I have 5 years of experience in helping with furniture moving and I\'m available this Saturday. I have all the necessary equipment and would be happy to help!',
-        sender: 'user', 
-        time: '11:20',
-        type: 'quest-introduction',
-        questInfo: {
-          title: 'Help Moving Furniture',
-          detail: 'Need help moving some heavy furniture to my new apartment this Saturday.',
-          rewardPoints: 80,
-          paymentMethod: 'face-to-face',
-          tags: ['Physical Help', 'Moving']
-        }
-      }
+      { id: 1, text: 'See you tomorrow!', sender: 'other', time: '09:15' }
     ]
   },
   {
     id: 3,
-    name: 'Mike Johnson',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    lastMessage: 'Thanks for the help!',
-    lastMessageTime: '08:20',
-    unread: 0,
-    messages: [
-      { id: 1, text: 'Can you help me with my computer?', sender: 'other', time: '08:00' },
-      { id: 2, text: 'Sure, what\'s the issue?', sender: 'user', time: '08:05' },
-      { id: 3, text: 'Thanks for the help!', sender: 'other', time: '08:20' }
-    ]
-  },
-  {
-    id: 4,
-    name: 'Sarah Williams',
-    avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
-    lastMessage: 'Great class today!',
-    lastMessageTime: '07:45',
-    unread: 1,
-    messages: [
-      { id: 1, text: 'Are you coming to yoga?', sender: 'other', time: '07:30' },
-      { id: 2, text: 'Yes, see you there!', sender: 'user', time: '07:35' },
-      { id: 3, text: 'Great class today!', sender: 'other', time: '07:45' }
-    ]
-  },
-  {
-    id: 5,
-    name: 'David Brown',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    lastMessage: 'Check out these photos!',
-    lastMessageTime: '07:10',
-    unread: 0,
-    messages: [
-      { id: 1, text: 'I went hiking yesterday', sender: 'other', time: '07:00' },
-      { id: 2, text: 'That sounds amazing!', sender: 'user', time: '07:05' },
-      { id: 3, text: 'Check out these photos!', sender: 'other', time: '07:10' }
-    ]
-  },
-  {
-    id: 6,
-    name: 'Emily Davis',
-    avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
-    lastMessage: 'Love the design!',
-    lastMessageTime: '06:55',
-    unread: 3,
-    messages: [
-      { id: 1, text: 'What do you think of my new artwork?', sender: 'other', time: '06:45' },
-      { id: 2, text: 'It looks incredible!', sender: 'user', time: '06:50' },
-      { id: 3, text: 'Love the design!', sender: 'other', time: '06:55' }
-    ]
-  },
-  {
-    id: 7,
-    name: 'Robert Martinez',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    lastMessage: 'Let\'s meet for coffee',
-    lastMessageTime: 'Yesterday',
-    unread: 0,
-    messages: [
-      { id: 1, text: 'Hey, long time no see!', sender: 'other', time: '15:30' },
-      { id: 2, text: 'I know! How have you been?', sender: 'user', time: '15:35' },
-      { id: 3, text: 'Let\'s meet for coffee', sender: 'other', time: '15:40' }
-    ]
-  },
-  {
-    id: 8,
-    name: 'Lisa Anderson',
-    avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
-    lastMessage: 'Recipe coming soon!',
-    lastMessageTime: 'Yesterday',
-    unread: 0,
-    messages: [
-      { id: 1, text: 'That dinner was delicious', sender: 'user', time: '14:20' },
-      { id: 2, text: 'Thank you! I\'ll send you the recipe', sender: 'other', time: '14:25' },
-      { id: 3, text: 'Recipe coming soon!', sender: 'other', time: '14:30' }
-    ]
-  },
-  {
-    id: 9,
-    name: 'Tom Wilson',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    lastMessage: 'Game night Friday?',
-    lastMessageTime: 'Yesterday',
-    unread: 2,
-    messages: [
-      { id: 1, text: 'Want to play some games?', sender: 'other', time: '13:15' },
-      { id: 2, text: 'Sure! When?', sender: 'user', time: '13:20' },
-      { id: 3, text: 'Game night Friday?', sender: 'other', time: '13:25' }
-    ]
-  },
-  {
-    id: 10,
-    name: 'Amy Chen',
-    avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
-    lastMessage: 'Thanks for the recommendation',
-    lastMessageTime: 'Yesterday',
-    unread: 0,
-    messages: [
-      { id: 1, text: 'Have you read that book?', sender: 'other', time: '12:00' },
-      { id: 2, text: 'Yes! It\'s amazing', sender: 'user', time: '12:05' },
-      { id: 3, text: 'Thanks for the recommendation', sender: 'other', time: '12:10' }
-    ]
-  },
-  {
-    id: 100,
     name: 'Community Group',
     avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    lastMessage: 'Thanks for organizing!',
-    lastMessageTime: '08:45',
-    unread: 5,
-    messages: [
-      { id: 1, text: 'Community event tomorrow at 5pm', sender: 'other', time: '08:30' },
-      { id: 2, text: 'Count me in!', sender: 'user', time: '08:35' },
-      { id: 3, text: 'Thanks for organizing!', sender: 'other', time: '08:45' }
-    ]
-  },
-  {
-    id: 101,
-    name: 'Neighborhood Watch',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    lastMessage: 'Stay safe everyone',
-    lastMessageTime: 'Feb 1',
+    lastMessage: 'Community event tomorrow at 5pm',
+    lastMessageTime: '08:30',
     unread: 0,
+    isGroup: true,
     messages: [
-      { id: 1, text: 'Reminder about safety meeting', sender: 'other', time: '10:00' },
-      { id: 2, text: 'Will be there', sender: 'user', time: '10:05' },
-      { id: 3, text: 'Stay safe everyone', sender: 'other', time: '10:10' }
-    ]
-  },
-  {
-    id: 102,
-    name: 'Local Sports Club',
-    avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
-    lastMessage: 'Match this Saturday',
-    lastMessageTime: 'Feb 1',
-    unread: 1,
-    messages: [
-      { id: 1, text: 'Who wants to play soccer?', sender: 'other', time: '09:00' },
-      { id: 2, text: 'I\'m in!', sender: 'user', time: '09:05' },
-      { id: 3, text: 'Match this Saturday', sender: 'other', time: '09:10' }
+      { id: 1, text: 'Community event tomorrow at 5pm', sender: 'other', time: '08:30' }
     ]
   }
 ])
@@ -792,7 +650,6 @@ onMounted(async () => {
   }
 
   blockedPeople.value = loadBlacklist()
-  conversations.value = []
   await loadConversationsFromServer()
   
   const peerEmail = String(route.query.peerEmail || '').toLowerCase().trim()
@@ -856,6 +713,21 @@ const availableGroupMembers = computed<GroupMemberOption[]>(() => {
       id: conversation.id,
       name: conversation.name
     }))
+})
+
+const canCreateGroupConversation = computed(() => {
+  const hasName = groupChatName.value.trim().length > 0
+  if (!hasName) {
+    return false
+  }
+
+  const selectableIds = new Set(availableGroupMembers.value.map((member) => String(member.id)))
+  const validMemberCount = selectedGroupMembers.value
+    .map((id) => String(id))
+    .filter((id) => selectableIds.has(id)).length
+
+  // Creator + at least 2 selected members = minimum 3 people.
+  return validMemberCount >= 2
 })
 
 const selectedConversation = computed(() => {
@@ -1360,12 +1232,31 @@ const toggleConversationBlock = async (conversation: Conversation) => {
 
 const createGroupConversation = () => {
   const name = groupChatName.value.trim()
-  if (!name || selectedGroupMembers.value.length === 0) {
+  if (!name) {
     ElMessage.warning(t('groupChatValidation'))
     return
   }
 
-  const members = availableGroupMembers.value.filter((member) => selectedGroupMembers.value.includes(member.id))
+  const selectableMemberIds = new Set(availableGroupMembers.value.map((member) => String(member.id)))
+  const sanitizedSelected = selectedGroupMembers.value
+    .map((id) => String(id))
+    .filter((id) => selectableMemberIds.has(id))
+
+  if (sanitizedSelected.length < 2) {
+    ElMessage.warning(language.value === 'zh'
+      ? '群組聊天至少需要 3 人（包括你自己）'
+      : 'Group chat needs at least 3 people (including you)')
+    return
+  }
+
+  const members = availableGroupMembers.value.filter((member) => sanitizedSelected.includes(String(member.id)))
+  if (members.length < 2) {
+    ElMessage.warning(language.value === 'zh'
+      ? '只能選擇一般聊天成員，不能加入其他群組'
+      : 'Only direct-chat contacts can be selected. Group chats cannot be added as members.')
+    return
+  }
+
   const now = formatClockTime()
   const newConversation: Conversation = {
     id: Date.now(),

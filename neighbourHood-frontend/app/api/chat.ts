@@ -84,7 +84,6 @@ export async function getChatConversations(): Promise<APIResponse<BasicResponse<
     const { data, headers } = await createAxiosInstance().get<BasicResponse<ChatConversationSummary[]>>('/chat/conversations', getConfig())
     return [null, data, { headers }]
   } catch (error: any) {
-    console.error(error)
     return [error, error.response?.status]
   }
 }
@@ -100,7 +99,6 @@ export async function getChatMessages(peerEmail: string, sinceId?: number): Prom
     )
     return [null, data, { headers }]
   } catch (error: any) {
-    console.error(error)
     return [error, error.response?.status]
   }
 }
@@ -115,7 +113,6 @@ export async function sendChatMessage(peerEmail: string, content: string, messag
     )
     return [null, data, { headers }]
   } catch (error: any) {
-    console.error(error)
     return [error, error.response?.status]
   }
 }
@@ -129,7 +126,6 @@ export async function markConversationRead(peerEmail: string): Promise<APIRespon
     )
     return [null, data, { headers }]
   } catch (error: any) {
-    console.error(error)
     return [error, error.response?.status]
   }
 }
@@ -143,7 +139,6 @@ export async function updateMyPresence(status: string): Promise<APIResponse<Basi
     )
     return [null, data, { headers }]
   } catch (error: any) {
-    console.error(error)
     return [error, error.response?.status]
   }
 }
@@ -157,7 +152,6 @@ export async function getPresenceByEmails(emails: string[]): Promise<APIResponse
     )
     return [null, data, { headers }]
   } catch (error: any) {
-    console.error(error)
     return [error, error.response?.status]
   }
 }

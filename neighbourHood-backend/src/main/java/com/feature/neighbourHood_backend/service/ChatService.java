@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.feature.neighbourHood_backend.model.DTO.ChatConversationSummaryDTO;
 import com.feature.neighbourHood_backend.model.DTO.ChatMessageResponseDTO;
@@ -71,8 +72,11 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public List<ChatMessageResponseDTO> getMessages(User currentUser, String peerEmail, Long sinceId) {
-        User peer = userRepository.findByEmail(peerEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Optional<User> peerOptional = findPeerByEmail(peerEmail);
+        if (peerOptional.isEmpty()) {
+            return List.of();
+        }
+        User peer = peerOptional.get();
 
         ChatConversation conversation = findConversation(currentUser.getUuid(), peer.getUuid()).orElse(null);
         if (conversation == null) {
@@ -88,8 +92,8 @@ public class ChatService {
 
     @Transactional
     public ChatMessageResponseDTO sendMessage(User sender, String peerEmail, ChatSendMessageRequestDTO request) {
-        User peer = userRepository.findByEmail(peerEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User peer = findPeerByEmail(peerEmail)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (request.getContent() == null || request.getContent().isBlank()) {
             throw new IllegalArgumentException("Message content is required");
@@ -114,11 +118,17 @@ public class ChatService {
 
     @Transactional
     public int markConversationRead(User currentUser, String peerEmail) {
-        User peer = userRepository.findByEmail(peerEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Optional<User> peerOptional = findPeerByEmail(peerEmail);
+        if (peerOptional.isEmpty()) {
+            return 0;
+        }
+        User peer = peerOptional.get();
 
         ChatConversation conversation = findConversation(currentUser.getUuid(), peer.getUuid())
-                .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
+                .orElse(null);
+        if (conversation == null) {
+            return 0;
+        }
 
         return messageRepository.markConversationRead(conversation.getId(), currentUser.getUuid());
     }
@@ -155,6 +165,13 @@ public class ChatService {
         UUID first = sortFirst(userOneId, userTwoId);
         UUID second = sortSecond(userOneId, userTwoId);
         return conversationRepository.findByUserAIdAndUserBId(first, second);
+    }
+
+    private Optional<User> findPeerByEmail(String peerEmail) {
+        if (!StringUtils.hasText(peerEmail)) {
+            return Optional.empty();
+        }
+        return userRepository.findByEmailIgnoreCase(peerEmail.trim());
     }
 
     private UUID sortFirst(UUID a, UUID b) {

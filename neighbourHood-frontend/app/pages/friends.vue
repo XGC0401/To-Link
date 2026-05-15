@@ -57,7 +57,7 @@
 
     <div class="friends-grid">
       <el-card v-for="friend in filteredFriends" :key="friend.id" class="friend-card">
-        <div class="friend-content friend-content-clickable" @click="sendMessage(friend)">
+        <div class="friend-content friend-content-clickable" @click="openFriendProfile(friend)">
           <div class="friend-avatar-wrapper">
             <el-avatar :size="80" :src="friend.avatar" />
             <span :class="['online-indicator', friend.status]"></span>
@@ -108,6 +108,37 @@
         <el-button type="primary" @click="selectedDiscoverUser && addFriend(selectedDiscoverUser)">{{ $t('addFriend') }}</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="showFriendProfileDialog" :title="$t('friends')" width="560px" align-center>
+      <div v-if="selectedFriendProfile" class="discover-profile-dialog">
+        <div class="discover-profile-header">
+          <el-avatar :size="72" :src="selectedFriendProfile.avatar" />
+          <div>
+            <div class="discover-profile-name">{{ selectedFriendProfile.name }}</div>
+            <div class="discover-profile-email">{{ selectedFriendProfile.email || '-' }}</div>
+          </div>
+        </div>
+        <el-divider />
+        <p class="discover-profile-label">{{ $t('profession') }}</p>
+        <p class="discover-profile-text">{{ selectedFriendProfile.profession || '-' }}</p>
+        <p class="discover-profile-label">{{ $t('bio') }}</p>
+        <p class="discover-profile-text">{{ selectedFriendProfile.bio || '-' }}</p>
+        <p class="discover-profile-label">{{ $t('addressSection') }}</p>
+        <p class="discover-profile-text" v-if="!canViewFriendProfile(selectedFriendProfile)">
+          {{ language === 'zh' ? '此用戶已將個人資料設為私人。' : 'This user has set their profile to private.' }}
+        </p>
+        <div v-else-if="visibleFriendAddressLines.length > 0" class="friend-address-lines">
+          <p class="discover-profile-text" v-for="line in visibleFriendAddressLines" :key="line">{{ line }}</p>
+        </div>
+        <p class="discover-profile-text" v-else>
+          {{ language === 'zh' ? '此用戶已隱藏地址資訊。' : 'This user has hidden their address details.' }}
+        </p>
+      </div>
+      <template #footer>
+        <el-button @click="showFriendProfileDialog = false">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" @click="selectedFriendProfile && sendMessage(selectedFriendProfile)">{{ $t('message') }}</el-button>
+      </template>
+    </el-dialog>
     </div>
   </NuxtLayout>
 </template>
@@ -135,6 +166,10 @@ interface Friend {
   bio: string
   profession?: string
   email?: string
+  profileVisibility?: 'public' | 'friends' | 'private'
+  address?: Record<string, string>
+  addressVisibility?: Record<string, 'none' | 'friends' | 'specific' | 'all'>
+  addressSpecificPeople?: Record<string, string>
 }
 
 const friends = ref<Friend[]>([
@@ -188,6 +223,8 @@ const discoverUsers = ref<Friend[]>([
 const ignoredDiscoverKeys = ref<string[]>([])
 const showDiscoverProfileDialog = ref(false)
 const selectedDiscoverUser = ref<Friend | null>(null)
+const showFriendProfileDialog = ref(false)
+const selectedFriendProfile = ref<Friend | null>(null)
 let presencePollHandle: number | null = null
 
 const getDiscoverKey = (user: Friend) => {
@@ -316,7 +353,11 @@ const buildGeneratedUsers = (): Friend[] => {
         avatar: String(parsed?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg'),
         status: resolvePresenceStatus(email),
         profession: String(parsed?.profession || parsed?.status || ''),
-        bio: String(parsed?.bio || '')
+        bio: String(parsed?.bio || ''),
+        profileVisibility: (parsed?.profileVisibility || 'public') as Friend['profileVisibility'],
+        address: (parsed?.address && typeof parsed.address === 'object') ? parsed.address : {},
+        addressVisibility: (parsed?.addressVisibility && typeof parsed.addressVisibility === 'object') ? parsed.addressVisibility : {},
+        addressSpecificPeople: (parsed?.addressSpecificPeople && typeof parsed.addressSpecificPeople === 'object') ? parsed.addressSpecificPeople : {}
       })
     } catch {
       // Ignore malformed entries.
@@ -401,6 +442,63 @@ const filteredDiscoverUsers = computed(() => {
 const openDiscoverProfile = (user: Friend) => {
   selectedDiscoverUser.value = user
   showDiscoverProfileDialog.value = true
+}
+
+const canViewFriendProfile = (friend: Friend) => {
+  const visibility = String(friend.profileVisibility || 'public')
+  return visibility !== 'private'
+}
+
+const canViewAddressField = (friend: Friend, field: string) => {
+  if (!canViewFriendProfile(friend)) {
+    return false
+  }
+
+  const visibility = String(friend.addressVisibility?.[field] || 'friends')
+  if (visibility === 'all' || visibility === 'friends') {
+    return true
+  }
+  if (visibility === 'none') {
+    return false
+  }
+  if (visibility === 'specific') {
+    const specificRaw = String(friend.addressSpecificPeople?.[field] || '')
+    const entries = specificRaw
+      .split(',')
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean)
+    const current = getCurrentAccount()
+    const meEmail = String(current.email || '').toLowerCase()
+    const meName = String(current.name || '').toLowerCase()
+    return (!!meEmail && entries.includes(meEmail)) || (!!meName && entries.includes(meName))
+  }
+  return false
+}
+
+const visibleFriendAddressLines = computed(() => {
+  const friend = selectedFriendProfile.value
+  if (!friend || !friend.address || typeof friend.address !== 'object') {
+    return []
+  }
+
+  const labels: Record<string, string> = {
+    country: t('country'),
+    nation: t('nation'),
+    area: t('area'),
+    street: t('street'),
+    building: t('buildingName'),
+    floor: t('floor'),
+    room: t('roomNumber')
+  }
+
+  return Object.entries(friend.address)
+    .filter(([key, value]) => !!String(value || '').trim() && canViewAddressField(friend, key))
+    .map(([key, value]) => `${labels[key] || key}: ${String(value)}`)
+})
+
+const openFriendProfile = (friend: Friend) => {
+  selectedFriendProfile.value = friend
+  showFriendProfileDialog.value = true
 }
 
 const ignoreSuggestion = (user: Friend) => {
