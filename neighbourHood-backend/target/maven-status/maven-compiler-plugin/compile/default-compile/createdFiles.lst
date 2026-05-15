@@ -7,12 +7,14 @@ com/feature/neighbourHood_backend/config/PasswordEncoderConfig.class
 com/feature/neighbourHood_backend/repository/RoleRepository.class
 com/feature/neighbourHood_backend/repository/PhotoRepository.class
 com/feature/neighbourHood_backend/model/entity/Role.class
+com/feature/neighbourHood_backend/util/ErrorCode.class
 com/feature/neighbourHood_backend/repository/UserRepository.class
 com/feature/neighbourHood_backend/config/FileConfig.class
 com/feature/neighbourHood_backend/service/PostService.class
 com/feature/neighbourHood_backend/service/SupabaseStorageService.class
 com/feature/neighbourHood_backend/controller/PostController.class
 com/feature/neighbourHood_backend/model/DTO/UpdateEmailRequestDTO.class
+com/feature/neighbourHood_backend/model/DTO/BlockUserRequestDTO.class
 com/feature/neighbourHood_backend/model/DTO/createPostDTO.class
 com/feature/neighbourHood_backend/Application.class
 com/feature/neighbourHood_backend/model/entity/PostEntity.class
@@ -22,7 +24,10 @@ com/feature/neighbourHood_backend/service/PhotoService.class
 com/feature/neighbourHood_backend/repository/PostRepository.class
 com/feature/neighbourHood_backend/controller/LoginController.class
 com/feature/neighbourHood_backend/service/UserService.class
+com/feature/neighbourHood_backend/util/BusinessException.class
 com/feature/neighbourHood_backend/util/jwtUtil.class
+com/feature/neighbourHood_backend/config/GlobalExceptionHandler.class
+com/feature/neighbourHood_backend/model/DTO/ChangePasswordRequestDTO.class
 com/feature/neighbourHood_backend/model/DTO/LoginRequestDTO.class
 com/feature/neighbourHood_backend/model/DTO/ApiResponse.class
 com/feature/neighbourHood_backend/model/CustomUserDetails.class
