@@ -235,9 +235,11 @@
             />
             <el-input
               v-model="messageInput"
+              type="textarea"
+              :autosize="{ minRows: 1, maxRows: 4 }"
               :placeholder="$t('typeMessage')"
               :disabled="isConversationBlocked(selectedConversation)"
-              @keyup.enter="sendMessage"
+              @keydown.enter.exact.prevent="sendMessage"
             />
             <div class="composer-actions">
               <el-button text :icon="IceCreamRound" circle size="large" />
@@ -405,6 +407,7 @@ interface Message {
   text: string
   sender: 'user' | 'other'
   time: string
+  fromServer?: boolean
   type?: 'normal' | 'quest-introduction' | 'photo' | 'video' | 'document' | 'audio' | 'location'
   questInfo?: {
     title: string
@@ -515,6 +518,30 @@ const moveConversationToTop = (id: number | string) => {
   }
 }
 
+const createLocalMessageId = () => Date.now() + Math.floor(Math.random() * 1000)
+
+const getMessageKey = (message: Message) => {
+  return `${message.id}:${message.sender}:${message.type || 'normal'}`
+}
+
+const loadConversationsFromStorage = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    const scopedKey = getScopedConversationKey(currentUserEmail.value)
+    const scopedRaw = localStorage.getItem(scopedKey)
+    const fallbackRaw = localStorage.getItem('chatConversations')
+    const parsed = JSON.parse(scopedRaw || fallbackRaw || '[]')
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      conversations.value = parsed
+    }
+  } catch {
+    // Ignore malformed local conversation cache.
+  }
+}
+
 const toDisplayTime = (isoLike?: string) => {
   if (!isoLike) {
     return formatClockTime()
@@ -589,16 +616,18 @@ const loadMessagesFromServer = async (conversation: Conversation, sinceId?: numb
     text: item.content,
     sender: item.senderEmail?.toLowerCase() === currentUserEmail.value ? 'user' : 'other',
     time: toDisplayTime(item.sentAt),
+    fromServer: true,
     type: item.messageType === 'text' ? 'normal' : (item.messageType as Message['type'])
   } as Message))
 
   if (sinceId) {
-    conversation.messages.push(...mapped)
+    const existing = new Set(conversation.messages.map((message) => getMessageKey(message)))
+    const nextItems = mapped.filter((message) => !existing.has(getMessageKey(message)))
+    conversation.messages.push(...nextItems)
   } else {
-    if (mapped.length === 0 && conversation.messages.length > 0) {
-      return
-    }
-    conversation.messages = mapped
+    const serverKeys = new Set(mapped.map((message) => getMessageKey(message)))
+    const localOnly = conversation.messages.filter((message) => !serverKeys.has(getMessageKey(message)))
+    conversation.messages = [...mapped, ...localOnly]
   }
 }
 
@@ -707,6 +736,7 @@ onMounted(async () => {
     await updateMyPresence('online')
   }
 
+  loadConversationsFromStorage()
   blockedPeople.value = loadBlacklist()
   await loadConversationsFromServer()
   
@@ -748,8 +778,16 @@ onMounted(async () => {
     if (previouslySelected) {
       const nextSelected = conversations.value.find((item) => item.id === previouslySelected)
       if (nextSelected && selectedConversationId.value === previouslySelected) {
-        const lastId = nextSelected.messages[nextSelected.messages.length - 1]?.id
-        await loadMessagesFromServer(nextSelected, lastId)
+        const serverIds = nextSelected.messages
+          .filter((message) => message.fromServer)
+          .map((message) => message.id)
+        const lastServerId = serverIds.length > 0 ? Math.max(...serverIds) : undefined
+
+        if (typeof lastServerId === 'number') {
+          await loadMessagesFromServer(nextSelected, lastServerId)
+        } else {
+          await loadMessagesFromServer(nextSelected)
+        }
       }
     }
   }, 1000)
@@ -772,6 +810,7 @@ onMounted(async () => {
           text: msg.content,
           sender: msg.senderEmail?.toLowerCase() === currentUserEmail.value ? 'user' : 'other',
           time: toDisplayTime(msg.sentAt),
+          fromServer: true,
           type: msg.messageType === 'text' ? 'normal' : (msg.messageType as Message['type'])
         }
         conversation.messages.push(newMsg)
@@ -975,6 +1014,7 @@ const sendMessage = async () => {
     text: outgoingText,
     sender: 'user',
     time: formatClockTime(),
+    fromServer: false,
     type: 'normal'
   }
   
@@ -1024,6 +1064,7 @@ const sendMessage = async () => {
       text: response.data.content,
       sender: 'user',
       time: toDisplayTime(response.data.sentAt),
+      fromServer: true,
       type: 'normal'
     }
   }
@@ -1100,10 +1141,11 @@ const handleFileSelect = (event: Event) => {
     const fileUrl = e.target?.result as string
     
     const newMessage: Message = {
-      id: (selectedConversation.value!.messages.length || 0) + 1,
+      id: createLocalMessageId(),
       text: displayText,
       sender: 'user',
       time: formatClockTime(),
+      fromServer: false,
       type: fileType as 'photo' | 'video' | 'document' | 'audio',
       fileUrl: fileUrl,
       fileName: file.name,
@@ -1152,10 +1194,11 @@ const handleLocationShare = () => {
         const locationText = `${t('location')}: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
         
         const newMessage: Message = {
-          id: (selectedConversation.value!.messages.length || 0) + 1,
+          id: createLocalMessageId(),
           text: locationText,
           sender: 'user',
           time: formatClockTime(),
+          fromServer: false,
           type: 'location',
           latitude: latitude,
           longitude: longitude
@@ -1753,11 +1796,14 @@ const createGroupConversation = () => {
 }
 
 .message-bubble {
-  max-width: 70%;
+  width: 50%;
+  max-width: 50%;
   padding: 11px 14px;
   border-radius: 16px;
   font-size: 18px;
+  white-space: pre-wrap;
   word-wrap: break-word;
+  overflow-wrap: anywhere;
   line-height: 1.4;
   border: 1px solid transparent;
   box-shadow: 0 10px 18px rgba(57, 70, 148, 0.12);
@@ -1886,6 +1932,7 @@ const createGroupConversation = () => {
 
 .file-message {
   padding: 8px !important;
+  width: auto !important;
   max-width: 350px;
 }
 
