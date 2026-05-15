@@ -1,4 +1,5 @@
 import { Client, IMessage } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import { ref, Ref } from 'vue';
 
 interface WebSocketMessage {
@@ -24,21 +25,111 @@ const errorCallbacks: ((msg: string) => void)[] = [];
 const connectionStateCallbacks: ((connected: boolean) => void)[] = [];
 
 export function useWebSocket() {
-  const resolveWsUrl = () => {
+  const resolveSocketEndpoints = () => {
     const config = useRuntimeConfig();
     const apiBaseUrl = String(config.public.apiBaseUrl || '').trim();
 
     if (apiBaseUrl) {
       const withoutApiSuffix = apiBaseUrl.replace(/\/api\/?$/, '');
-      return withoutApiSuffix.replace(/^http/, 'ws') + '/ws/chat';
+      return {
+        nativeWsUrl: withoutApiSuffix.replace(/^http/, 'ws') + '/ws/chat',
+        sockJsHttpUrl: withoutApiSuffix.replace(/^ws/, 'http') + '/ws/chat'
+      };
     }
 
     if (typeof window !== 'undefined') {
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      return `${wsProtocol}//${window.location.host}/ws/chat`;
+      const httpProtocol = window.location.protocol;
+      return {
+        nativeWsUrl: `${wsProtocol}//${window.location.host}/ws/chat`,
+        sockJsHttpUrl: `${httpProtocol}//${window.location.host}/ws/chat`
+      };
     }
 
-    return 'ws://localhost:8080/ws/chat';
+    return {
+      nativeWsUrl: 'ws://localhost:8080/ws/chat',
+      sockJsHttpUrl: 'http://localhost:8080/ws/chat'
+    };
+  }
+
+  const connectStomp = (token: string, useSockJs: boolean, nativeWsUrl: string, sockJsHttpUrl: string) => {
+    return new Promise<void>((resolve, reject) => {
+      let settled = false;
+
+      stompClient = new Client();
+      stompClient.configure({
+        brokerURL: useSockJs ? undefined : nativeWsUrl,
+        webSocketFactory: useSockJs
+          ? () => new SockJS(sockJsHttpUrl) as unknown as WebSocket
+          : undefined,
+        login: 'user',
+        passcode: token,
+        reconnectDelay: RECONNECT_DELAY,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        onConnect: () => {
+          isConnected.value = true;
+          connectionStateCallbacks.forEach(cb => cb(true));
+
+          if (stompClient) {
+            stompClient.subscribe('/user/queue/messages', (message: IMessage) => {
+              try {
+                const msg = JSON.parse(message.body);
+                messageCallbacks.forEach(cb => cb(msg));
+              } catch (e) {
+                console.error('Failed to parse message:', e);
+              }
+            });
+
+            stompClient.subscribe('/user/queue/conversations', (message: IMessage) => {
+              try {
+                const msg = JSON.parse(message.body);
+                conversationCallbacks.forEach(cb => cb(msg));
+              } catch (e) {
+                console.error('Failed to parse conversation update:', e);
+              }
+            });
+
+            stompClient.subscribe('/user/queue/errors', (message: IMessage) => {
+              errorCallbacks.forEach(cb => cb(message.body));
+            });
+          }
+
+          if (!settled) {
+            settled = true;
+            resolve();
+          }
+        },
+        onStompError: (frame) => {
+          console.error('WebSocket STOMP error:', frame);
+          isConnected.value = false;
+          connectionStateCallbacks.forEach(cb => cb(false));
+          if (!settled) {
+            settled = true;
+            reject(new Error('WebSocket STOMP connection failed'));
+          }
+        },
+        onWebSocketError: (event) => {
+          console.error('WebSocket connection error:', event);
+          isConnected.value = false;
+          connectionStateCallbacks.forEach(cb => cb(false));
+          if (!settled) {
+            settled = true;
+            reject(new Error('WebSocket transport connection failed'));
+          }
+        },
+        onWebSocketClose: () => {
+          isConnected.value = false;
+          connectionStateCallbacks.forEach(cb => cb(false));
+          if (!settled) {
+            settled = true;
+            reject(new Error('WebSocket transport closed before connect'));
+          }
+        }
+      });
+
+      stompClient.activate();
+    });
   }
 
   /**
@@ -49,81 +140,37 @@ export function useWebSocket() {
       return; // Already connected
     }
 
-    return new Promise<void>((resolve, reject) => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          console.warn('No token found, cannot connect to WebSocket');
-          reject(new Error('No authentication token'));
-          return;
-        }
-
-        stompClient = new Client();
-
-        const wsUrl = resolveWsUrl();
-
-        stompClient.configure({
-          brokerURL: wsUrl,
-          login: 'user',
-          passcode: token,
-          reconnectDelay: RECONNECT_DELAY,
-          heartbeatIncoming: 4000,
-          heartbeatOutgoing: 4000,
-          onConnect: () => {
-            console.log('WebSocket connected');
-            isConnected.value = true;
-            connectionStateCallbacks.forEach(cb => cb(true));
-
-            // Subscribe to message queue
-            if (stompClient) {
-              stompClient.subscribe('/user/queue/messages', (message: IMessage) => {
-                try {
-                  const msg = JSON.parse(message.body);
-                  messageCallbacks.forEach(cb => cb(msg));
-                } catch (e) {
-                  console.error('Failed to parse message:', e);
-                }
-              });
-
-              // Subscribe to conversation updates
-              stompClient.subscribe('/user/queue/conversations', (message: IMessage) => {
-                try {
-                  const msg = JSON.parse(message.body);
-                  conversationCallbacks.forEach(cb => cb(msg));
-                } catch (e) {
-                  console.error('Failed to parse conversation update:', e);
-                }
-              });
-
-              // Subscribe to errors
-              stompClient.subscribe('/user/queue/errors', (message: IMessage) => {
-                errorCallbacks.forEach(cb => cb(message.body));
-              });
-            }
-
-            resolve();
-          },
-          onStompError: (frame) => {
-            console.error('WebSocket error:', frame);
-            isConnected.value = false;
-            connectionStateCallbacks.forEach(cb => cb(false));
-            reject(new Error('WebSocket connection failed'));
-          },
-          onWebSocketError: (event) => {
-            console.error('WebSocket connection error:', event);
-            isConnected.value = false;
-            connectionStateCallbacks.forEach(cb => cb(false));
-          }
-        });
-
-        stompClient.activate();
-      } catch (error) {
-        console.error('Failed to initialize WebSocket:', error);
-        isConnected.value = false;
-        connectionStateCallbacks.forEach(cb => cb(false));
-        reject(error);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.warn('No token found, cannot connect to WebSocket');
+        throw new Error('No authentication token');
       }
-    });
+
+      const { nativeWsUrl, sockJsHttpUrl } = resolveSocketEndpoints();
+
+      try {
+        await connectStomp(token, false, nativeWsUrl, sockJsHttpUrl);
+        console.log('WebSocket connected using native transport');
+      } catch (nativeError) {
+        console.warn('Native WebSocket failed, switching to SockJS fallback:', nativeError);
+        if (stompClient) {
+          try {
+            stompClient.deactivate();
+          } catch {
+            // Ignore deactivate errors during fallback switch.
+          }
+          stompClient = null;
+        }
+        await connectStomp(token, true, nativeWsUrl, sockJsHttpUrl);
+        console.log('WebSocket connected using SockJS fallback');
+      }
+    } catch (error) {
+      console.error('Failed to initialize WebSocket:', error);
+      isConnected.value = false;
+      connectionStateCallbacks.forEach(cb => cb(false));
+      throw error;
+    }
   }
 
   /**

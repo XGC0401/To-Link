@@ -73,11 +73,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { ChatDotRound, Share } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { likePost } from '~/api/post'
+import { addPostComment, getPostComments, likePost } from '~/api/post'
 
 interface PostUser {
   username?: string
@@ -158,6 +158,27 @@ const saveComments = () => {
   localStorage.setItem(commentsKey.value, JSON.stringify(comments.value))
 }
 
+const dispatchInteractionUpdated = () => {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent('post-interaction-updated', {
+    detail: {
+      postId: props.post?.id,
+      likeCount: likeCount.value,
+      isLiked: isLiked.value
+    }
+  }))
+}
+
+const dispatchCommentsUpdated = () => {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent('post-comments-updated', {
+    detail: {
+      postId: props.post?.id,
+      commentCount: comments.value.length
+    }
+  }))
+}
+
 const loadLikeState = () => {
   isLiked.value = localStorage.getItem(likeKey.value) === '1'
   const count = Number(localStorage.getItem(likeCountKey.value))
@@ -177,6 +198,7 @@ const toggleLike = async () => {
   }
   localStorage.setItem(likeKey.value, isLiked.value ? '1' : '0')
   localStorage.setItem(likeCountKey.value, String(likeCount.value))
+  dispatchInteractionUpdated()
 
   if (typeof props.post?.id === 'number') {
     const [error] = await likePost(props.post.id)
@@ -185,12 +207,46 @@ const toggleLike = async () => {
       likeCount.value = prevCount
       localStorage.setItem(likeKey.value, prevLiked ? '1' : '0')
       localStorage.setItem(likeCountKey.value, String(prevCount))
+      dispatchInteractionUpdated()
       ElMessage.error(t('likeUpdateFailed'))
     }
   }
 }
 
-const submitComment = () => {
+const loadCommentsFromServer = async () => {
+  if (typeof props.post?.id !== 'number') {
+    loadComments()
+    return
+  }
+
+  const [error, response] = await getPostComments(props.post.id)
+  if (error || !response?.success || !Array.isArray(response.data)) {
+    loadComments()
+    return
+  }
+
+  comments.value = response.data.map((item) => ({
+    id: String(item.id),
+    author: String(item.authorName || item.authorEmail || t('unknownUser')),
+    content: String(item.content || ''),
+    createdAt: String(item.createdAt || new Date().toISOString())
+  }))
+  saveComments()
+  dispatchCommentsUpdated()
+}
+
+const getCurrentProfileLabel = () => {
+  if (typeof window === 'undefined') return t('you')
+  try {
+    const raw = localStorage.getItem('userProfile')
+    const parsed = raw ? JSON.parse(raw) : null
+    return String(parsed?.name || parsed?.username || parsed?.email || t('you'))
+  } catch {
+    return t('you')
+  }
+}
+
+const submitComment = async () => {
   const text = commentDraft.value.trim()
   if (!text) {
     ElMessage.warning(t('enterContent'))
@@ -204,16 +260,32 @@ const submitComment = () => {
     }
     editingCommentId.value = null
   } else {
-    comments.value.unshift({
-      id: `${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
-      author: t('you'),
-      content: text,
-      createdAt: new Date().toISOString()
-    })
+    if (typeof props.post?.id === 'number') {
+      const [error, response] = await addPostComment(props.post.id, text)
+      if (error || !response?.success || !response.data) {
+        ElMessage.error(t('profileSaveFailed'))
+        return
+      }
+
+      comments.value.unshift({
+        id: String(response.data.id),
+        author: String(response.data.authorName || response.data.authorEmail || getCurrentProfileLabel()),
+        content: String(response.data.content || text),
+        createdAt: String(response.data.createdAt || new Date().toISOString())
+      })
+    } else {
+      comments.value.unshift({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+        author: getCurrentProfileLabel(),
+        content: text,
+        createdAt: new Date().toISOString()
+      })
+    }
   }
 
   commentDraft.value = ''
   saveComments()
+  dispatchCommentsUpdated()
 }
 
 const startEdit = (comment: PostComment) => {
@@ -228,8 +300,24 @@ const cancelEdit = () => {
 
 watch(() => props.modelValue, (open) => {
   if (!open || !props.post) return
-  loadComments()
+  loadCommentsFromServer()
   loadLikeState()
+})
+
+const handleCommentSync = (event: Event) => {
+  const detail = (event as CustomEvent).detail
+  if (!detail || String(detail.postId) !== String(props.post?.id)) return
+  loadCommentsFromServer()
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('post-comments-updated', handleCommentSync)
+}
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('post-comments-updated', handleCommentSync)
+  }
 })
 </script>
 

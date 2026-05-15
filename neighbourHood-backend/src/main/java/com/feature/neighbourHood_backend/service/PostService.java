@@ -1,6 +1,8 @@
 package com.feature.neighbourHood_backend.service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -9,9 +11,12 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.feature.neighbourHood_backend.model.DTO.PostCommentResponseDTO;
+import com.feature.neighbourHood_backend.model.entity.PostCommentEntity;
 import com.feature.neighbourHood_backend.model.entity.PhotoEntity;
 import com.feature.neighbourHood_backend.model.entity.PostEntity;
 import com.feature.neighbourHood_backend.model.entity.User;
+import com.feature.neighbourHood_backend.repository.PostCommentRepository;
 import com.feature.neighbourHood_backend.repository.PostRepository;
 import com.feature.neighbourHood_backend.repository.UserRepository;
 
@@ -20,10 +25,13 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostCommentRepository postCommentRepository;
 
-    public PostService(PostRepository postRepository, UserRepository userRepository) {
+    public PostService(PostRepository postRepository, UserRepository userRepository,
+            PostCommentRepository postCommentRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.postCommentRepository = postCommentRepository;
     }
 
     public PostEntity createRequest(String title, String content, int type, UUID userId, int redeemPoints,
@@ -161,5 +169,46 @@ public class PostService {
             return 1;
         }
         return 2;
-    }   
+    }
+
+    public List<PostCommentResponseDTO> getPostComments(Long postId) {
+        return postCommentRepository.findByPostIdOrderByCreatedAtDesc(postId)
+                .stream()
+                .map(this::toCommentDto)
+                .collect(Collectors.toList());
+    }
+
+    public PostCommentResponseDTO createPostComment(Long postId, UUID userUuid, String content) {
+        String safeContent = String(content == null ? "" : content).trim();
+        if (safeContent.isEmpty()) {
+            return null;
+        }
+
+        Optional<User> user = userRepository.findById(userUuid);
+        Optional<PostEntity> post = postRepository.findById(postId);
+        if (user.isEmpty() || post.isEmpty()) {
+            return null;
+        }
+
+        PostCommentEntity entity = new PostCommentEntity();
+        entity.setContent(safeContent);
+        entity.setUser(user.get());
+        entity.setPost(post.get());
+
+        PostCommentEntity saved = postCommentRepository.save(entity);
+        return toCommentDto(saved);
+    }
+
+    private PostCommentResponseDTO toCommentDto(PostCommentEntity entity) {
+        OffsetDateTime createdAt = entity.getCreatedAt() == null
+                ? OffsetDateTime.now(ZoneOffset.UTC)
+                : entity.getCreatedAt().atOffset(ZoneOffset.UTC);
+
+        return new PostCommentResponseDTO(
+                entity.getId(),
+                entity.getUser() == null ? "" : entity.getUser().getUsername(),
+                entity.getUser() == null ? "" : entity.getUser().getEmail(),
+                entity.getContent(),
+                createdAt);
+    }
 }

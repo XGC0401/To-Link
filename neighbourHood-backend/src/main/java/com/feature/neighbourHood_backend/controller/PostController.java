@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.feature.neighbourHood_backend.model.CustomUserDetails;
 import com.feature.neighbourHood_backend.model.DTO.ApiResponse;
+import com.feature.neighbourHood_backend.model.DTO.PostCommentCreateRequestDTO;
+import com.feature.neighbourHood_backend.model.DTO.PostCommentResponseDTO;
 import com.feature.neighbourHood_backend.model.DTO.createPostDTO;
 import com.feature.neighbourHood_backend.model.entity.PhotoEntity;
 import com.feature.neighbourHood_backend.model.entity.PostEntity;
@@ -146,6 +148,37 @@ public class PostController {
         } else {
             return ResponseEntity.status(404).body(new ApiResponse<>(false,false, "fail to find corresponding user or post"));
         }
+    }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<ApiResponse> getPostComments(@PathVariable("id") Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        PostEntity post = postService.findById(id);
+        if (post == null || !postService.isVisibleForUser(post, userDetails.getUuid())) {
+            return ResponseEntity.status(404).body(new ApiResponse<>(false, null, "fail"));
+        }
+
+        List<PostCommentResponseDTO> comments = postService.getPostComments(id);
+        return ResponseEntity.status(200).body(new ApiResponse<>(true, comments, "success"));
+    }
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<ApiResponse> createPostComment(@PathVariable("id") Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody PostCommentCreateRequestDTO payload) {
+        PostEntity post = postService.findById(id);
+        if (post == null || !postService.isVisibleForUser(post, userDetails.getUuid())) {
+            return ResponseEntity.status(404).body(new ApiResponse<>(false, null, "fail"));
+        }
+
+        PostCommentResponseDTO created = postService.createPostComment(id, userDetails.getUuid(),
+                payload == null ? null : payload.getContent());
+
+        if (created == null) {
+            return ResponseEntity.status(400).body(new ApiResponse<>(false, null, "comment is required"));
+        }
+
+        return ResponseEntity.status(200).body(new ApiResponse<>(true, created, "success"));
     }
 
     private Long extractPostId(JsonNode payload) {

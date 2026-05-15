@@ -108,3 +108,38 @@ export async function deletePostById(postID: number): Promise<APIResponse<BasicR
     return [error, error.response?.status]
   }
 }
+
+export interface PostCommentResponse {
+  id: number
+  authorName: string
+  authorEmail: string
+  content: string
+  createdAt: string
+}
+
+export async function getPostComments(postID: number): Promise<APIResponse<BasicResponse<PostCommentResponse[]>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().get<BasicResponse<PostCommentResponse[]>>(
+      `/post/${postID}/comments`,
+      getConfig()
+    )
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}
+
+export async function addPostComment(postID: number, content: string): Promise<APIResponse<BasicResponse<PostCommentResponse>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<PostCommentResponse>>(
+      `/post/${postID}/comments`,
+      { content },
+      getConfig()
+    )
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}

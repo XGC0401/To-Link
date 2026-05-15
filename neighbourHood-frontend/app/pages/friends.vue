@@ -268,6 +268,12 @@ const getCurrentAccount = () => {
   }
 }
 
+const getScopedStorageKey = (base: string) => {
+  const { email } = getCurrentAccount()
+  const normalized = String(email || '').toLowerCase().trim()
+  return normalized ? `${base}:${normalized}` : base
+}
+
 const resolvePresenceStatus = (email?: string) => {
   const normalized = String(email || '').toLowerCase().trim()
   if (!normalized || typeof window === 'undefined') return 'offline' as Friend['status']
@@ -422,9 +428,9 @@ const persistFriendsState = () => {
   if (typeof window === 'undefined') {
     return
   }
-  localStorage.setItem('friendsList', JSON.stringify(friends.value))
-  localStorage.setItem('friendSuggestions', JSON.stringify(discoverUsers.value))
-  localStorage.setItem('friendDirectory', JSON.stringify([...friends.value, ...discoverUsers.value]))
+  localStorage.setItem(getScopedStorageKey('friendsList'), JSON.stringify(friends.value))
+  localStorage.setItem(getScopedStorageKey('friendSuggestions'), JSON.stringify(discoverUsers.value))
+  localStorage.setItem(getScopedStorageKey('friendDirectory'), JSON.stringify([...friends.value, ...discoverUsers.value]))
 }
 
 const loadFriendsState = async () => {
@@ -433,7 +439,7 @@ const loadFriendsState = async () => {
   }
 
   try {
-    const savedFriends = JSON.parse(localStorage.getItem('friendsList') || '[]')
+    const savedFriends = JSON.parse(localStorage.getItem(getScopedStorageKey('friendsList')) || '[]')
     if (Array.isArray(savedFriends) && savedFriends.length > 0) {
       friends.value = savedFriends.filter((item) => !isAdminCandidate(item))
     }
@@ -442,7 +448,7 @@ const loadFriendsState = async () => {
   }
 
   try {
-    const ignored = JSON.parse(localStorage.getItem('ignoredFriendSuggestions') || '[]')
+    const ignored = JSON.parse(localStorage.getItem(getScopedStorageKey('ignoredFriendSuggestions')) || '[]')
     ignoredDiscoverKeys.value = Array.isArray(ignored)
       ? ignored.map((item) => String(item || '').toLowerCase()).filter(Boolean)
       : []
@@ -572,7 +578,7 @@ const ignoreSuggestion = (user: Friend) => {
   const key = getDiscoverKey(user)
   if (!key) return
   ignoredDiscoverKeys.value = [...new Set([...ignoredDiscoverKeys.value, key])]
-  localStorage.setItem('ignoredFriendSuggestions', JSON.stringify(ignoredDiscoverKeys.value))
+  localStorage.setItem(getScopedStorageKey('ignoredFriendSuggestions'), JSON.stringify(ignoredDiscoverKeys.value))
   discoverUsers.value = discoverUsers.value.filter((item) => getDiscoverKey(item) !== key)
   persistFriendsState()
 }

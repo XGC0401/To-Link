@@ -345,11 +345,35 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="showAttachmentPreviewDialog" :title="$t('attachmentPreviewTitle')" width="520px" align-center>
+  <el-dialog v-model="showAttachmentPreviewDialog" :title="$t('attachmentPreviewTitle')" width="920px" align-center>
     <div v-if="pendingAttachment" class="attachment-preview-dialog">
       <div class="attachment-preview-box">
+        <div v-if="pendingAttachment.type === 'photo'" class="photo-editor-shell">
+          <div class="photo-editor-toolbar">
+            <el-button circle size="small" :icon="ZoomOut" @click="zoomOutPhoto" />
+            <span class="photo-zoom-label">{{ Math.round(photoEditorZoom * 100) }}%</span>
+            <el-button circle size="small" :icon="ZoomIn" @click="zoomInPhoto" />
+            <el-divider direction="vertical" />
+            <el-icon><EditPen /></el-icon>
+            <span class="photo-tool-label">{{ $t('draw') }}</span>
+            <el-color-picker v-model="photoEditorPenColor" size="small" />
+            <el-button size="small" :icon="Delete" @click="resetPhotoEditor">{{ $t('clearDrawing') }}</el-button>
+          </div>
+          <div class="photo-editor-canvas-wrap">
+            <canvas
+              ref="photoEditorCanvasRef"
+              class="photo-editor-canvas"
+              :style="{ transform: `scale(${photoEditorZoom})` }"
+              @mousedown="startPhotoDrawing"
+              @mousemove="drawOnPhoto"
+              @mouseup="stopPhotoDrawing"
+              @mouseleave="stopPhotoDrawing"
+            />
+          </div>
+        </div>
         <el-image
           v-if="pendingAttachment.type === 'photo'"
+          v-show="false"
           :src="pendingAttachment.fileUrl"
           fit="contain"
           class="attachment-preview-image"
@@ -408,6 +432,10 @@ import {
   Document,
   Headset,
   Location,
+  ZoomIn,
+  ZoomOut,
+  EditPen,
+  Delete,
   Download,
   MapLocation,
   View
@@ -446,6 +474,13 @@ const mapInstances = ref<Map<number, any>>(new Map())
 const showQuestDetailDialog = ref(false)
 const selectedQuestDetail = ref<any>(null)
 const showAttachmentPreviewDialog = ref(false)
+const photoEditorCanvasRef = ref<HTMLCanvasElement>()
+const photoEditorZoom = ref(1)
+const photoEditorPenColor = ref('#ef4444')
+const isPhotoDrawing = ref(false)
+const photoEditedDataUrl = ref<string>('')
+const photoEditorSnapshot = ref<ImageData | null>(null)
+const photoLastPoint = ref<{ x: number; y: number } | null>(null)
 
 interface Message {
   id: number
@@ -560,6 +595,11 @@ const toStableConversationId = (seed: string) => {
 const getScopedConversationKey = (email: string) => {
   const normalized = String(email || '').toLowerCase().trim()
   return normalized ? `chatConversations:${normalized}` : 'chatConversations'
+}
+
+const getScopedFriendDirectoryKey = (email: string) => {
+  const normalized = String(email || '').toLowerCase().trim()
+  return normalized ? `friendDirectory:${normalized}` : 'friendDirectory'
 }
 
 const moveConversationToTop = (id: number | string) => {
@@ -996,7 +1036,9 @@ const selectConversation = async (conversation: Conversation) => {
 const createNewConversation = (userId: number) => {
   const storedDirectory = (() => {
     try {
-      return JSON.parse(localStorage.getItem('friendDirectory') || '[]')
+      const scoped = localStorage.getItem(getScopedFriendDirectoryKey(currentUserEmail.value))
+      const fallback = localStorage.getItem('friendDirectory')
+      return JSON.parse(scoped || fallback || '[]')
     } catch {
       return []
     }
@@ -1219,7 +1261,16 @@ const handleFileSelect = (event: Event) => {
       fileName: file.name,
       fileSize: file.size
     }
+    photoEditorZoom.value = 1
+    photoEditorPenColor.value = '#ef4444'
+    photoEditedDataUrl.value = ''
+    photoEditorSnapshot.value = null
+    photoLastPoint.value = null
     showAttachmentPreviewDialog.value = true
+
+    if (safeType === 'photo') {
+      nextTick(() => initializePhotoEditor(fileUrl))
+    }
   }
   
   reader.onerror = () => {
@@ -1236,6 +1287,99 @@ const handleFileSelect = (event: Event) => {
 const cancelAttachmentPreview = () => {
   showAttachmentPreviewDialog.value = false
   pendingAttachment.value = null
+  photoEditedDataUrl.value = ''
+  photoEditorSnapshot.value = null
+  photoLastPoint.value = null
+}
+
+const initializePhotoEditor = (imageUrl: string) => {
+  const canvas = photoEditorCanvasRef.value
+  if (!canvas) return
+
+  const img = new Image()
+  img.onload = () => {
+    const maxWidth = 1400
+    const maxHeight = 1000
+    let width = img.naturalWidth || img.width
+    let height = img.naturalHeight || img.height
+
+    const scale = Math.min(maxWidth / width, maxHeight / height, 1)
+    width = Math.max(1, Math.round(width * scale))
+    height = Math.max(1, Math.round(height * scale))
+
+    canvas.width = width
+    canvas.height = height
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    ctx.clearRect(0, 0, width, height)
+    ctx.drawImage(img, 0, 0, width, height)
+    photoEditorSnapshot.value = ctx.getImageData(0, 0, width, height)
+    photoEditedDataUrl.value = canvas.toDataURL('image/png')
+  }
+  img.src = imageUrl
+}
+
+const resetPhotoEditor = () => {
+  const canvas = photoEditorCanvasRef.value
+  const snapshot = photoEditorSnapshot.value
+  if (!canvas || !snapshot) return
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  ctx.putImageData(snapshot, 0, 0)
+  photoEditedDataUrl.value = canvas.toDataURL('image/png')
+}
+
+const getCanvasPoint = (event: MouseEvent) => {
+  const canvas = photoEditorCanvasRef.value
+  if (!canvas) return null
+  const rect = canvas.getBoundingClientRect()
+  return {
+    x: (event.clientX - rect.left) / photoEditorZoom.value,
+    y: (event.clientY - rect.top) / photoEditorZoom.value
+  }
+}
+
+const startPhotoDrawing = (event: MouseEvent) => {
+  if (!pendingAttachment.value || pendingAttachment.value.type !== 'photo') return
+  isPhotoDrawing.value = true
+  photoLastPoint.value = getCanvasPoint(event)
+}
+
+const drawOnPhoto = (event: MouseEvent) => {
+  if (!isPhotoDrawing.value || !photoLastPoint.value || !photoEditorCanvasRef.value) return
+
+  const ctx = photoEditorCanvasRef.value.getContext('2d')
+  const nextPoint = getCanvasPoint(event)
+  if (!ctx || !nextPoint) return
+
+  ctx.strokeStyle = photoEditorPenColor.value
+  ctx.lineWidth = 4
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+  ctx.beginPath()
+  ctx.moveTo(photoLastPoint.value.x, photoLastPoint.value.y)
+  ctx.lineTo(nextPoint.x, nextPoint.y)
+  ctx.stroke()
+
+  photoLastPoint.value = nextPoint
+  photoEditedDataUrl.value = photoEditorCanvasRef.value.toDataURL('image/png')
+}
+
+const stopPhotoDrawing = () => {
+  isPhotoDrawing.value = false
+  photoLastPoint.value = null
+}
+
+const zoomInPhoto = () => {
+  photoEditorZoom.value = Math.min(3, Number((photoEditorZoom.value + 0.2).toFixed(2)))
+}
+
+const zoomOutPhoto = () => {
+  photoEditorZoom.value = Math.max(0.4, Number((photoEditorZoom.value - 0.2).toFixed(2)))
 }
 
 const confirmAttachmentSend = async () => {
@@ -1249,7 +1393,13 @@ const confirmAttachmentSend = async () => {
   }
 
   const outgoingName = pendingAttachment.value.fileName.trim() || t('untitledFile')
-  const attachment = { ...pendingAttachment.value, fileName: outgoingName }
+  const attachment = {
+    ...pendingAttachment.value,
+    fileName: outgoingName,
+    fileUrl: pendingAttachment.value.type === 'photo' && photoEditedDataUrl.value
+      ? photoEditedDataUrl.value
+      : pendingAttachment.value.fileUrl
+  }
   const peerEmail = selectedConversation.value.participantEmail
 
   const optimisticId = createLocalMessageId()
@@ -1271,6 +1421,9 @@ const confirmAttachmentSend = async () => {
   moveConversationToTop(selectedConversation.value.id)
   showAttachmentPreviewDialog.value = false
   pendingAttachment.value = null
+  photoEditedDataUrl.value = ''
+  photoEditorSnapshot.value = null
+  photoLastPoint.value = null
 
   nextTick(() => {
     scrollToBottom()
@@ -2196,17 +2349,63 @@ const createGroupConversation = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 220px;
+  min-height: 540px;
   border: 1px solid var(--tl-border);
   border-radius: 12px;
   background: color-mix(in srgb, var(--tl-surface) 90%, transparent);
   padding: 10px;
 }
 
+.photo-editor-shell {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.photo-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.photo-zoom-label {
+  min-width: 56px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--tl-text);
+}
+
+.photo-tool-label {
+  color: var(--tl-text);
+  font-weight: 600;
+}
+
+.photo-editor-canvas-wrap {
+  width: 100%;
+  max-height: 62vh;
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid var(--tl-border);
+  background: rgba(15, 23, 42, 0.05);
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
+.photo-editor-canvas {
+  transform-origin: center top;
+  cursor: crosshair;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
 .attachment-preview-image,
 .attachment-preview-video {
   width: 100%;
-  max-height: 320px;
+  max-height: 62vh;
   border-radius: 10px;
 }
 

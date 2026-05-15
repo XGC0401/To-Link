@@ -467,6 +467,8 @@
   "attachmentFileName": "File Name",
   "attachmentFileNamePlaceholder": "Edit file name before sending",
   "untitledFile": "Untitled file",
+  "draw": "Draw",
+  "clearDrawing": "Clear drawing",
   "send": "Send",
   "download": "Download",
   "sharedLocation": "Shared Location",

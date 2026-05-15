@@ -66,7 +66,10 @@
     <template #footer>
       <div class="post-footer">
         <el-space>
-          <el-button text :icon="Star" :class="{ 'is-liked': isLiked }" @click="handleLike">{{ likeCount }}</el-button>
+          <el-button text class="post-like-btn" @click="handleLike">
+            <span class="post-like-heart" :class="{ 'is-liked': isLiked }">{{ isLiked ? '❤' : '♡' }}</span>
+            <span class="post-like-count">{{ likeCount }}</span>
+          </el-button>
           <el-button text :icon="ChatDotRound" @click="emit('comment', props.post)">{{ commentCount }}</el-button>
         </el-space>
       </div>
@@ -75,9 +78,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, ChatDotRound, MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
+import { ChatDotRound, MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { likePost } from '~/api/post'
 import type { Post } from '../api/types/post'
@@ -130,26 +133,71 @@ const loadCommentCount = () => {
   }
 }
 
-onMounted(() => {
+const loadLikeState = () => {
   const likedRaw = localStorage.getItem(likeStorageKey.value)
   isLiked.value = likedRaw === '1'
 
-  const storedCountRaw = localStorage.getItem(likeCountStorageKey.value)
-  const storedCount = Number(storedCountRaw)
-  if (!Number.isNaN(storedCount) && storedCount >= 0) {
-    likeCount.value = storedCount
-  }
-  loadCommentCount()
-})
-
-watch(() => props.post.id, () => {
-  const likedRaw = localStorage.getItem(likeStorageKey.value)
-  isLiked.value = likedRaw === '1'
   const storedCountRaw = localStorage.getItem(likeCountStorageKey.value)
   const storedCount = Number(storedCountRaw)
   likeCount.value = !Number.isNaN(storedCount) && storedCount >= 0
     ? storedCount
     : Number((props.post as any).likes || 0)
+}
+
+const dispatchPostInteractionEvent = () => {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent('post-interaction-updated', {
+    detail: {
+      postId: props.post.id,
+      likeCount: likeCount.value,
+      isLiked: isLiked.value
+    }
+  }))
+}
+
+const dispatchPostCommentEvent = () => {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent('post-comments-updated', {
+    detail: {
+      postId: props.post.id,
+      commentCount: commentCount.value
+    }
+  }))
+}
+
+const handleInteractionSyncEvent = (event: Event) => {
+  const detail = (event as CustomEvent).detail
+  if (!detail || String(detail.postId) !== String(props.post.id)) return
+  loadLikeState()
+}
+
+const handleCommentSyncEvent = (event: Event) => {
+  const detail = (event as CustomEvent).detail
+  if (!detail || String(detail.postId) !== String(props.post.id)) return
+  loadCommentCount()
+}
+
+const handleStorageEvent = () => {
+  loadLikeState()
+  loadCommentCount()
+}
+
+onMounted(() => {
+  loadLikeState()
+  loadCommentCount()
+  window.addEventListener('post-interaction-updated', handleInteractionSyncEvent)
+  window.addEventListener('post-comments-updated', handleCommentSyncEvent)
+  window.addEventListener('storage', handleStorageEvent)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('post-interaction-updated', handleInteractionSyncEvent)
+  window.removeEventListener('post-comments-updated', handleCommentSyncEvent)
+  window.removeEventListener('storage', handleStorageEvent)
+})
+
+watch(() => props.post.id, () => {
+  loadLikeState()
   loadCommentCount()
 })
 
@@ -167,6 +215,7 @@ async function handleLike() {
     localStorage.setItem(likeStorageKey.value, '1')
   }
   localStorage.setItem(likeCountStorageKey.value, String(likeCount.value))
+  dispatchPostInteractionEvent()
 
   if (typeof props.post.id === 'number') {
     const [error] = await likePost(props.post.id)
@@ -175,6 +224,7 @@ async function handleLike() {
       likeCount.value = previousCount
       localStorage.setItem(likeStorageKey.value, previousLiked ? '1' : '0')
       localStorage.setItem(likeCountStorageKey.value, String(previousCount))
+      dispatchPostInteractionEvent()
       ElMessage.error(t('likeUpdateFailed'))
     }
   }
@@ -384,5 +434,23 @@ const tagValue = computed(() => {
 
 .is-liked {
   color: #dc2626 !important;
+}
+
+.post-like-btn {
+  gap: 6px;
+}
+
+.post-like-heart {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--tl-text-muted);
+}
+
+.post-like-heart.is-liked {
+  color: #dc2626;
+}
+
+.post-like-count {
+  color: var(--tl-text);
 }
 </style>

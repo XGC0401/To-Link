@@ -466,6 +466,8 @@
   "attachmentFileName": "檔案名稱",
   "attachmentFileNamePlaceholder": "發送前可修改檔案名稱",
   "untitledFile": "未命名檔案",
+  "draw": "繪畫",
+  "clearDrawing": "清除塗鴉",
   "send": "發送",
   "download": "下載",
   "sharedLocation": "分享的位置",
