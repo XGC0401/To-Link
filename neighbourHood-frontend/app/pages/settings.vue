@@ -263,6 +263,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Check } from '@element-plus/icons-vue'
 import { applyCompactMode, applyDarkMode, applyFontSize, applyThemeColor } from '@/utils/theme'
+import { updateMyPresence } from '~/api/chat'
 
 const router = useRouter()
 const { t, locale, setLocale } = useI18n()
@@ -407,17 +408,16 @@ const handleSave = async () => {
     }
 
     if (currentEmail) {
+      const presenceStatus = settingsForm.onlineStatus === 'hidden' ? 'offline' : settingsForm.onlineStatus
       localStorage.setItem(`userPresence:${currentEmail}`, JSON.stringify({
-        status: settingsForm.onlineStatus === 'hidden' ? 'offline' : settingsForm.onlineStatus,
+        status: presenceStatus,
         lastActiveAt: Date.now()
       }))
+      await updateMyPresence(presenceStatus)
     }
 
     // Save to localStorage
     localStorage.setItem('userSettings', JSON.stringify(settingsForm))
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
 
     ElMessage.success(t('settingsSaved'))
 

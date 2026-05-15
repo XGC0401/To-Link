@@ -19,8 +19,10 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_users_email", columnList = "email"),
@@ -29,6 +31,7 @@ import lombok.Data;
 public class User {
     @Id
     @Column(name = "uuid", columnDefinition = "uuid")
+    @EqualsAndHashCode.Include
     private UUID uuid;
 
     @Column(name = "username")

@@ -358,6 +358,7 @@ import {
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { blockUser, unblockUser } from '~/api/auth'
+import { getChatConversations, getChatMessages, markConversationRead, sendChatMessage, updateMyPresence } from '~/api/chat'
 import { loadBlacklist, removeBlockedPerson, saveBlacklist, upsertBlockedPerson, isBlockedByCandidates, type BlockedPerson } from '~/utils/blacklist'
 
 // Add Leaflet CSS
@@ -435,6 +436,7 @@ const showRenameDialog = ref(false)
 const showDeleteDialog = ref(false)
 const renameValue = ref('')
 const selectedManageConversationId = ref<string | number | null>(null)
+let conversationPollHandle: number | null = null
 
 const getPreferredTimeFormat = () => {
   try {
@@ -480,6 +482,60 @@ const moveConversationToTop = (id: number | string) => {
   const [picked] = conversations.value.splice(index, 1)
   if (picked) {
     conversations.value.unshift(picked)
+  }
+}
+
+const toDisplayTime = (isoLike?: string) => {
+  if (!isoLike) {
+    return formatClockTime()
+  }
+  const parsed = new Date(isoLike)
+  if (Number.isNaN(parsed.getTime())) {
+    return formatClockTime()
+  }
+  return formatClockTime(parsed)
+}
+
+const loadConversationsFromServer = async () => {
+  const [error, response] = await getChatConversations()
+  if (error || !response?.success || !Array.isArray(response.data)) {
+    return
+  }
+
+  conversations.value = response.data.map((item) => ({
+    id: item.conversationId,
+    name: item.peerName || item.peerEmail,
+    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+    participantEmail: item.peerEmail,
+    lastMessage: item.lastMessage || '',
+    lastMessageTime: toDisplayTime(item.lastMessageTime),
+    unread: Number(item.unreadCount || 0),
+    messages: []
+  }))
+}
+
+const loadMessagesFromServer = async (conversation: Conversation, sinceId?: number) => {
+  if (!conversation.participantEmail) {
+    return
+  }
+
+  const [error, response] = await getChatMessages(conversation.participantEmail, sinceId)
+  if (error || !response?.success || !Array.isArray(response.data)) {
+    return
+  }
+
+  const mapped = response.data.map((item) => ({
+    id: item.id,
+    text: item.content,
+    sender: item.senderEmail?.toLowerCase() === currentUserEmail.value ? 'user' : 'other',
+    time: toDisplayTime(item.sentAt),
+    type: item.messageType === 'text' ? 'normal' : (item.messageType as Message['type'])
+  } as Message))
+
+  if (sinceId) {
+    conversation.messages.push(...mapped)
+  } else {
+    conversation.messages = mapped
   }
 }
 
@@ -715,8 +771,8 @@ const conversations = ref<Conversation[]>([
   }
 ])
 
-// Load conversations from localStorage on mount
-onMounted(() => {
+// Load conversations from backend on mount
+onMounted(async () => {
   try {
     const profileRaw = localStorage.getItem('userProfile')
     const profile = profileRaw ? JSON.parse(profileRaw) : {}
@@ -732,38 +788,57 @@ onMounted(() => {
       status: 'online',
       lastActiveAt: Date.now()
     }))
+    await updateMyPresence('online')
   }
 
   blockedPeople.value = loadBlacklist()
-  const scopedKey = getScopedConversationKey(currentUserEmail.value)
-  const storedConversations = localStorage.getItem(scopedKey) || localStorage.getItem('chatConversations')
-  if (storedConversations) {
-    const parsed = JSON.parse(storedConversations)
-    // Merge with existing conversations, adding new ones
-    parsed.forEach((stored: Conversation) => {
-      const existing = conversations.value.find(c => c.id === stored.id)
-      if (existing) {
-        existing.messages = stored.messages
-        existing.lastMessage = stored.lastMessage
-        existing.lastMessageTime = stored.lastMessageTime
-      } else {
-        conversations.value.push(stored)
-      }
-    })
-  }
+  conversations.value = []
+  await loadConversationsFromServer()
   
-  // Check if userId query parameter is present
+  const peerEmail = String(route.query.peerEmail || '').toLowerCase().trim()
   const userId = route.query.userId
-  if (userId) {
+  if (peerEmail) {
+    const byEmail = conversations.value.find((c) => String(c.participantEmail || '').toLowerCase() === peerEmail)
+    if (byEmail) {
+      await selectConversation(byEmail)
+    } else {
+      const fallbackName = String(route.query.userName || peerEmail.split('@')[0] || 'User')
+      const created: Conversation = {
+        id: Date.now(),
+        name: fallbackName,
+        avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+        participantEmail: peerEmail,
+        lastMessage: '',
+        lastMessageTime: formatClockTime(),
+        unread: 0,
+        messages: []
+      }
+      conversations.value.unshift(created)
+      await selectConversation(created)
+    }
+  } else if (userId) {
     const conversationId = parseInt(userId as string)
     const conversation = conversations.value.find(c => c.id === conversationId)
     if (conversation) {
-      selectConversation(conversation)
+      await selectConversation(conversation)
     } else {
       // Create a new conversation if it doesn't exist
       createNewConversation(conversationId)
     }
   }
+
+  conversationPollHandle = window.setInterval(async () => {
+    const previouslySelected = selectedConversation.value?.id
+    await loadConversationsFromServer()
+    if (previouslySelected) {
+      const nextSelected = conversations.value.find((item) => item.id === previouslySelected)
+      if (nextSelected && selectedConversationId.value === previouslySelected) {
+        const lastId = nextSelected.messages[nextSelected.messages.length - 1]?.id
+        await loadMessagesFromServer(nextSelected, lastId)
+      }
+    }
+  }, 3000)
+
   window.addEventListener('app:emergency-message-sent', handleEmergencyMessageSent)
 })
 
@@ -812,9 +887,13 @@ const isConversationBlocked = (conversation?: Conversation) => {
   return isBlockedByCandidates(blockedPeople.value, memberCandidates)
 }
 
-const selectConversation = (conversation: Conversation) => {
+const selectConversation = async (conversation: Conversation) => {
   selectedConversationId.value = conversation.id
   conversation.unread = 0
+  await loadMessagesFromServer(conversation)
+  if (conversation.participantEmail) {
+    await markConversationRead(conversation.participantEmail)
+  }
   nextTick(() => {
     scrollToBottom()
   })
@@ -834,17 +913,7 @@ const createNewConversation = (userId: number) => {
     ? Object.fromEntries(storedDirectory.map((item: any) => [String(item.id), { name: item.name, avatar: item.avatar, email: item.email }]))
     : {}
 
-  const friendsData: Record<string, { name: string, avatar: string }> = {
-    '1': { name: 'John Doe', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
-    '2': { name: 'Jane Smith', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' },
-    '3': { name: 'Mike Johnson', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
-    '4': { name: 'Sarah Williams', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' },
-    '5': { name: 'David Brown', avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg' },
-    '6': { name: 'Emily Davis', avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg' },
-    ...mappedDirectory
-  }
-
-  const friendData = friendsData[String(userId)] as { name: string; avatar: string; email?: string } | undefined
+  const friendData = mappedDirectory[String(userId)] as { name: string; avatar: string; email?: string } | undefined
   if (friendData) {
     const newConversation: Conversation = {
       id: Number.isNaN(userId) ? Date.now() : userId,
@@ -902,34 +971,44 @@ const confirmDeleteConversation = () => {
   showDeleteDialog.value = false
 }
 
-const sendMessage = () => {
+const sendMessage = async () => {
   if (!messageInput.value.trim() || !selectedConversation.value) return
   if (isConversationBlocked(selectedConversation.value)) {
     ElMessage.warning(t('conversationBlocked'))
     return
   }
 
+  if (!selectedConversation.value.participantEmail) {
+    ElMessage.warning(language.value === 'zh' ? '無法發送訊息' : 'Unable to send message')
+    return
+  }
+
+  const outgoingText = messageInput.value.trim()
+  const [error, response] = await sendChatMessage(selectedConversation.value.participantEmail, outgoingText, 'text')
+  if (error || !response?.success || !response.data) {
+    ElMessage.error(language.value === 'zh' ? '訊息傳送失敗' : 'Message failed to send')
+    return
+  }
+
   const newMessage: Message = {
-    id: (selectedConversation.value.messages.length || 0) + 1,
-    text: messageInput.value,
+    id: response.data.id,
+    text: response.data.content,
     sender: 'user',
-    time: formatClockTime()
+    time: toDisplayTime(response.data.sentAt),
+    type: 'normal'
   }
 
   selectedConversation.value.messages.push(newMessage)
-  selectedConversation.value.lastMessage = messageInput.value
+  selectedConversation.value.lastMessage = outgoingText
   selectedConversation.value.lastMessageTime = newMessage.time
   moveConversationToTop(selectedConversation.value.id)
-
-  if (selectedConversation.value.participantEmail) {
-    saveRecipientConversation(selectedConversation.value.participantEmail, selectedConversation.value, newMessage)
-  }
 
   if (currentUserEmail.value) {
     localStorage.setItem(`userPresence:${currentUserEmail.value}`, JSON.stringify({
       status: 'online',
       lastActiveAt: Date.now()
     }))
+    await updateMyPresence('online')
   }
 
   messageInput.value = ''
@@ -1206,12 +1285,17 @@ watch(conversations, (newConversations) => {
 
 // Cleanup on unmount
 onBeforeUnmount(() => {
+  if (conversationPollHandle) {
+    window.clearInterval(conversationPollHandle)
+    conversationPollHandle = null
+  }
   cleanupMaps()
   if (currentUserEmail.value) {
     localStorage.setItem(`userPresence:${currentUserEmail.value}`, JSON.stringify({
       status: 'offline',
       lastActiveAt: Date.now()
     }))
+    updateMyPresence('offline')
   }
   window.removeEventListener('app:emergency-message-sent', handleEmergencyMessageSent)
 })

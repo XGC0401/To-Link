@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -131,12 +132,57 @@ public class PostController {
     }
 
     @PostMapping("/like-post")
-    public ResponseEntity<ApiResponse> likePost(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody Long postID) {
+    public ResponseEntity<ApiResponse> likePost(@AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody JsonNode payload) {
+        Long postID = extractPostId(payload);
+        if (postID == null) {
+            return ResponseEntity.status(400)
+                    .body(new ApiResponse<>(false, false, "postID is required"));
+        }
+
         int response = postService.likePost(postID, userDetails.getUuid());
         if (response == 1) {
             return ResponseEntity.status(200).body(new ApiResponse<>(true, true,"success"));
         } else {
             return ResponseEntity.status(404).body(new ApiResponse<>(false,false, "fail to find corresponding user or post"));
         }
+    }
+
+    private Long extractPostId(JsonNode payload) {
+        if (payload == null || payload.isNull()) {
+            return null;
+        }
+
+        if (payload.isNumber()) {
+            return payload.longValue();
+        }
+
+        if (payload.isTextual()) {
+            try {
+                return Long.parseLong(payload.textValue());
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+
+        JsonNode idNode = payload.get("postID");
+        if (idNode == null) {
+            idNode = payload.get("postId");
+        }
+        if (idNode == null || idNode.isNull()) {
+            return null;
+        }
+
+        if (idNode.isNumber()) {
+            return idNode.longValue();
+        }
+        if (idNode.isTextual()) {
+            try {
+                return Long.parseLong(idNode.textValue());
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        return null;
     }
 }

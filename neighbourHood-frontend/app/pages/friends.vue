@@ -57,7 +57,7 @@
 
     <div class="friends-grid">
       <el-card v-for="friend in filteredFriends" :key="friend.id" class="friend-card">
-        <div class="friend-content">
+        <div class="friend-content friend-content-clickable" @click="sendMessage(friend)">
           <div class="friend-avatar-wrapper">
             <el-avatar :size="80" :src="friend.avatar" />
             <span :class="['online-indicator', friend.status]"></span>
@@ -69,13 +69,13 @@
           </div>
 
           <div class="friend-actions">
-            <el-button size="small">
+            <el-button size="small" @click.stop>
               <template #icon>
                 <el-icon><Phone /></el-icon>
               </template>
               {{ $t('call') }}
             </el-button>
-            <el-button type="primary" size="small" @click="sendMessage(friend)">
+            <el-button type="primary" size="small" @click.stop="sendMessage(friend)">
               <template #icon>
                 <el-icon><Message /></el-icon>
               </template>
@@ -118,6 +118,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Message, Phone, Close } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
+import { getPresenceByEmails } from '~/api/chat'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -187,6 +188,7 @@ const discoverUsers = ref<Friend[]>([
 const ignoredDiscoverKeys = ref<string[]>([])
 const showDiscoverProfileDialog = ref(false)
 const selectedDiscoverUser = ref<Friend | null>(null)
+let presencePollHandle: number | null = null
 
 const getDiscoverKey = (user: Friend) => {
   return String(user.email || user.id || '').toLowerCase()
@@ -239,14 +241,30 @@ const resolvePresenceStatus = (email?: string) => {
   }
 }
 
-const refreshFriendStatuses = () => {
-  friends.value = friends.value.map((friend) => {
-    const nextStatus = resolvePresenceStatus(friend.email)
-    return {
-      ...friend,
-      status: nextStatus
+const refreshFriendStatuses = async () => {
+  const emails = friends.value
+    .map((friend) => String(friend.email || '').toLowerCase())
+    .filter(Boolean)
+
+  if (emails.length > 0) {
+    const [error, response] = await getPresenceByEmails(emails)
+    if (!error && response?.success && Array.isArray(response.data)) {
+      const statusMap = new Map(response.data.map((item) => [String(item.email || '').toLowerCase(), item.status]))
+      friends.value = friends.value.map((friend) => {
+        const mapped = statusMap.get(String(friend.email || '').toLowerCase())
+        return {
+          ...friend,
+          status: (mapped as Friend['status']) || resolvePresenceStatus(friend.email)
+        }
+      })
+      return
     }
-  })
+  }
+
+  friends.value = friends.value.map((friend) => ({
+    ...friend,
+    status: resolvePresenceStatus(friend.email)
+  }))
 }
 
 const getStatusLabel = (status: Friend['status']) => {
@@ -473,17 +491,22 @@ const sendMessage = (friend: Friend) => {
       localStorage.setItem('chatConversations', JSON.stringify(conversations))
     }
   }
-  router.push({ path: '/chat', query: { userId: String(friend.id) } })
+  router.push({ path: '/chat', query: { userId: String(friend.id), peerEmail: String(friend.email || '') } })
 }
 
 onMounted(() => {
   loadFriendsState()
   refreshFriendStatuses()
-  window.addEventListener('storage', refreshFriendStatuses)
+  presencePollHandle = window.setInterval(() => {
+    refreshFriendStatuses()
+  }, 5000)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('storage', refreshFriendStatuses)
+  if (presencePollHandle) {
+    window.clearInterval(presencePollHandle)
+    presencePollHandle = null
+  }
 })
 
 watch([friends, discoverUsers], () => {
@@ -681,6 +704,10 @@ watch(filterStatus, () => {
 .friend-content {
   padding: 24px 20px;
   text-align: center;
+}
+
+.friend-content-clickable {
+  cursor: pointer;
 }
 
 .friend-avatar-wrapper {

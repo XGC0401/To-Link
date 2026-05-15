@@ -91,7 +91,7 @@ export async function likePost(postID: number): Promise<APIResponse<BasicRespons
         'Content-Type': 'application/json'
       }
     };
-    const { data, headers } = await createAxiosInstance().post<BasicResponse<Boolean>>(`/post/like-post`, postID, likeConfig);
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<Boolean>>(`/post/like-post`, { postId: postID }, likeConfig);
     return [null, data, { headers }];
   } catch (error: any) {
     console.error(error);
