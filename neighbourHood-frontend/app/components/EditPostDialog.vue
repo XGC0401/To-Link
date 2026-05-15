@@ -15,10 +15,12 @@
     >
       <el-form-item :label="$t('title')" prop="title">
         <el-input
+          ref="titleInput"
           v-model="formData.title"
           :placeholder="$t('enterTitle')"
           maxlength="100"
           show-word-limit
+          @keyup.enter="handleTitleEnter"
         />
       </el-form-item>
 
@@ -146,6 +148,7 @@ const emit = defineEmits<{
 }>()
 
 const postFormRef = ref<FormInstance>()
+const titleInput = ref<any>(null)
 const saving = ref(false)
 
 const formData = reactive({
@@ -238,6 +241,10 @@ const addTag = () => {
 
 const removeTag = (tag: string) => {
   formData.tags = formData.tags.filter((item) => item !== tag)
+}
+
+const handleTitleEnter = () => {
+  handleSave()
 }
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {

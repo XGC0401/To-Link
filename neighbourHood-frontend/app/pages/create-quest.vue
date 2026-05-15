@@ -10,7 +10,7 @@
 
         <el-form ref="questFormRef" :model="questForm" :rules="questRules" label-position="top" class="quest-form">
           <el-form-item :label="$t('title')" prop="title">
-            <el-input v-model="questForm.title" :placeholder="$t('enterQuestTitle')" maxlength="100" show-word-limit />
+            <el-input ref="titleInput" v-model="questForm.title" :placeholder="$t('enterQuestTitle')" maxlength="100" show-word-limit @keyup.enter="handleTitleEnter" />
           </el-form-item>
 
           <el-form-item :label="$t('detail')" prop="detail">
@@ -93,6 +93,7 @@ import { Plus, Check } from '@element-plus/icons-vue'
 const router = useRouter()
 const { t } = useI18n()
 const questFormRef = ref<FormInstance>()
+const titleInput = ref<any>(null)
 const submitting = ref(false)
 const fileList = ref<UploadUserFile[]>([])
 const tagInput = ref('')
@@ -129,6 +130,10 @@ const addTag = () => {
 
 const removeTag = (tag: string) => {
   questForm.tags = questForm.tags.filter((item) => item !== tag)
+}
+
+const handleTitleEnter = () => {
+  handleSubmit()
 }
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {

@@ -149,6 +149,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Message, Phone, Close } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
+import { getUserDirectory } from '~/api/auth'
 import { getPresenceByEmails } from '~/api/chat'
 
 const router = useRouter()
@@ -366,6 +367,35 @@ const buildGeneratedUsers = (): Friend[] => {
   return users
 }
 
+const loadBackendDiscoverUsers = async (): Promise<Friend[]> => {
+  const [error, response] = await getUserDirectory()
+  if (error || !response?.success || !Array.isArray(response.data)) {
+    return []
+  }
+
+  return response.data.map((user) => ({
+    id: user.uuid,
+    name: String(user.username || user.email || '').trim(),
+    email: String(user.email || '').trim(),
+    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+    status: resolvePresenceStatus(String(user.email || '').trim()),
+    profession: String(user.status || ''),
+    bio: String(user.house || ''),
+    profileVisibility: 'public',
+    address: {
+      street: String(user.address1 || ''),
+      building: String(user.address2 || ''),
+      room: String(user.address3 || '')
+    },
+    addressVisibility: {
+      street: 'friends',
+      building: 'friends',
+      room: 'friends'
+    },
+    addressSpecificPeople: {}
+  }))
+}
+
 const persistFriendsState = () => {
   if (typeof window === 'undefined') {
     return
@@ -375,7 +405,7 @@ const persistFriendsState = () => {
   localStorage.setItem('friendDirectory', JSON.stringify([...friends.value, ...discoverUsers.value]))
 }
 
-const loadFriendsState = () => {
+const loadFriendsState = async () => {
   if (typeof window === 'undefined') {
     return
   }
@@ -400,6 +430,18 @@ const loadFriendsState = () => {
 
   const { email: currentEmail } = getCurrentAccount()
   const generatedUsers = buildGeneratedUsers()
+  const backendUsers = await loadBackendDiscoverUsers()
+  const candidates = [...generatedUsers]
+  const seenEmails = new Set(generatedUsers.map((user) => String(user.email || '').toLowerCase()).filter(Boolean))
+
+  backendUsers.forEach((user) => {
+    const email = String(user.email || '').toLowerCase()
+    if (email && !seenEmails.has(email)) {
+      candidates.push(user)
+      seenEmails.add(email)
+    }
+  })
+
   const friendIds = new Set(friends.value.map((item) => String(item.id)))
   const friendEmails = new Set(
     friends.value
@@ -407,7 +449,7 @@ const loadFriendsState = () => {
       .filter(Boolean)
   )
 
-  discoverUsers.value = generatedUsers.filter((user) => {
+  discoverUsers.value = candidates.filter((user) => {
     const userEmail = String(user.email || '').toLowerCase()
     if (!userEmail) return false
     if (currentEmail && userEmail === currentEmail) return false
@@ -597,7 +639,7 @@ onMounted(() => {
   refreshFriendStatuses()
   presencePollHandle = window.setInterval(() => {
     refreshFriendStatuses()
-  }, 5000)
+  }, 1000)
 })
 
 onUnmounted(() => {

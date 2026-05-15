@@ -1,5 +1,7 @@
 package com.feature.neighbourHood_backend.controller;
 
+import java.util.List;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import com.feature.neighbourHood_backend.model.CustomUserDetails;
 import com.feature.neighbourHood_backend.model.DTO.ApiResponse;
 import com.feature.neighbourHood_backend.model.DTO.BlockUserRequestDTO;
 import com.feature.neighbourHood_backend.model.DTO.ChangePasswordRequestDTO;
+import com.feature.neighbourHood_backend.model.DTO.PublicUserProfileDTO;
 import com.feature.neighbourHood_backend.model.DTO.UpdateEmailRequestDTO;
 import com.feature.neighbourHood_backend.model.entity.User;
 import com.feature.neighbourHood_backend.service.UserService;
@@ -43,6 +46,13 @@ public class AdminController {
     public ApiResponse<String> userInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userService.getUser(userDetails.getEmail());
         return new ApiResponse(true, user, "");
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/users/discover")
+    public ApiResponse<List<PublicUserProfileDTO>> discoverUsers(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return new ApiResponse<>(true, userService.listPublicUsers(userDetails.getUuid()), "success");
     }
 
     @PreAuthorize("isAuthenticated()")

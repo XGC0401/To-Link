@@ -107,7 +107,7 @@
                       :alt="message.fileName"
                       fit="cover"
                       class="message-image"
-                      :preview-src-list="[message.fileUrl]"
+                      :preview-src-list="message.fileUrl ? [message.fileUrl] : []"
                     />
                   </div>
                   <div class="file-info">
@@ -360,6 +360,7 @@ import { ElMessage } from 'element-plus'
 import { blockUser, unblockUser } from '~/api/auth'
 import { getChatConversations, getChatMessages, markConversationRead, sendChatMessage, updateMyPresence } from '~/api/chat'
 import { loadBlacklist, removeBlockedPerson, saveBlacklist, upsertBlockedPerson, isBlockedByCandidates, type BlockedPerson } from '~/utils/blacklist'
+import { useWebSocket } from '~/utils/websocket'
 
 // Add Leaflet CSS
 useHead({
@@ -454,8 +455,26 @@ const formatClockTime = (date = new Date()) => {
   return date.toLocaleTimeString(localeCode, {
     hour: '2-digit',
     minute: '2-digit',
-    hour12
+    hour12,
+    timeZone: 'Asia/Hong_Kong'
   })
+}
+
+const parseBackendTime = (rawValue?: string) => {
+  const raw = String(rawValue || '').trim()
+  if (!raw) {
+    return null
+  }
+
+  const normalized = raw.replace(' ', 'T')
+  const localMatch = normalized.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/)
+  if (localMatch) {
+    const [, year, month, day, hour, minute, second = '0'] = localMatch
+    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second))
+  }
+
+  const parsed = new Date(normalized)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
 const toStableConversationId = (seed: string) => {
@@ -489,8 +508,8 @@ const toDisplayTime = (isoLike?: string) => {
   if (!isoLike) {
     return formatClockTime()
   }
-  const parsed = new Date(isoLike)
-  if (Number.isNaN(parsed.getTime())) {
+  const parsed = parseBackendTime(isoLike)
+  if (!parsed || Number.isNaN(parsed.getTime())) {
     return formatClockTime()
   }
   return formatClockTime(parsed)
@@ -506,16 +525,41 @@ const loadConversationsFromServer = async () => {
     return false
   }
 
-  conversations.value = response.data.map((item) => ({
-    id: item.conversationId,
-    name: item.peerName || item.peerEmail,
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    participantEmail: item.peerEmail,
-    lastMessage: item.lastMessage || '',
-    lastMessageTime: toDisplayTime(item.lastMessageTime),
-    unread: Number(item.unreadCount || 0),
-    messages: []
-  }))
+  const serverConversations: Conversation[] = response.data.map((item) => {
+    const existing = conversations.value.find((current) =>
+      String(current.id) === String(item.conversationId) ||
+      String(current.participantEmail || '').toLowerCase() === String(item.peerEmail || '').toLowerCase()
+    )
+
+    return {
+      id: item.conversationId,
+      name: item.peerName || item.peerEmail,
+      avatar: existing?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+      participantEmail: item.peerEmail,
+      lastMessage: item.lastMessage || '',
+      lastMessageTime: toDisplayTime(item.lastMessageTime),
+      unread: Number(item.unreadCount || 0),
+      messages: Array.isArray(existing?.messages) ? existing.messages : []
+    }
+  })
+
+  const merged: Conversation[] = [...serverConversations]
+  const existingIds = new Set(serverConversations.map((item) => String(item.id)))
+  const existingEmails = new Set(serverConversations.map((item) => String(item.participantEmail || '').toLowerCase()))
+
+  conversations.value.forEach((item) => {
+    const itemId = String(item.id)
+    const itemEmail = String(item.participantEmail || '').toLowerCase()
+    if (existingIds.has(itemId)) {
+      return
+    }
+    if (itemEmail && existingEmails.has(itemEmail)) {
+      return
+    }
+    merged.push(item)
+  })
+
+  conversations.value = merged
   return true
 }
 
@@ -540,6 +584,9 @@ const loadMessagesFromServer = async (conversation: Conversation, sinceId?: numb
   if (sinceId) {
     conversation.messages.push(...mapped)
   } else {
+    if (mapped.length === 0 && conversation.messages.length > 0) {
+      return
+    }
     conversation.messages = mapped
   }
 }
@@ -694,7 +741,42 @@ onMounted(async () => {
         await loadMessagesFromServer(nextSelected, lastId)
       }
     }
-  }, 3000)
+  }, 1000)
+
+  // Initialize WebSocket for real-time messaging
+  const ws = useWebSocket()
+  try {
+    await ws.initWebSocket()
+    
+    // Listen for incoming messages via WebSocket
+    ws.onMessage((msg) => {
+      const conversation = conversations.value.find((c) =>
+        String(c.participantEmail || '').toLowerCase() === String(msg.senderEmail || '').toLowerCase() ||
+        String(c.participantEmail || '').toLowerCase() === String(msg.senderEmail || '').toLowerCase()
+      )
+      
+      if (conversation) {
+        const newMsg: Message = {
+          id: msg.id,
+          text: msg.content,
+          sender: msg.senderEmail?.toLowerCase() === currentUserEmail.value ? 'user' : 'other',
+          time: toDisplayTime(msg.sentAt),
+          type: msg.messageType === 'text' ? 'normal' : (msg.messageType as Message['type'])
+        }
+        conversation.messages.push(newMsg)
+        moveConversationToTop(conversation.id)
+      }
+    })
+    
+    // Listen for conversation updates
+    ws.onConversationUpdate((update) => {
+      loadConversationsFromServer()
+    })
+    
+    console.log('WebSocket connected successfully')
+  } catch (error) {
+    console.warn('WebSocket connection failed, using polling as fallback:', error)
+  }
 
   window.addEventListener('app:emergency-message-sent', handleEmergencyMessageSent)
 })
@@ -856,24 +938,66 @@ const sendMessage = async () => {
   }
 
   const outgoingText = messageInput.value.trim()
+  
+  // Optimistic render: show message immediately
+  const optimisticId = Date.now()
+  const optimisticMessage: Message = {
+    id: optimisticId,
+    text: outgoingText,
+    sender: 'user',
+    time: formatClockTime(),
+    type: 'normal'
+  }
+  
+  selectedConversation.value.messages.push(optimisticMessage)
+  selectedConversation.value.lastMessage = outgoingText
+  selectedConversation.value.lastMessageTime = optimisticMessage.time
+  moveConversationToTop(selectedConversation.value.id)
+  messageInput.value = ''
+  
+  nextTick(() => {
+    scrollToBottom()
+  })
+  
+  // Try to send via WebSocket first for real-time delivery
+  const ws = useWebSocket()
+  if (ws.isWebSocketConnected()) {
+    try {
+      await ws.sendMessageViaWebSocket(selectedConversation.value.participantEmail, outgoingText, 'text')
+      // Mark optimistic message as sent
+      const msgIndex = selectedConversation.value.messages.findIndex((m) => m.id === optimisticId)
+      if (msgIndex >= 0) {
+        // Message is confirmed on server, no need to update
+      }
+      return
+    } catch (wsError) {
+      console.warn('WebSocket send failed, falling back to REST:', wsError)
+      // Fall through to REST API
+    }
+  }
+  
+  // Fallback to REST API
   const [error, response] = await sendChatMessage(selectedConversation.value.participantEmail, outgoingText, 'text')
   if (error || !response?.success || !response.data) {
     ElMessage.error(language.value === 'zh' ? '訊息傳送失敗' : 'Message failed to send')
+    const idx = selectedConversation.value.messages.findIndex((m) => m.id === optimisticId)
+    if (idx >= 0) {
+      selectedConversation.value.messages.splice(idx, 1)
+    }
     return
   }
 
-  const newMessage: Message = {
-    id: response.data.id,
-    text: response.data.content,
-    sender: 'user',
-    time: toDisplayTime(response.data.sentAt),
-    type: 'normal'
+  // Replace optimistic message with confirmed server version
+  const msgIndex = selectedConversation.value.messages.findIndex((m) => m.id === optimisticId)
+  if (msgIndex >= 0) {
+    selectedConversation.value.messages[msgIndex] = {
+      id: response.data.id,
+      text: response.data.content,
+      sender: 'user',
+      time: toDisplayTime(response.data.sentAt),
+      type: 'normal'
+    }
   }
-
-  selectedConversation.value.messages.push(newMessage)
-  selectedConversation.value.lastMessage = outgoingText
-  selectedConversation.value.lastMessageTime = newMessage.time
-  moveConversationToTop(selectedConversation.value.id)
 
   if (currentUserEmail.value) {
     localStorage.setItem(`userPresence:${currentUserEmail.value}`, JSON.stringify({
@@ -882,12 +1006,6 @@ const sendMessage = async () => {
     }))
     await updateMyPresence('online')
   }
-
-  messageInput.value = ''
-
-  nextTick(() => {
-    scrollToBottom()
-  })
 
 }
 
@@ -1161,6 +1279,11 @@ onBeforeUnmount(() => {
     window.clearInterval(conversationPollHandle)
     conversationPollHandle = null
   }
+  
+  // Disconnect WebSocket
+  const ws = useWebSocket()
+  ws.disconnect()
+  
   cleanupMaps()
   if (currentUserEmail.value) {
     localStorage.setItem(`userPresence:${currentUserEmail.value}`, JSON.stringify({

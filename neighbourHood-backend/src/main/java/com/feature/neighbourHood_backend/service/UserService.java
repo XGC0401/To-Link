@@ -1,6 +1,7 @@
 package com.feature.neighbourHood_backend.service;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.feature.neighbourHood_backend.model.CustomUserDetails;
+import com.feature.neighbourHood_backend.model.DTO.PublicUserProfileDTO;
 import com.feature.neighbourHood_backend.model.entity.Role;
 import com.feature.neighbourHood_backend.model.entity.User;
 import com.feature.neighbourHood_backend.repository.RoleRepository;
@@ -116,6 +118,22 @@ public class UserService implements UserDetailsService {
 
         return user;
     }
+
+        public List<PublicUserProfileDTO> listPublicUsers(UUID currentUserId) {
+        return userRepository.findAll().stream()
+            .filter(user -> user.getUuid() != null && !user.getUuid().equals(currentUserId))
+            .map(user -> PublicUserProfileDTO.builder()
+                .uuid(user.getUuid())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .status(user.getStatus())
+                .house(user.getHouse())
+                .address1(user.getAddress1())
+                .address2(user.getAddress2())
+                .address3(user.getAddress3())
+                .build())
+            .toList();
+        }
 
     public User updateEmail(UUID userId, String newEmail) {
         if (newEmail == null || newEmail.isBlank()) {

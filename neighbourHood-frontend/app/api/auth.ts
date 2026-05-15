@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { BasicResponse, loginParams, registerParams, User } from '~/api/types/common';
+import type { BasicResponse, loginParams, PublicUserProfile, registerParams, User } from '~/api/types/common';
 import { Storage } from "../utils/storage"
 
 const createAxiosInstance = () => {
@@ -79,6 +79,16 @@ export async function getUser(): Promise<APIResponse<User>> {
   } catch (error: any) {
     console.error(error);
     return [error, error.response?.status];
+  }
+}
+
+export async function getUserDirectory(): Promise<APIResponse<BasicResponse<PublicUserProfile[]>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().get<BasicResponse<PublicUserProfile[]>>(`/admin/users/discover`, getConfig())
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
   }
 }
 

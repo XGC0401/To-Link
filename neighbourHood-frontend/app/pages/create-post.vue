@@ -10,8 +10,8 @@
 
         <el-form ref="postFormRef" :model="postForm" :rules="postRules" label-position="top" class="post-form">
           <el-form-item :label="$t('title')" prop="title">
-            <el-input v-model="postForm.title" :placeholder="$t('enterTitle')" maxlength="100" show-word-limit
-              size="large" />
+            <el-input ref="titleInput" v-model="postForm.title" :placeholder="$t('enterTitle')" maxlength="100" show-word-limit
+              size="large" @keyup.enter="handleTitleEnter" />
           </el-form-item>
 
           <el-form-item :label="$t('category')" prop="request_type">
@@ -121,6 +121,7 @@ const router = useRouter()
 const { t } = useI18n()
 const submitting = ref(false)
 const postFormRef = ref<FormInstance>()
+const titleInput = ref<any>(null)
 const dialogVisible = ref(false)
 const dialogImageUrl = ref('')
 const fileList = ref<UploadFile[]>([])
@@ -221,6 +222,10 @@ const addTag = () => {
 
 const removeTag = (tag: string) => {
   postForm.tags = postForm.tags.filter((item) => item !== tag)
+}
+
+const handleTitleEnter = () => {
+  handleSubmit()
 }
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {

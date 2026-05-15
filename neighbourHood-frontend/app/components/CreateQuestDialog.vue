@@ -9,8 +9,10 @@
     <el-form :model="formData" label-position="top">
       <el-form-item :label="$t('title')">
         <el-input
+          ref="titleInput"
           v-model="formData.title"
           :placeholder="$t('enterQuestTitle')"
+          @keyup.enter="handleTitleEnter"
         />
       </el-form-item>
 
@@ -175,6 +177,7 @@ const formData = reactive<QuestFormData>({
 const customTagInput = ref('')
 const customTags = ref<string[]>([])
 const showCustomTagInput = ref(false)
+const titleInput = ref<any>(null)
 const fileList = ref<UploadUserFile[]>([])
 const imagePreviewVisible = ref(false)
 const previewImageUrl = ref('')
@@ -235,6 +238,10 @@ function removeCustomTag(tag: string) {
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
   previewImageUrl.value = uploadFile.url || ''
   imagePreviewVisible.value = true
+}
+
+const handleTitleEnter = () => {
+  handleCreate()
 }
 
 function handleCreate() {

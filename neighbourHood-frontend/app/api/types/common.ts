@@ -29,3 +29,14 @@ export interface User {
     email: String;
     house: String;
 }
+
+export interface PublicUserProfile {
+    uuid: string;
+    username: string;
+    email: string;
+    status?: string;
+    house?: string;
+    address1?: string;
+    address2?: string;
+    address3?: string;
+}

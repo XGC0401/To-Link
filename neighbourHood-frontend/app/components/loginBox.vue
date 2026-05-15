@@ -84,11 +84,11 @@
 
           <el-form :model="loginForm" ref="loginFormRef" label-position="top" :rules="loginRules">
             <el-form-item :label="t('email')" prop="email">
-              <el-input v-model="loginForm.email" :placeholder="safePlaceholder('emailPlaceholder')"></el-input>
+              <el-input ref="loginEmailInput" v-model="loginForm.email" :placeholder="safePlaceholder('emailPlaceholder')" @keyup.enter="handleFormEnter('login', 0)"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('password')" prop="password">
-              <el-input :type="passwordVisible ? 'text' : 'password'" v-model="loginForm.password" :placeholder="safePlaceholder('passwordPlaceholder')">
+              <el-input ref="loginPasswordInput" :type="passwordVisible ? 'text' : 'password'" v-model="loginForm.password" :placeholder="safePlaceholder('passwordPlaceholder')" @keyup.enter="handleFormEnter('login', 1)">
                 <template #suffix>
                   <el-button text @click="togglePasswordVisibility">
                     <el-icon>
@@ -123,31 +123,29 @@
 
           <el-form :model="registerForm" ref="registerFormRef" label-position="top" :rules="registerRules">
             <el-form-item :label="t('name')" prop="name">
-              <el-input v-model="registerForm.name" :placeholder="safePlaceholder('namePlaceholder')"></el-input>
+              <el-input ref="registerNameInput" v-model="registerForm.name" :placeholder="safePlaceholder('namePlaceholder')" @keyup.enter="handleFormEnter('register', 0)"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('age')" prop="age">
-              <el-input v-model="registerForm.age" :placeholder="safePlaceholder('agePlaceholder')"></el-input>
+              <el-input ref="registerAgeInput" v-model="registerForm.age" :placeholder="safePlaceholder('agePlaceholder')" @keyup.enter="handleFormEnter('register', 1)"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('hkid')" prop="hkid">
-              <el-input v-model="registerForm.hkid" :placeholder="safePlaceholder('hkidPlaceholder')"></el-input>
+              <el-input ref="registerHkidInput" v-model="registerForm.hkid" :placeholder="safePlaceholder('hkidPlaceholder')" @keyup.enter="handleFormEnter('register', 2)"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('address1')" prop="address1">
-              <el-input v-model="registerForm.address1" :placeholder="safePlaceholder('address1Placeholder')">
+              <el-input ref="registerAddress1Input" v-model="registerForm.address1" :placeholder="safePlaceholder('address1Placeholder')" @keyup.enter="handleFormEnter('register', 3)">
               </el-input>
             </el-form-item>
 
             <el-form-item :label="t('address2')" prop="address2">
-              <el-input v-model="registerForm.address2"
-                :placeholder="safePlaceholder('address2Placeholder')">
+              <el-input ref="registerAddress2Input" v-model="registerForm.address2" :placeholder="safePlaceholder('address2Placeholder')" @keyup.enter="handleFormEnter('register', 4)">
               </el-input>
             </el-form-item>
 
             <el-form-item :label="t('address3')" prop="address3">
-              <el-input v-model="registerForm.address3"
-                :placeholder="safePlaceholder('address3Placeholder')"></el-input>
+              <el-input ref="registerAddress3Input" v-model="registerForm.address3" :placeholder="safePlaceholder('address3Placeholder')" @keyup.enter="handleFormEnter('register', 5)"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('phone')" prop="phone">
@@ -206,19 +204,21 @@
                 </div>
                 <!-- Phone number input -->
                 <el-input
+                  ref="registerPhoneInput"
                   v-model="registerForm.phone"
                   :placeholder="safePlaceholder('phonePlaceholder')"
                   class="phone-number-input"
+                  @keyup.enter="handleFormEnter('register', 6)"
                 />
               </div>
             </el-form-item>
 
             <el-form-item :label="t('email')" prop="email">
-              <el-input v-model="registerForm.email" :placeholder="safePlaceholder('emailPlaceholder')"></el-input>
+              <el-input ref="registerEmailInput" v-model="registerForm.email" :placeholder="safePlaceholder('emailPlaceholder')" @keyup.enter="handleFormEnter('register', 7)"></el-input>
             </el-form-item>
 
             <el-form-item :label="t('password')" prop="password">
-              <el-input :type="registerPasswordVisible ? 'text' : 'password'" v-model="registerForm.password" :placeholder="safePlaceholder('passwordPlaceholder')">
+              <el-input ref="registerPasswordInput" :type="registerPasswordVisible ? 'text' : 'password'" v-model="registerForm.password" :placeholder="safePlaceholder('passwordPlaceholder')" @keyup.enter="handleFormEnter('register', 8)">
                 <template #suffix>
                   <el-button text @click="toggleRegisterPasswordVisibility">
                     <el-icon>
@@ -230,12 +230,12 @@
             </el-form-item>
 
             <el-form-item :label="t('status')" prop="status">
-              <el-select v-model="registerForm.status" :placeholder="safePlaceholder('selectStatus')" clearable>
-                <el-option :label="t('statusStudent')" value="Student" />
-                <el-option :label="t('statusWorker')" value="Worker" />
-                <el-option :label="t('statusFreelancer')" value="Freelancer" />
-                <el-option :label="t('statusRetired')" value="Retired" />
-                <el-option :label="t('statusOther')" value="Other" />
+              <el-select ref="registerStatusSelect" v-model="registerForm.status" :placeholder="safePlaceholder('selectStatus')" clearable @keyup.enter="handleFormEnter('register', 9)">
+                <el-option  :label="t('statusStudent')" value="Student" />
+                <el-option  :label="t('statusWorker')" value="Worker" />
+                <el-option  :label="t('statusFreelancer')" value="Freelancer" />
+                <el-option  :label="t('statusRetired')" value="Retired" />
+                <el-option  :label="t('statusOther')" value="Other" />
               </el-select>
             </el-form-item>
 
@@ -315,6 +315,18 @@ const registerForm = reactive<registerParams>({
 
 const loginFormRef = ref<FormInstance>()
 const registerFormRef = ref<FormInstance>()
+const loginEmailInput = ref<any>(null)
+const loginPasswordInput = ref<any>(null)
+const registerNameInput = ref<any>(null)
+const registerAgeInput = ref<any>(null)
+const registerHkidInput = ref<any>(null)
+const registerAddress1Input = ref<any>(null)
+const registerAddress2Input = ref<any>(null)
+const registerAddress3Input = ref<any>(null)
+const registerPhoneInput = ref<any>(null)
+const registerEmailInput = ref<any>(null)
+const registerPasswordInput = ref<any>(null)
+const registerStatusSelect = ref<any>(null)
 const showError = ref(false)
 const errorMessage = ref('')
 const isLoggingIn = ref(false)
@@ -466,6 +478,33 @@ const parseJson = (raw: string | null) => {
     return JSON.parse(raw)
   } catch {
     return null
+  }
+}
+
+const focusLoginPassword = () => {
+  loginPasswordInput.value?.focus()
+}
+
+const focusRegisterPassword = () => {
+  registerPasswordInput.value?.focus()
+}
+
+const handleFormEnter = (formType: 'login' | 'register', fieldIndex: number) => {
+  const loginFields = [loginEmailInput, loginPasswordInput]
+  const registerFields = [registerNameInput, registerAgeInput, registerHkidInput, registerAddress1Input, registerAddress2Input, registerAddress3Input, registerPhoneInput, registerEmailInput, registerPasswordInput, registerStatusSelect]
+  
+  if (formType === 'login') {
+    if (fieldIndex < loginFields.length - 1) {
+      loginFields[fieldIndex + 1].value?.focus()
+    } else {
+      handleLogin()
+    }
+  } else if (formType === 'register') {
+    if (fieldIndex < registerFields.length - 1) {
+      registerFields[fieldIndex + 1].value?.focus()
+    } else {
+      handleRegister()
+    }
   }
 }
 
