@@ -241,41 +241,51 @@ const removeTag = (tag: string) => {
 }
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
-  previewImageUrl.value = uploadFile.url || ''
+  previewImageUrl.value = uploadFile.url || (uploadFile.raw ? URL.createObjectURL(uploadFile.raw) : '')
   imagePreviewVisible.value = true
 }
+
+const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '')
+  reader.onerror = () => reject(reader.error)
+  reader.readAsDataURL(file)
+})
 
 async function handleSave() {
   if (!postFormRef.value || !props.post) return
 
-  await postFormRef.value.validate((valid) => {
-    if (valid) {
-      saving.value = true
-      
-      emit('save', {
-        id: props.post!.id,
-        title: formData.title,
-        content: formData.content,
-        request_type: formData.request_type,
-        custom_category: formData.request_type === 4 ? formData.custom_category.trim() : undefined,
-        tags: [...formData.tags],
-        photos: fileList.value
-          .map((file) => {
-            if (file.url) {
-              return file.url
-            }
-            if (file.raw) {
-              return URL.createObjectURL(file.raw)
-            }
-            return ''
-          })
-          .filter(Boolean)
+  const valid = await postFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  saving.value = true
+  try {
+    const photos = await Promise.all(
+      fileList.value.map(async (file) => {
+        if (file.url) {
+          return file.url
+        }
+        if (file.raw) {
+          return await fileToDataUrl(file.raw)
+        }
+        return ''
       })
-      
-      saving.value = false
-      emit('update:modelValue', false)
-    }
-  })
+    )
+
+    emit('save', {
+      id: props.post.id,
+      title: formData.title,
+      content: formData.content,
+      request_type: formData.request_type,
+      custom_category: formData.request_type === 4 ? formData.custom_category.trim() : undefined,
+      tags: [...formData.tags],
+      photos: photos.filter(Boolean)
+    })
+
+    emit('update:modelValue', false)
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 

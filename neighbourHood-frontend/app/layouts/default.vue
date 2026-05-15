@@ -662,12 +662,32 @@ const loadUserLanguage = () => {
   }
 }
 
+const getCurrentUserEmail = () => {
+  const reactiveEmail = String(userProfile.value?.email || '').toLowerCase()
+  if (reactiveEmail) return reactiveEmail
+
+  const raw = localStorage.getItem('userProfile')
+  if (!raw) return ''
+  try {
+    const parsed = JSON.parse(raw)
+    return String(parsed?.email || '').toLowerCase()
+  } catch {
+    return ''
+  }
+}
+
+const getNotificationStorageKey = () => {
+  const email = getCurrentUserEmail()
+  if (!email) return 'appNotifications'
+  return `appNotifications:${email}`
+}
+
 const persistNotifications = () => {
-  localStorage.setItem('appNotifications', JSON.stringify(notificationItems.value))
+  localStorage.setItem(getNotificationStorageKey(), JSON.stringify(notificationItems.value))
 }
 
 const loadNotifications = () => {
-  const raw = localStorage.getItem('appNotifications')
+  const raw = localStorage.getItem(getNotificationStorageKey())
   if (!raw) {
     notificationItems.value = []
     return
@@ -788,6 +808,12 @@ const handleNotificationClick = (item: AppNotification) => {
 const handleAppNotificationEvent = (event: Event) => {
   const detail = (event as CustomEvent).detail
   if (!detail) return
+
+  const targetEmail = String(detail.targetEmail || '').toLowerCase()
+  if (targetEmail && targetEmail !== getCurrentUserEmail()) {
+    return
+  }
+
   if (detail.type === 'chat') {
     addNotification(
       t('chatNotificationTitle', { name: detail.senderName }),
@@ -811,6 +837,16 @@ const handleAppNotificationEvent = (event: Event) => {
         removalDescription: detail.removalDescription
       }
     )
+  } else if (detail.type === 'friend_added') {
+    addNotification(
+      t('friends'),
+      detail.message || `${detail.senderName || 'Someone'} added you as a friend.`,
+      'generic',
+      {
+        senderName: detail.senderName,
+        senderEmail: detail.senderEmail
+      }
+    )
   }
 }
 
@@ -827,6 +863,7 @@ onMounted(() => {
     loadUserProfile()
     loadUserSettings()
     loadUserLanguage()
+    loadNotifications()
     loadRedeemedRewards()
   })
 
@@ -881,7 +918,12 @@ watch(() => route.path, (newPath) => {
   // Reload profile and settings when navigating (in case they were updated)
   loadUserProfile()
   loadUserSettings()
+  loadNotifications()
 }, { immediate: true })
+
+watch(() => userProfile.value?.email, () => {
+  loadNotifications()
+})
 
 watch(() => locale.value, () => {
   scheduleVisibleItemsCalculation()
@@ -913,6 +955,7 @@ const handleLanguageToggle = async () => {
 }
 
 const clearAccountScopedStorage = () => {
+  const currentEmail = getCurrentUserEmail()
   const keysToClear = [
     'userPosts',
     'cachedPosts',
@@ -925,6 +968,10 @@ const clearAccountScopedStorage = () => {
     'adminSecretSettingUnlocked',
     'userProfile'
   ]
+
+  if (currentEmail) {
+    keysToClear.push(`appNotifications:${currentEmail}`)
+  }
 
   keysToClear.forEach((key) => localStorage.removeItem(key))
 }

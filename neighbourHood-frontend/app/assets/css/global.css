@@ -895,6 +895,19 @@ html.dark body #__nuxt #app [class*='button'] {
   box-shadow: none !important;
 }
 
+html.dark body #__nuxt #app .el-button:not(.el-button--primary):not(.el-button--danger):not(.el-button--success):not(.el-button--warning),
+html.dark body #__nuxt #app button:not(.el-button--primary):not(.el-button--danger):not(.el-button--success):not(.el-button--warning) {
+  background: #243044 !important;
+  border-color: #3b4a63 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark body #__nuxt #app .el-button:not(.el-button--primary):not(.el-button--danger):not(.el-button--success):not(.el-button--warning) span,
+html.dark body #__nuxt #app button:not(.el-button--primary):not(.el-button--danger):not(.el-button--success):not(.el-button--warning) span,
+html.dark .el-message-box__btns .el-button span {
+  color: #e5e7eb !important;
+}
+
 html.dark body #__nuxt #app button:hover,
 html.dark body #__nuxt #app .el-button:hover,
 html.dark body #__nuxt #app [class*='btn']:hover,
@@ -1016,6 +1029,13 @@ html.dark body #__nuxt #app .el-textarea__inner {
 html.dark body #__nuxt #app .el-slider__button {
   background: var(--theme-surface-soft) !important;
   border-color: var(--theme-border) !important;
+}
+
+html.dark body #__nuxt #app .el-radio-button__inner,
+html.dark .el-radio-button__inner {
+  color: #e5e7eb !important;
+  background: #1f2937 !important;
+  border-color: #475569 !important;
 }
 
 /* Unified control styling: make input wrappers and inner fields look like one merged component. */

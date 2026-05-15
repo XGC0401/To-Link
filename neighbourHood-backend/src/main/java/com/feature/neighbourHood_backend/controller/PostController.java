@@ -51,11 +51,16 @@ public class PostController {
                 request.getRedeemPoints(), request.getRequestType(), request.getPaymentMethod(),
                 request.getIsImportant(), request.getStartTime(), request.getEndTime());
 
+        if (post == null) {
+            return ResponseEntity.status(400)
+                .body(new ApiResponse<>("400", false, null, "Invalid post payload"));
+        }
+
         List<String> urls = new ArrayList<>();
         if (request.getFiles() != null) {
             for (MultipartFile file : request.getFiles()) {
                 String url = storageService.uploadFile(file, "request");
-                if (url != null)
+            if (url != null && url.startsWith("http"))
                     urls.add(url);
             }
         }

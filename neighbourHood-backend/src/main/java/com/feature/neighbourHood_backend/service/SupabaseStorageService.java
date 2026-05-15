@@ -62,7 +62,9 @@ public class SupabaseStorageService {
             return generatePublicUrl(selectedBucket, path + "/" + key);
 
         } catch (IOException exception) {
-            return exception.getMessage();
+            return null;
+        } catch (Exception exception) {
+            return null;
         }
     }
 

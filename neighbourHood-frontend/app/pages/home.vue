@@ -99,7 +99,7 @@
               <h4>{{ post.title }}</h4>
               <p>{{ post.content }}</p>
               <div class="post-tags">
-                <el-tag v-if="isMyPost(post)" type="info" class="post-tag">{{ $t('yourPost') }}</el-tag>
+                <el-tag v-if="isMyPost(post)" type="info" class="post-tag post-tag-your-post">{{ $t('yourPost') }}</el-tag>
                 <el-tag class="post-tag">{{ getCategoryLabel(post) }}</el-tag>
                 <el-tag v-if="post.is_important" type="danger" class="post-tag">{{ $t('important') }}</el-tag>
                 <el-tag v-if="post.redeemPoints" type="warning" class="post-tag">
@@ -937,6 +937,13 @@ const handleAdminDeleteConfirm = async (payload: { tag: string; description: str
   const deleted = await performDeletion(post)
   if (!deleted) return
 
+  const ownerEmail = String(
+    post.authorEmail
+    || post.email
+    || (post as any).user?.email
+    || ''
+  ).toLowerCase()
+
   // Store removal notification for post owner
   const removalNotifications = JSON.parse(localStorage.getItem('postRemovalNotifications') || '[]')
   removalNotifications.push({
@@ -949,14 +956,40 @@ const handleAdminDeleteConfirm = async (payload: { tag: string; description: str
     removalTime: new Date().toISOString(),
     removalTag: payload.tag,
     removalDescription: payload.description,
-    postAuthorEmail: post.authorEmail || post.email || ''
+    postAuthorEmail: ownerEmail
   })
   localStorage.setItem('postRemovalNotifications', JSON.stringify(removalNotifications))
+
+  if (ownerEmail) {
+    const accountNotificationKey = `appNotifications:${ownerEmail}`
+    const scopedNotifications = JSON.parse(localStorage.getItem(accountNotificationKey) || '[]')
+    scopedNotifications.unshift({
+      id: `post-removed-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+      title: t('postRemovedNotificationTitle'),
+      message: t('postRemovedNotificationMessage', { tag: t('deleteTag_' + payload.tag) }),
+      time: new Date().toISOString(),
+      read: false,
+      type: 'post_removed',
+      meta: {
+        postId: post.id,
+        postTitle: post.title || '',
+        postContent: post.content || '',
+        postPhotos: post.photos || [],
+        postCreateTime: post.createTime || post.createdAt || '',
+        removalTime: new Date().toISOString(),
+        removalTag: payload.tag,
+        removalDescription: payload.description,
+        postAuthorEmail: ownerEmail
+      }
+    })
+    localStorage.setItem(accountNotificationKey, JSON.stringify(scopedNotifications.slice(0, 50)))
+  }
 
   // Broadcast so default.vue notification panel picks it up
   window.dispatchEvent(new CustomEvent('app:notification', {
     detail: {
       type: 'post_removed',
+      targetEmail: ownerEmail,
       postId: post.id,
       postTitle: post.title || '',
       postContent: post.content || '',
@@ -1276,10 +1309,24 @@ const deletePost = (post: Post) => {
   border-color: rgba(89, 124, 237, 0.45) !important;
 }
 
+.post-tag-your-post.el-tag--info {
+  color: #18317c !important;
+  background: rgba(118, 159, 255, 0.26) !important;
+  border-color: rgba(74, 113, 226, 0.62) !important;
+  font-weight: 700;
+}
+
 :global(.dark) .post-tag.el-tag--info {
   color: #dbeafe !important;
   background: rgba(37, 99, 235, 0.32) !important;
   border-color: rgba(96, 165, 250, 0.5) !important;
+}
+
+:global(.dark) .post-tag-your-post.el-tag--info {
+  color: #eff6ff !important;
+  background: rgba(30, 64, 175, 0.5) !important;
+  border-color: rgba(147, 197, 253, 0.78) !important;
+  font-weight: 700;
 }
 
 :global(.dark) .post-footer .el-button--danger,

@@ -101,6 +101,7 @@ interface Friend {
   avatar: string
   status: 'online' | 'offline'
   bio: string
+  email?: string
 }
 
 const friends = ref<Friend[]>([
@@ -149,28 +150,27 @@ const friends = ref<Friend[]>([
 ])
 
 const discoverUsers = ref<Friend[]>([
-  {
-    id: 11,
-    name: 'Kevin Lau',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    status: 'offline',
-    bio: 'Community volunteer and language buddy'
-  },
-  {
-    id: 12,
-    name: 'Wendy Ng',
-    avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
-    status: 'online',
-    bio: 'UI designer, loves neighborhood events'
-  },
-  {
-    id: 13,
-    name: 'Alex Wong',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
-    status: 'online',
-    bio: 'Guitar player and pet lover'
-  }
+  
 ])
+
+const getCurrentAccount = () => {
+  if (typeof window === 'undefined') {
+    return { email: '', name: '' }
+  }
+  try {
+    const raw = localStorage.getItem('userProfile')
+    if (!raw) {
+      return { email: '', name: '' }
+    }
+    const profile = JSON.parse(raw)
+    return {
+      email: String(profile?.email || '').toLowerCase(),
+      name: String(profile?.name || profile?.username || '').trim()
+    }
+  } catch {
+    return { email: '', name: '' }
+  }
+}
 
 const buildGeneratedUsers = (): Friend[] => {
   if (typeof window === 'undefined') {
@@ -202,6 +202,7 @@ const buildGeneratedUsers = (): Friend[] => {
       users.push({
         id: toStableId(email || key),
         name,
+        email,
         avatar: String(parsed?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg'),
         status: 'offline',
         bio: String(parsed?.bio || parsed?.status || 'To-Link user')
@@ -236,23 +237,23 @@ const loadFriendsState = () => {
     // Ignore malformed storage.
   }
 
-  try {
-    const savedSuggestions = JSON.parse(localStorage.getItem('friendSuggestions') || '[]')
-    if (Array.isArray(savedSuggestions) && savedSuggestions.length > 0) {
-      discoverUsers.value = savedSuggestions
-    }
-  } catch {
-    // Ignore malformed storage.
-  }
-
+  const { email: currentEmail } = getCurrentAccount()
   const generatedUsers = buildGeneratedUsers()
-  const knownIds = new Set([...friends.value, ...discoverUsers.value].map((item) => String(item.id)))
-  for (const user of generatedUsers) {
-    if (!knownIds.has(String(user.id))) {
-      discoverUsers.value.push(user)
-      knownIds.add(String(user.id))
-    }
-  }
+  const friendIds = new Set(friends.value.map((item) => String(item.id)))
+  const friendEmails = new Set(
+    friends.value
+      .map((item) => String(item.email || '').toLowerCase())
+      .filter(Boolean)
+  )
+
+  discoverUsers.value = generatedUsers.filter((user) => {
+    const userEmail = String(user.email || '').toLowerCase()
+    if (!userEmail) return false
+    if (currentEmail && userEmail === currentEmail) return false
+    if (friendIds.has(String(user.id))) return false
+    if (friendEmails.has(userEmail)) return false
+    return true
+  })
 
   persistFriendsState()
 }
@@ -282,6 +283,42 @@ const addFriend = (user: Friend) => {
   friends.value.unshift({ ...user, status: user.status || 'offline' })
   discoverUsers.value = discoverUsers.value.filter((item) => String(item.id) !== String(user.id))
   persistFriendsState()
+
+  const targetEmail = String(user.email || '').toLowerCase()
+  if (targetEmail && typeof window !== 'undefined') {
+    const { name: currentName } = getCurrentAccount()
+    const senderLabel = currentName || t('you')
+    const message = language.value === 'zh'
+      ? `${senderLabel} 已新增你為好友。`
+      : `${senderLabel} added you as a friend.`
+
+    const key = `appNotifications:${targetEmail}`
+    const existing = JSON.parse(localStorage.getItem(key) || '[]')
+    existing.unshift({
+      id: `friend-added-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+      title: t('friends'),
+      message,
+      time: new Date().toISOString(),
+      read: false,
+      type: 'generic',
+      meta: {
+        senderName: senderLabel,
+        senderEmail: getCurrentAccount().email
+      }
+    })
+    localStorage.setItem(key, JSON.stringify(existing.slice(0, 50)))
+
+    window.dispatchEvent(new CustomEvent('app:notification', {
+      detail: {
+        type: 'friend_added',
+        targetEmail,
+        senderName: senderLabel,
+        senderEmail: getCurrentAccount().email,
+        message
+      }
+    }))
+  }
+
   ElMessage.success(t('friendAdded'))
 }
 
@@ -434,7 +471,8 @@ watch([friends, discoverUsers], () => {
 .discover-content {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -442,7 +480,17 @@ watch([friends, discoverUsers], () => {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 1 1 220px;
   min-width: 0;
+}
+
+.discover-card :deep(.el-card__body) {
+  padding: 14px;
+}
+
+.discover-content :deep(.el-button) {
+  align-self: flex-start;
+  flex-shrink: 0;
 }
 
 .discover-name {
@@ -556,6 +604,10 @@ watch([friends, discoverUsers], () => {
 @media (max-width: 768px) {
   .friends-grid {
     grid-template-columns: 1fr;
+  }
+
+  .discover-content :deep(.el-button) {
+    width: 100%;
   }
 
   .friend-actions {

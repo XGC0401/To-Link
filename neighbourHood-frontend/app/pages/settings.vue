@@ -1086,7 +1086,13 @@ const deleteAllPostsFromSecret = () => {
 }
 
 :global(.dark) .settings-form :deep(.el-switch__label.is-active) {
-  color: var(--el-color-primary) !important;
+  color: var(--theme-text) !important;
+}
+
+:global(.dark) .settings-form :deep(.el-radio-button__inner) {
+  color: #e5e7eb !important;
+  background: #1f2937 !important;
+  border-color: #475569 !important;
 }
 
 :global(.dark) .settings-tabs :deep(.el-tabs__item.is-active) {
