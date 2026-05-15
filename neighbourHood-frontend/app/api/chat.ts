@@ -103,12 +103,12 @@ export async function getChatMessages(peerEmail: string, sinceId?: number): Prom
   }
 }
 
-export async function sendChatMessage(peerEmail: string, content: string, messageType = 'normal'):
+export async function sendChatMessage(peerEmail: string, content: string, messageType = 'normal', attachmentUrl?: string):
   Promise<APIResponse<BasicResponse<ChatMessagePayload>>> {
   try {
     const { data, headers } = await createAxiosInstance().post<BasicResponse<ChatMessagePayload>>(
       `/chat/messages/${encodeURIComponent(peerEmail)}`,
-      { content, messageType },
+      { content, messageType, attachmentUrl },
       getConfig()
     )
     return [null, data, { headers }]

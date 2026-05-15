@@ -161,6 +161,7 @@ import { Message, Phone, Close } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { getUserDirectory } from '~/api/auth'
 import { getPresenceByEmails } from '~/api/chat'
+import { getLatestAvatarByEmail, refreshAvatarInList } from '~/utils/avatar'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -321,6 +322,11 @@ const refreshFriendStatuses = async () => {
   }))
 }
 
+const refreshFriendAvatars = () => {
+  friends.value = refreshAvatarInList(friends.value)
+  discoverUsers.value = refreshAvatarInList(discoverUsers.value)
+}
+
 const getStatusLabel = (status: Friend['status']) => {
   switch (status) {
     case 'active':
@@ -367,7 +373,7 @@ const buildGeneratedUsers = (): Friend[] => {
         id: toStableId(email || key),
         name,
         email,
-        avatar: String(parsed?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg'),
+        avatar: getLatestAvatarByEmail(email, String(parsed?.avatar || '')),
         status: resolvePresenceStatus(email),
         profession: String(parsed?.profession || parsed?.status || ''),
         bio: String(parsed?.bio || ''),
@@ -393,7 +399,7 @@ const loadBackendDiscoverUsers = async (): Promise<Friend[]> => {
     id: user.uuid,
     name: String(user.username || user.email || '').trim(),
     email: String(user.email || '').trim(),
-    avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+    avatar: getLatestAvatarByEmail(String(user.email || '').trim(), ''),
     status: resolvePresenceStatus(String(user.email || '').trim()),
     profession: String(user.status || ''),
     bio: String(user.house || ''),
@@ -476,6 +482,7 @@ const loadFriendsState = async () => {
     return true
   })
 
+  refreshFriendAvatars()
   persistFriendsState()
   refreshFriendStatuses()
 }
@@ -659,10 +666,14 @@ const sendMessage = (friend: Friend) => {
 
 onMounted(() => {
   loadFriendsState()
+  refreshFriendAvatars()
   refreshFriendStatuses()
   presencePollHandle = window.setInterval(() => {
+    refreshFriendAvatars()
     refreshFriendStatuses()
   }, 1000)
+
+  window.addEventListener('storage', refreshFriendAvatars)
 })
 
 onUnmounted(() => {
@@ -670,6 +681,7 @@ onUnmounted(() => {
     window.clearInterval(presencePollHandle)
     presencePollHandle = null
   }
+  window.removeEventListener('storage', refreshFriendAvatars)
 })
 
 watch([friends, discoverUsers], () => {

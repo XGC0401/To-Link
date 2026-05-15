@@ -15,8 +15,6 @@ interface WebSocketMessage {
 
 let stompClient: Client | null = null;
 let isConnected: Ref<boolean> = ref(false);
-let connectionAttempts = 0;
-const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_DELAY = 3000;
 
 // Callbacks for different message types
@@ -26,6 +24,23 @@ const errorCallbacks: ((msg: string) => void)[] = [];
 const connectionStateCallbacks: ((connected: boolean) => void)[] = [];
 
 export function useWebSocket() {
+  const resolveWsUrl = () => {
+    const config = useRuntimeConfig();
+    const apiBaseUrl = String(config.public.apiBaseUrl || '').trim();
+
+    if (apiBaseUrl) {
+      const withoutApiSuffix = apiBaseUrl.replace(/\/api\/?$/, '');
+      return withoutApiSuffix.replace(/^http/, 'ws') + '/ws/chat';
+    }
+
+    if (typeof window !== 'undefined') {
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${wsProtocol}//${window.location.host}/ws/chat`;
+    }
+
+    return 'ws://localhost:8080/ws/chat';
+  }
+
   /**
    * Initialize WebSocket connection to the backend
    */
@@ -45,10 +60,7 @@ export function useWebSocket() {
 
         stompClient = new Client();
 
-        // Get the backend URL
-        const config = useRuntimeConfig();
-        const backendUrl = config.public.backendUrl || 'http://localhost:8080';
-        const wsUrl = backendUrl.replace(/^http/, 'ws') + '/ws/chat';
+        const wsUrl = resolveWsUrl();
 
         stompClient.configure({
           brokerURL: wsUrl,
@@ -60,7 +72,6 @@ export function useWebSocket() {
           onConnect: () => {
             console.log('WebSocket connected');
             isConnected.value = true;
-            connectionAttempts = 0;
             connectionStateCallbacks.forEach(cb => cb(true));
 
             // Subscribe to message queue
@@ -96,14 +107,12 @@ export function useWebSocket() {
             console.error('WebSocket error:', frame);
             isConnected.value = false;
             connectionStateCallbacks.forEach(cb => cb(false));
-            attemptReconnect();
             reject(new Error('WebSocket connection failed'));
           },
           onWebSocketError: (event) => {
             console.error('WebSocket connection error:', event);
             isConnected.value = false;
             connectionStateCallbacks.forEach(cb => cb(false));
-            attemptReconnect();
           }
         });
 
@@ -190,23 +199,6 @@ export function useWebSocket() {
       const index = connectionStateCallbacks.indexOf(callback);
       if (index > -1) connectionStateCallbacks.splice(index, 1);
     };
-  }
-
-  /**
-   * Attempt to reconnect
-   */
-  function attemptReconnect() {
-    if (connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
-      connectionAttempts++;
-      console.log(`Attempting to reconnect (${connectionAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
-      setTimeout(() => {
-        initWebSocket().catch(err => {
-          console.error('Reconnection failed:', err);
-        });
-      }, RECONNECT_DELAY * connectionAttempts);
-    } else {
-      console.error('Max reconnection attempts reached');
-    }
   }
 
   /**

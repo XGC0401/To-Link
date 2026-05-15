@@ -38,9 +38,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             origins = new String[] { "http://localhost:3000" };
         }
 
-        // Register the STOMP endpoint at /ws/chat
+        // Native WebSocket STOMP endpoint
         registry.addEndpoint("/ws/chat")
-                .setAllowedOriginPatterns(origins)
-                .withSockJS();
+            .setAllowedOriginPatterns(origins);
+
+        // SockJS fallback endpoint
+        registry.addEndpoint("/ws/chat")
+            .setAllowedOriginPatterns(origins)
+            .withSockJS();
     }
 }

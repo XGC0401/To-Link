@@ -344,6 +344,49 @@
       <el-button type="danger" @click="confirmDeleteConversation">{{ $t('delete') }}</el-button>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="showAttachmentPreviewDialog" :title="$t('attachmentPreviewTitle')" width="520px" align-center>
+    <div v-if="pendingAttachment" class="attachment-preview-dialog">
+      <div class="attachment-preview-box">
+        <el-image
+          v-if="pendingAttachment.type === 'photo'"
+          :src="pendingAttachment.fileUrl"
+          fit="contain"
+          class="attachment-preview-image"
+        />
+        <video
+          v-else-if="pendingAttachment.type === 'video'"
+          :src="pendingAttachment.fileUrl"
+          controls
+          class="attachment-preview-video"
+        />
+        <audio
+          v-else-if="pendingAttachment.type === 'audio'"
+          :src="pendingAttachment.fileUrl"
+          controls
+          class="attachment-preview-audio"
+        />
+        <div v-else class="attachment-preview-document">
+          <el-icon :size="44"><Document /></el-icon>
+          <p>{{ $t('document') }}</p>
+        </div>
+      </div>
+
+      <el-form label-position="top">
+        <el-form-item :label="$t('attachmentFileName')">
+          <el-input
+            v-model="pendingAttachment.fileName"
+            :placeholder="$t('attachmentFileNamePlaceholder')"
+            maxlength="120"
+          />
+        </el-form-item>
+      </el-form>
+    </div>
+    <template #footer>
+      <el-button @click="cancelAttachmentPreview">{{ $t('cancel') }}</el-button>
+      <el-button type="primary" @click="confirmAttachmentSend">{{ $t('send') }}</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -374,6 +417,7 @@ import { ElMessage } from 'element-plus'
 import { blockUser, unblockUser } from '~/api/auth'
 import { getChatConversations, getChatMessages, markConversationRead, sendChatMessage, updateMyPresence } from '~/api/chat'
 import { loadBlacklist, removeBlockedPerson, saveBlacklist, upsertBlockedPerson, isBlockedByCandidates, type BlockedPerson } from '~/utils/blacklist'
+import { getLatestAvatarByEmail, refreshAvatarInList, syncConversationAvatarCaches } from '~/utils/avatar'
 import { useWebSocket } from '~/utils/websocket'
 
 // Add Leaflet CSS
@@ -401,6 +445,7 @@ const currentAttachmentType = ref('')
 const mapInstances = ref<Map<number, any>>(new Map())
 const showQuestDetailDialog = ref(false)
 const selectedQuestDetail = ref<any>(null)
+const showAttachmentPreviewDialog = ref(false)
 
 interface Message {
   id: number
@@ -423,6 +468,13 @@ interface Message {
   longitude?: number
 }
 
+interface PendingAttachment {
+  type: 'photo' | 'video' | 'document' | 'audio'
+  fileUrl: string
+  fileName: string
+  fileSize: number
+}
+
 interface Conversation {
   id: number | string
   name: string
@@ -442,6 +494,7 @@ interface GroupMemberOption {
 }
 
 const blockedPeople = ref<BlockedPerson[]>([])
+const pendingAttachment = ref<PendingAttachment | null>(null)
 const currentUserEmail = ref('')
 const currentUserName = ref('')
 const currentUserAvatar = ref('')
@@ -572,7 +625,7 @@ const loadConversationsFromServer = async () => {
     return {
       id: item.conversationId,
       name: item.peerName || item.peerEmail,
-      avatar: existing?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+      avatar: getLatestAvatarByEmail(item.peerEmail, existing?.avatar),
       participantEmail: item.peerEmail,
       lastMessage: item.lastMessage || '',
       lastMessageTime: toDisplayTime(item.lastMessageTime),
@@ -597,8 +650,14 @@ const loadConversationsFromServer = async () => {
     merged.push(item)
   })
 
-  conversations.value = merged
+  conversations.value = refreshAvatarInList(merged)
+  syncConversationAvatarCaches(currentUserEmail.value)
   return true
+}
+
+const refreshConversationAvatars = () => {
+  conversations.value = refreshAvatarInList(conversations.value)
+  syncConversationAvatarCaches(currentUserEmail.value)
 }
 
 const loadMessagesFromServer = async (conversation: Conversation, sinceId?: number) => {
@@ -617,7 +676,9 @@ const loadMessagesFromServer = async (conversation: Conversation, sinceId?: numb
     sender: item.senderEmail?.toLowerCase() === currentUserEmail.value ? 'user' : 'other',
     time: toDisplayTime(item.sentAt),
     fromServer: true,
-    type: item.messageType === 'text' ? 'normal' : (item.messageType as Message['type'])
+    type: item.messageType === 'text' ? 'normal' : (item.messageType as Message['type']),
+    fileUrl: item.attachmentUrl,
+    fileName: item.messageType === 'text' ? undefined : item.content
   } as Message))
 
   if (sinceId) {
@@ -751,7 +812,7 @@ onMounted(async () => {
       const created: Conversation = {
         id: Date.now(),
         name: fallbackName,
-        avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
+        avatar: getLatestAvatarByEmail(peerEmail, ''),
         participantEmail: peerEmail,
         lastMessage: '',
         lastMessageTime: formatClockTime(),
@@ -759,6 +820,7 @@ onMounted(async () => {
         messages: []
       }
       conversations.value.unshift(created)
+      refreshConversationAvatars()
       await selectConversation(created)
     }
   } else if (userId) {
@@ -775,6 +837,7 @@ onMounted(async () => {
   conversationPollHandle = window.setInterval(async () => {
     const previouslySelected = selectedConversation.value?.id
     await loadConversationsFromServer()
+    refreshConversationAvatars()
     if (previouslySelected) {
       const nextSelected = conversations.value.find((item) => item.id === previouslySelected)
       if (nextSelected && selectedConversationId.value === previouslySelected) {
@@ -805,16 +868,22 @@ onMounted(async () => {
       )
       
       if (conversation) {
+        conversation.avatar = getLatestAvatarByEmail(conversation.participantEmail, conversation.avatar)
         const newMsg: Message = {
           id: msg.id,
           text: msg.content,
           sender: msg.senderEmail?.toLowerCase() === currentUserEmail.value ? 'user' : 'other',
           time: toDisplayTime(msg.sentAt),
           fromServer: true,
-          type: msg.messageType === 'text' ? 'normal' : (msg.messageType as Message['type'])
+          type: msg.messageType === 'text' ? 'normal' : (msg.messageType as Message['type']),
+          fileUrl: msg.attachmentUrl,
+          fileName: msg.messageType === 'text' ? undefined : msg.content
         }
         conversation.messages.push(newMsg)
+        conversation.lastMessage = msg.messageType === 'text' ? msg.content : `${t(msg.messageType)}: ${msg.content}`
+        conversation.lastMessageTime = toDisplayTime(msg.sentAt)
         moveConversationToTop(conversation.id)
+        syncConversationAvatarCaches(currentUserEmail.value)
       }
     })
     
@@ -828,6 +897,8 @@ onMounted(async () => {
     console.warn('WebSocket connection failed, using polling as fallback:', error)
   }
 
+  refreshConversationAvatars()
+  window.addEventListener('storage', refreshConversationAvatars)
   window.addEventListener('app:emergency-message-sent', handleEmergencyMessageSent)
 })
 
@@ -937,12 +1008,13 @@ const createNewConversation = (userId: number) => {
 
   const friendData = mappedDirectory[String(userId)] as { name: string; avatar: string; email?: string } | undefined
   if (friendData) {
+    const participantEmail = String((friendData as any).email || '').trim().toLowerCase()
     const newConversation: Conversation = {
       id: Number.isNaN(userId) ? Date.now() : userId,
       name: friendData.name,
-      avatar: friendData.avatar,
+      avatar: getLatestAvatarByEmail(participantEmail, friendData.avatar),
       lastMessage: '',
-      participantEmail: (friendData as any).email,
+      participantEmail,
       lastMessageTime: formatClockTime(),
       unread: 0,
       messages: []
@@ -1132,40 +1204,22 @@ const handleFileSelect = (event: Event) => {
   }
   
   const fileType = currentAttachmentType.value
-  let displayText = file.name
+  const safeType = (['photo', 'video', 'document', 'audio'].includes(fileType)
+    ? fileType
+    : 'document') as PendingAttachment['type']
   
   // Convert file to base64 data URL for persistence
   const reader = new FileReader()
   
   reader.onload = (e) => {
     const fileUrl = e.target?.result as string
-    
-    const newMessage: Message = {
-      id: createLocalMessageId(),
-      text: displayText,
-      sender: 'user',
-      time: formatClockTime(),
-      fromServer: false,
-      type: fileType as 'photo' | 'video' | 'document' | 'audio',
-      fileUrl: fileUrl,
+    pendingAttachment.value = {
+      type: safeType,
+      fileUrl,
       fileName: file.name,
       fileSize: file.size
     }
-    
-    selectedConversation.value!.messages.push(newMessage)
-    selectedConversation.value!.lastMessage = `${t(fileType)}: ${file.name}`
-    selectedConversation.value!.lastMessageTime = newMessage.time
-    moveConversationToTop(selectedConversation.value!.id)
-
-    if (selectedConversation.value!.participantEmail) {
-      saveRecipientConversation(selectedConversation.value!.participantEmail, selectedConversation.value!, newMessage)
-    }
-    
-    ElMessage.success(t('fileSent'))
-    
-    nextTick(() => {
-      scrollToBottom()
-    })
+    showAttachmentPreviewDialog.value = true
   }
   
   reader.onerror = () => {
@@ -1177,6 +1231,87 @@ const handleFileSelect = (event: Event) => {
   
   // Clear file input
   target.value = ''
+}
+
+const cancelAttachmentPreview = () => {
+  showAttachmentPreviewDialog.value = false
+  pendingAttachment.value = null
+}
+
+const confirmAttachmentSend = async () => {
+  if (!selectedConversation.value || !pendingAttachment.value) {
+    return
+  }
+
+  if (!selectedConversation.value.participantEmail) {
+    ElMessage.warning(language.value === 'zh' ? '無法發送檔案' : 'Unable to send file')
+    return
+  }
+
+  const outgoingName = pendingAttachment.value.fileName.trim() || t('untitledFile')
+  const attachment = { ...pendingAttachment.value, fileName: outgoingName }
+  const peerEmail = selectedConversation.value.participantEmail
+
+  const optimisticId = createLocalMessageId()
+  const optimisticMessage: Message = {
+    id: optimisticId,
+    text: outgoingName,
+    sender: 'user',
+    time: formatClockTime(),
+    fromServer: false,
+    type: attachment.type,
+    fileUrl: attachment.fileUrl,
+    fileName: attachment.fileName,
+    fileSize: attachment.fileSize
+  }
+
+  selectedConversation.value.messages.push(optimisticMessage)
+  selectedConversation.value.lastMessage = `${t(attachment.type)}: ${attachment.fileName}`
+  selectedConversation.value.lastMessageTime = optimisticMessage.time
+  moveConversationToTop(selectedConversation.value.id)
+  showAttachmentPreviewDialog.value = false
+  pendingAttachment.value = null
+
+  nextTick(() => {
+    scrollToBottom()
+  })
+
+  const ws = useWebSocket()
+  if (ws.isWebSocketConnected()) {
+    try {
+      await ws.sendMessageViaWebSocket(peerEmail, attachment.fileName, attachment.type, attachment.fileUrl)
+      return
+    } catch (wsError) {
+      console.warn('Attachment websocket send failed, fallback to REST:', wsError)
+    }
+  }
+
+  const [error, response] = await sendChatMessage(peerEmail, attachment.fileName, attachment.type, attachment.fileUrl)
+  if (error || !response?.success || !response.data) {
+    ElMessage.error(t('fileFailed'))
+    const idx = selectedConversation.value.messages.findIndex((item) => item.id === optimisticId)
+    if (idx >= 0) {
+      selectedConversation.value.messages.splice(idx, 1)
+    }
+    return
+  }
+
+  const idx = selectedConversation.value.messages.findIndex((item) => item.id === optimisticId)
+  if (idx >= 0) {
+    selectedConversation.value.messages[idx] = {
+      id: response.data.id,
+      text: response.data.content,
+      sender: 'user',
+      time: toDisplayTime(response.data.sentAt),
+      fromServer: true,
+      type: response.data.messageType === 'text' ? 'normal' : (response.data.messageType as Message['type']),
+      fileUrl: response.data.attachmentUrl,
+      fileName: response.data.content,
+      fileSize: attachment.fileSize
+    }
+  }
+
+  ElMessage.success(t('fileSent'))
 }
 
 // Handle location sharing
@@ -1364,6 +1499,7 @@ onBeforeUnmount(() => {
     }))
     updateMyPresence('offline')
   }
+  window.removeEventListener('storage', refreshConversationAvatars)
   window.removeEventListener('app:emergency-message-sent', handleEmergencyMessageSent)
 })
 
@@ -2048,6 +2184,47 @@ const createGroupConversation = () => {
 
 .file-download-btn:hover {
   background: linear-gradient(145deg, #4338ca, #4f46e5);
+}
+
+.attachment-preview-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.attachment-preview-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  border: 1px solid var(--tl-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--tl-surface) 90%, transparent);
+  padding: 10px;
+}
+
+.attachment-preview-image,
+.attachment-preview-video {
+  width: 100%;
+  max-height: 320px;
+  border-radius: 10px;
+}
+
+.attachment-preview-audio {
+  width: 100%;
+}
+
+.attachment-preview-document {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--tl-text);
+}
+
+.attachment-preview-document p {
+  margin: 0;
+  font-weight: 600;
 }
 
 .message.sent .file-download-btn {
