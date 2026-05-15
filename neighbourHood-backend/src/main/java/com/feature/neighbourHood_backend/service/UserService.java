@@ -2,6 +2,7 @@ package com.feature.neighbourHood_backend.service;
 
 import java.util.Optional;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -13,6 +14,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feature.neighbourHood_backend.model.CustomUserDetails;
 import com.feature.neighbourHood_backend.model.DTO.PublicUserProfileDTO;
 import com.feature.neighbourHood_backend.model.entity.Role;
@@ -26,15 +29,18 @@ import com.feature.neighbourHood_backend.util.ErrorCode;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     private PasswordEncoder encoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+            ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.encoder = passwordEncoder;
         this.roleRepository = roleRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -128,6 +134,7 @@ public class UserService implements UserDetailsService {
                 .email(user.getEmail())
                 .status(user.getStatus())
                 .house(user.getHouse())
+                .avatar(user.getAvatar())
                 .address1(user.getAddress1())
                 .address2(user.getAddress2())
                 .address3(user.getAddress3())
@@ -186,6 +193,44 @@ public class UserService implements UserDetailsService {
 
         user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    public Map<String, String> getAppState(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));
+
+        String raw = String.valueOf(user.getAppState() == null ? "" : user.getAppState()).trim();
+        if (raw.isEmpty()) {
+            return Map.of();
+        }
+
+        try {
+            return objectMapper.readValue(raw, new TypeReference<Map<String, String>>() {
+            });
+        } catch (Exception ex) {
+            throw new BusinessException(ErrorCode.DATABASE_ERROR, "Failed to parse preserved app state", ex);
+        }
+    }
+
+    public void saveAppState(UUID userId, Map<String, String> state) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));
+
+        try {
+            String payload = objectMapper.writeValueAsString(state == null ? Map.of() : state);
+            user.setAppState(payload);
+            userRepository.save(user);
+        } catch (Exception ex) {
+            throw new BusinessException(ErrorCode.DATABASE_ERROR, "Failed to persist app state", ex);
+        }
+    }
+
+    public User updateAvatar(UUID userId, String avatar) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PROFILE_NOT_FOUND, "User not found"));
+
+        user.setAvatar(String.valueOf(avatar == null ? "" : avatar));
+        return userRepository.save(user);
     }
 
     public Set<UUID> getBlockedUserIds(UUID userId) {

@@ -303,7 +303,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Upload, View, InfoFilled } from '@element-plus/icons-vue'
-import { changePassword, updateEmail } from '~/api/auth'
+import { changePassword, updateAvatar, updateEmail } from '~/api/auth'
 import { Storage } from '~/utils/storage'
 
 type CscType = typeof import('countries-states-cities').default
@@ -774,6 +774,12 @@ const saveProfile = async () => {
 
       currentEmail.value = profileForm.email
       }
+    }
+
+    const [avatarError, avatarData] = await updateAvatar(String(profileForm.avatar || ''))
+    if (avatarError || !avatarData?.success) {
+      ElMessage.error(t('profileSaveFailed'))
+      return
     }
 
     // Save to localStorage

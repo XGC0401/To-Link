@@ -405,7 +405,7 @@ const loadBackendDiscoverUsers = async (): Promise<Friend[]> => {
     id: user.uuid,
     name: String(user.username || user.email || '').trim(),
     email: String(user.email || '').trim(),
-    avatar: getLatestAvatarByEmail(String(user.email || '').trim(), ''),
+    avatar: String(user.avatar || '') || getLatestAvatarByEmail(String(user.email || '').trim(), ''),
     status: resolvePresenceStatus(String(user.email || '').trim()),
     profession: String(user.status || ''),
     bio: String(user.house || ''),

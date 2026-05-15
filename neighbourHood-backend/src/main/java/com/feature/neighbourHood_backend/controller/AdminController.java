@@ -1,6 +1,7 @@
 package com.feature.neighbourHood_backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,7 +16,10 @@ import com.feature.neighbourHood_backend.model.CustomUserDetails;
 import com.feature.neighbourHood_backend.model.DTO.ApiResponse;
 import com.feature.neighbourHood_backend.model.DTO.BlockUserRequestDTO;
 import com.feature.neighbourHood_backend.model.DTO.ChangePasswordRequestDTO;
+import com.feature.neighbourHood_backend.model.DTO.PreservedAppStateRequestDTO;
+import com.feature.neighbourHood_backend.model.DTO.PreservedAppStateResponseDTO;
 import com.feature.neighbourHood_backend.model.DTO.PublicUserProfileDTO;
+import com.feature.neighbourHood_backend.model.DTO.UpdateAvatarRequestDTO;
 import com.feature.neighbourHood_backend.model.DTO.UpdateEmailRequestDTO;
 import com.feature.neighbourHood_backend.model.entity.User;
 import com.feature.neighbourHood_backend.service.UserService;
@@ -70,6 +74,14 @@ public class AdminController {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @PostMapping("/user/avatar")
+    public ApiResponse<Boolean> updateAvatar(@AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody UpdateAvatarRequestDTO request) {
+        userService.updateAvatar(userDetails.getUuid(), request == null ? null : request.getAvatar());
+        return new ApiResponse<>(true, true, "avatar updated");
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/user/password")
     public ApiResponse<String> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody ChangePasswordRequestDTO request) {
@@ -79,6 +91,22 @@ public class AdminController {
         } catch (IllegalArgumentException ex) {
             return new ApiResponse<>(false, ex.getMessage());
         }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/user/app-state")
+    public ApiResponse<PreservedAppStateResponseDTO> getAppState(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Map<String, String> state = userService.getAppState(userDetails.getUuid());
+        return new ApiResponse<>(true, new PreservedAppStateResponseDTO(state), "success");
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/user/app-state")
+    public ApiResponse<Boolean> saveAppState(@AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody PreservedAppStateRequestDTO request) {
+        userService.saveAppState(userDetails.getUuid(), request == null ? null : request.getState());
+        return new ApiResponse<>(true, true, "saved");
     }
 
     @PreAuthorize("isAuthenticated()")

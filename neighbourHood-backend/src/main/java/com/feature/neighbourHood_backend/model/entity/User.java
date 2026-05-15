@@ -69,6 +69,12 @@ public class User {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "avatar", columnDefinition = "TEXT")
+    private String avatar;
+
+    @Column(name = "app_state", columnDefinition = "TEXT")
+    private String appState;
+
     public User(String username, String email, String password, Role userRole) {
         this.uuid = UUID.randomUUID();
         this.username = username;
@@ -143,6 +149,22 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getAppState() {
+        return appState;
+    }
+
+    public void setAppState(String appState) {
+        this.appState = appState;
     }
 
     public Set<Role> getRoles() {

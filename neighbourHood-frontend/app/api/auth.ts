@@ -52,6 +52,10 @@ export type APIResponse<T> = [null, T, Options?] | [Error, Options?];
 
 export type Options = { headers?: Record<string, any>; code?: number; message?: String };
 
+export interface PreservedAppStateResponse {
+  state: Record<string, string>
+}
+
 export async function login(params: loginParams): Promise<APIResponse<BasicResponse<String>>> {
   try {
     const { data, headers } = await createAxiosInstance().post<BasicResponse<String>>(`/login`, { email: params.email, password: params.password });
@@ -116,6 +120,20 @@ export async function changePassword(currentPassword: string, newPassword: strin
   }
 }
 
+export async function updateAvatar(avatar: string): Promise<APIResponse<BasicResponse<boolean>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<boolean>>(
+      `/admin/user/avatar`,
+      { avatar },
+      getConfig()
+    )
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}
+
 export async function getBlacklist(): Promise<APIResponse<BasicResponse<User[]>>> {
   try {
     const { data, headers } = await createAxiosInstance().get<BasicResponse<User[]>>(`/admin/user/blacklist`, getConfig())
@@ -146,6 +164,33 @@ export async function unblockUser(userId: string): Promise<APIResponse<BasicResp
       ...getConfig(),
       data: { userId }
     })
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}
+
+export async function getPreservedAppState(): Promise<APIResponse<BasicResponse<PreservedAppStateResponse>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().get<BasicResponse<PreservedAppStateResponse>>(
+      `/admin/user/app-state`,
+      getConfig()
+    )
+    return [null, data, { headers }]
+  } catch (error: any) {
+    console.error(error)
+    return [error, error.response?.status]
+  }
+}
+
+export async function savePreservedAppState(state: Record<string, string>): Promise<APIResponse<BasicResponse<boolean>>> {
+  try {
+    const { data, headers } = await createAxiosInstance().post<BasicResponse<boolean>>(
+      `/admin/user/app-state`,
+      { state },
+      getConfig()
+    )
     return [null, data, { headers }]
   } catch (error: any) {
     console.error(error)

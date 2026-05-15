@@ -13,6 +13,7 @@ public class PublicUserProfileDTO {
     private String email;
     private String status;
     private String house;
+    private String avatar;
     private String address1;
     private String address2;
     private String address3;

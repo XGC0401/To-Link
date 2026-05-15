@@ -28,6 +28,7 @@ export interface User {
     username: String;
     email: String;
     house: String;
+    avatar?: string;
 }
 
 export interface PublicUserProfile {
