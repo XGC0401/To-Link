@@ -1,14 +1,11 @@
-# syntax=docker/dockerfile:1
-
-FROM eclipse-temurin:17-jdk-jammy AS builder
+FROM maven:3.9.9-eclipse-temurin-17 AS builder
 WORKDIR /app
 
 COPY pom.xml .
-RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
-RUN mvn -q dependency:go-offline
+RUN mvn -q -B dependency:go-offline
 
 COPY src src
-RUN mvn clean package -DskipTests
+RUN mvn -B clean package -DskipTests
 
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
