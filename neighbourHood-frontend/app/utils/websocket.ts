@@ -1,4 +1,4 @@
-import { Client, IMessage, RxStomp } from '@stomp/stompjs';
+import { Client, IMessage } from '@stomp/stompjs';
 import { ref, Ref } from 'vue';
 
 interface WebSocketMessage {
@@ -13,7 +13,7 @@ interface WebSocketMessage {
   read: boolean;
 }
 
-let stompClient: RxStomp | null = null;
+let stompClient: Client | null = null;
 let isConnected: Ref<boolean> = ref(false);
 let connectionAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -43,7 +43,7 @@ export function useWebSocket() {
           return;
         }
 
-        stompClient = new RxStomp();
+        stompClient = new Client();
 
         // Get the backend URL
         const config = useRuntimeConfig();

@@ -1,6 +1,6 @@
 package com.feature.neighbourHood_backend.model.DTO;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +15,6 @@ public class ChatMessageResponseDTO {
     private String content;
     private String messageType;
     private String attachmentUrl;
-    private LocalDateTime sentAt;
+    private OffsetDateTime sentAt;
     private boolean read;
 }

@@ -1,6 +1,6 @@
 package com.feature.neighbourHood_backend.model.DTO;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +13,6 @@ public class ChatConversationSummaryDTO {
     private String peerName;
     private String lastMessage;
     private String lastMessageType;
-    private LocalDateTime lastMessageTime;
+    private OffsetDateTime lastMessageTime;
     private long unreadCount;
 }

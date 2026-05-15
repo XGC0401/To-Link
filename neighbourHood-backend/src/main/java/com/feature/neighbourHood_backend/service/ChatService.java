@@ -1,6 +1,8 @@
 package com.feature.neighbourHood_backend.service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,13 @@ public class ChatService {
         this.messageRepository = messageRepository;
     }
 
+    private OffsetDateTime toUtcOffset(LocalDateTime value) {
+        if (value == null) {
+            return null;
+        }
+        return value.atOffset(ZoneOffset.UTC);
+    }
+
     @Transactional(readOnly = true)
     public List<ChatConversationSummaryDTO> listConversations(User currentUser) {
         List<ChatConversation> conversations = conversationRepository
@@ -62,7 +71,7 @@ public class ChatService {
                     .peerName(peer.getUsername())
                     .lastMessage(lastContent)
                     .lastMessageType(lastType)
-                    .lastMessageTime(lastSent)
+                    .lastMessageTime(toUtcOffset(lastSent))
                     .unreadCount(unread)
                     .build());
         }
@@ -143,7 +152,7 @@ public class ChatService {
                 .content(message.getContent())
                 .messageType(message.getMessageType())
                 .attachmentUrl(message.getAttachmentUrl())
-                .sentAt(message.getSentAt())
+            .sentAt(toUtcOffset(message.getSentAt()))
                 .read(message.isRead())
                 .build();
     }

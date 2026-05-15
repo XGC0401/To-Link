@@ -33,8 +33,13 @@
 
       <el-empty v-if="filteredDiscoverUsers.length === 0" :description="$t('noUsersFound')" />
       <div v-else class="discover-grid">
-        <el-card v-for="user in filteredDiscoverUsers" :key="`discover-${user.id}`" class="discover-card">
-          <div class="discover-content" @click="openDiscoverProfile(user)">
+        <el-card
+          v-for="user in filteredDiscoverUsers"
+          :key="`discover-${user.id}`"
+          class="discover-card"
+          @click="openDiscoverProfile(user)"
+        >
+          <div class="discover-content">
             <el-button
               class="discover-ignore-btn"
               text
@@ -56,8 +61,13 @@
     </div>
 
     <div class="friends-grid">
-      <el-card v-for="friend in filteredFriends" :key="friend.id" class="friend-card">
-        <div class="friend-content friend-content-clickable" @click="openFriendProfile(friend)">
+      <el-card
+        v-for="friend in filteredFriends"
+        :key="friend.id"
+        class="friend-card"
+        @click="openFriendProfile(friend)"
+      >
+        <div class="friend-content friend-content-clickable">
           <div class="friend-avatar-wrapper">
             <el-avatar :size="80" :src="friend.avatar" />
             <span :class="['online-indicator', friend.status]"></span>
@@ -815,6 +825,7 @@ watch(filterStatus, () => {
 
 .discover-card :deep(.el-card__body) {
   padding: 14px;
+  cursor: pointer;
 }
 
 .discover-content :deep(.el-button) {
@@ -857,6 +868,10 @@ watch(filterStatus, () => {
 .friend-content {
   padding: 24px 20px;
   text-align: center;
+}
+
+.friend-card :deep(.el-card__body) {
+  cursor: pointer;
 }
 
 .friend-content-clickable {
