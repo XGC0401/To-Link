@@ -179,7 +179,7 @@ public class PostService {
     }
 
     public PostCommentResponseDTO createPostComment(Long postId, UUID userUuid, String content) {
-        String safeContent = String(content == null ? "" : content).trim();
+        String safeContent = (content == null ? "" : content).trim();
         if (safeContent.isEmpty()) {
             return null;
         }
