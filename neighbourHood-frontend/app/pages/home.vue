@@ -111,8 +111,9 @@
             <template #footer>
               <div class="post-footer">
                 <el-space>
-                  <el-button text :icon="Star" :class="{ 'is-liked': isHomePostLiked(post) }" @click="toggleHomePostLike(post)">
-                    {{ getHomePostLikeCount(post) }}
+                  <el-button text class="home-like-btn" @click="toggleHomePostLike(post)">
+                    <span class="home-like-heart" :class="{ 'is-liked': isHomePostLiked(post) }">{{ isHomePostLiked(post) ? '❤' : '♡' }}</span>
+                    <span class="home-like-count">{{ getHomePostLikeCount(post) }}</span>
                   </el-button>
                   <el-button text :icon="ChatDotRound" @click="openHomePostComments(post)">
                     {{ getHomePostCommentCount(post) }}
@@ -236,7 +237,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Edit,
   Delete,
-  Star,
   ChatDotRound,
   Loading,
   Refresh
@@ -1390,6 +1390,24 @@ const deletePost = (post: Post) => {
 .post-footer {
   display: flex;
   justify-content: space-between;
+}
+
+.home-like-btn {
+  gap: 6px;
+}
+
+.home-like-heart {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--tl-text-muted);
+}
+
+.home-like-heart.is-liked {
+  color: #dc2626;
+}
+
+.home-like-count {
+  color: var(--tl-text);
 }
 
 .posts-loading {

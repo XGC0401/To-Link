@@ -28,8 +28,9 @@
 
       <div class="detail-footer">
         <el-space>
-          <el-button :icon="CirclePlus" :class="{ 'is-liked': isLiked }" @click="toggleLike">
-            {{ likeCount }} {{ $t('likes') }}
+          <el-button class="detail-like-btn" @click="toggleLike">
+            <span class="detail-like-heart" :class="{ 'is-liked': isLiked }">{{ isLiked ? '❤' : '♡' }}</span>
+            <span class="detail-like-count">{{ likeCount }} {{ $t('likes') }}</span>
           </el-button>
           <el-button :icon="ChatDotRound">{{ comments.length }} {{ $t('comments') }}</el-button>
           <el-button :icon="Share">{{ $t('share') }}</el-button>
@@ -73,7 +74,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { CirclePlus, ChatDotRound, Share } from '@element-plus/icons-vue'
+import { ChatDotRound, Share } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { likePost } from '~/api/post'
@@ -333,7 +334,21 @@ watch(() => props.modelValue, (open) => {
   justify-content: flex-end;
 }
 
-.is-liked {
+.detail-like-btn {
+  gap: 6px;
+}
+
+.detail-like-heart {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--tl-text-muted);
+}
+
+.detail-like-heart.is-liked {
   color: #dc2626;
+}
+
+.detail-like-count {
+  color: var(--tl-text);
 }
 </style>

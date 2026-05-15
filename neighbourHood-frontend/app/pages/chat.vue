@@ -311,7 +311,19 @@
     </el-form>
     <template #footer>
       <el-button @click="showCreateGroupDialog = false">{{ $t('cancel') }}</el-button>
-      <el-button type="primary" :disabled="!canCreateGroupConversation" @click="createGroupConversation">{{ $t('createGroupChat') }}</el-button>
+      <el-tooltip :content="groupCreateHint" :disabled="canCreateGroupConversation" placement="top">
+        <span class="group-create-wrap">
+          <el-button
+            type="primary"
+            class="group-create-btn"
+            :class="{ 'is-ready': canCreateGroupConversation }"
+            :disabled="!canCreateGroupConversation"
+            @click="createGroupConversation"
+          >
+            {{ $t('createGroupChat') }}
+          </el-button>
+        </span>
+      </el-tooltip>
     </template>
   </el-dialog>
 
@@ -379,7 +391,7 @@ const { t, locale } = useI18n()
 const language = computed(() => locale.value as 'en' | 'zh')
 const searchConversation = ref('')
 const messageInput = ref('')
-const selectedConversationId = ref<number | null>(null)
+const selectedConversationId = ref<number | string | null>(null)
 const messagesContainer = ref<HTMLElement>()
 const fileInputRef = ref<HTMLInputElement>()
 const fileAcceptType = ref('')
@@ -409,7 +421,7 @@ interface Message {
 }
 
 interface Conversation {
-  id: number
+  id: number | string
   name: string
   avatar: string
   participantEmail?: string
@@ -422,7 +434,7 @@ interface Conversation {
 }
 
 interface GroupMemberOption {
-  id: number
+  id: number | string
   name: string
 }
 
@@ -432,7 +444,7 @@ const currentUserName = ref('')
 const currentUserAvatar = ref('')
 const showCreateGroupDialog = ref(false)
 const groupChatName = ref('')
-const selectedGroupMembers = ref<number[]>([])
+const selectedGroupMembers = ref<Array<number | string>>([])
 const showRenameDialog = ref(false)
 const showDeleteDialog = ref(false)
 const renameValue = ref('')
@@ -455,8 +467,7 @@ const formatClockTime = (date = new Date()) => {
   return date.toLocaleTimeString(localeCode, {
     hour: '2-digit',
     minute: '2-digit',
-    hour12,
-    timeZone: 'Asia/Hong_Kong'
+    hour12
   })
 }
 
@@ -470,7 +481,7 @@ const parseBackendTime = (rawValue?: string) => {
   const localMatch = normalized.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/)
   if (localMatch) {
     const [, year, month, day, hour, minute, second = '0'] = localMatch
-    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second))
+    return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}Z`)
   }
 
   const parsed = new Date(normalized)
@@ -639,7 +650,7 @@ const saveRecipientConversation = (recipientEmail: string, conv: Conversation, m
 
 const conversations = ref<Conversation[]>([
   {
-    id: 1,
+    id: 'mock-1',
     name: 'John Doe',
     avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
     participantEmail: 'john.doe@example.com',
@@ -651,7 +662,7 @@ const conversations = ref<Conversation[]>([
     ]
   },
   {
-    id: 2,
+    id: 'mock-2',
     name: 'Jane Smith',
     avatar: 'https://cube.elemecdn.com/3/dc/1ea6beec64f4a146f6f02a42cc5f7.svg',
     participantEmail: 'jane.smith@example.com',
@@ -663,7 +674,7 @@ const conversations = ref<Conversation[]>([
     ]
   },
   {
-    id: 3,
+    id: 'mock-3',
     name: 'Community Group',
     avatar: 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg',
     lastMessage: 'Community event tomorrow at 5pm',
@@ -810,6 +821,24 @@ const canCreateGroupConversation = computed(() => {
 
   // Creator + at least 2 selected members = minimum 3 people.
   return validMemberCount >= 2
+})
+
+const groupCreateHint = computed(() => {
+  const hasName = groupChatName.value.trim().length > 0
+  if (!hasName) {
+    return t('groupCreateHintName')
+  }
+
+  const selectableIds = new Set(availableGroupMembers.value.map((member) => String(member.id)))
+  const validMemberCount = selectedGroupMembers.value
+    .map((id) => String(id))
+    .filter((id) => selectableIds.has(id)).length
+
+  if (validMemberCount < 2) {
+    return t('groupCreateHintMembers')
+  }
+
+  return t('groupCreateHintReady')
 })
 
 const selectedConversation = computed(() => {
@@ -1506,6 +1535,28 @@ const createGroupConversation = () => {
   justify-content: center;
   border-radius: 10px;
   font-weight: 700;
+}
+
+.group-create-wrap {
+  display: inline-flex;
+}
+
+.group-create-btn {
+  transition: all 0.2s ease;
+}
+
+.group-create-btn.is-ready {
+  background: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--el-color-primary) 30%, #ffffff), 0 8px 20px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
+}
+
+.group-create-btn:disabled,
+.group-create-btn.is-disabled {
+  background: #374151 !important;
+  border-color: #374151 !important;
+  color: #d1d5db !important;
+  opacity: 0.9;
 }
 
 .conversations-list {

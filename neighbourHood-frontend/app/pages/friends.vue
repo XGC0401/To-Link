@@ -232,6 +232,12 @@ const getDiscoverKey = (user: Friend) => {
   return String(user.email || user.id || '').toLowerCase()
 }
 
+const isAdminCandidate = (user: Friend) => {
+  const email = String(user.email || '').toLowerCase().trim()
+  const name = String(user.name || '').toLowerCase().trim()
+  return email === 'admin@gmail.com' || name === 'admin'
+}
+
 const getCurrentAccount = () => {
   if (typeof window === 'undefined') {
     return { email: '', name: '' }
@@ -413,7 +419,7 @@ const loadFriendsState = async () => {
   try {
     const savedFriends = JSON.parse(localStorage.getItem('friendsList') || '[]')
     if (Array.isArray(savedFriends) && savedFriends.length > 0) {
-      friends.value = savedFriends
+      friends.value = savedFriends.filter((item) => !isAdminCandidate(item))
     }
   } catch {
     // Ignore malformed storage.
@@ -452,6 +458,7 @@ const loadFriendsState = async () => {
   discoverUsers.value = candidates.filter((user) => {
     const userEmail = String(user.email || '').toLowerCase()
     if (!userEmail) return false
+    if (isAdminCandidate(user)) return false
     if (currentEmail && userEmail === currentEmail) return false
     if (friendIds.has(String(user.id))) return false
     if (friendEmails.has(userEmail)) return false
@@ -476,6 +483,7 @@ const filteredDiscoverUsers = computed(() => {
   const query = discoverQuery.value.toLowerCase().trim()
   const friendIds = new Set(friends.value.map((friend) => String(friend.id)))
   return discoverUsers.value
+    .filter((user) => !isAdminCandidate(user))
     .filter((user) => !friendIds.has(String(user.id)))
     .filter((user) => !ignoredDiscoverKeys.value.includes(getDiscoverKey(user)))
     .filter((user) => !query || user.name.toLowerCase().includes(query) || user.bio.toLowerCase().includes(query))
@@ -553,6 +561,11 @@ const ignoreSuggestion = (user: Friend) => {
 }
 
 const addFriend = (user: Friend) => {
+  if (isAdminCandidate(user)) {
+    ElMessage.warning(t('adminCannotBeFriend'))
+    return
+  }
+
   if (friends.value.some((friend) => String(friend.id) === String(user.id))) {
     ElMessage.info(t('alreadyFriends'))
     return
