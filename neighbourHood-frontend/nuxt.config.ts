@@ -7,7 +7,6 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n'
   ],
   i18n: {
-    lazy: true,
     langDir: 'locale',
     locales: [
       {
@@ -46,28 +45,7 @@ export default defineNuxtConfig({
   ssr: false,
   vite: {
     build: {
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (!id.includes('node_modules')) {
-              return
-            }
-            if (id.includes('element-plus')) {
-              return 'vendor-element-plus'
-            }
-            if (id.includes('@vue') || id.includes('vue-router') || id.includes('vue-i18n')) {
-              return 'vendor-vue'
-            }
-            if (id.includes('leaflet')) {
-              return 'vendor-leaflet'
-            }
-            if (id.includes('axios')) {
-              return 'vendor-axios'
-            }
-            return 'vendor'
-          }
-        }
-      }
+      minify: false
     }
   },
   devServer: {
