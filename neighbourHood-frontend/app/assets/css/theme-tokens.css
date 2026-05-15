@@ -23,8 +23,8 @@ body[data-theme='dark'] {
   --tl-surface-active: #24324a;
   --tl-border: #334155;
   --tl-border-strong: #475569;
-  --tl-text: #e8edf8;
-  --tl-text-muted: #c7d3e4;
+  --tl-text: #e7edf7;
+  --tl-text-muted: #e7edf7;
   --tl-text-strong: #f8fafc;
   --tl-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }

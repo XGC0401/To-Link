@@ -130,13 +130,13 @@ public class PostController {
         return ResponseEntity.status(200).body(new ApiResponse<>(true, true, "post deleted"));
     }
 
-    // @PostMapping("/like-post")
-    // public ResponseEntity<ApiResponse> likePost(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody Long postID) {
-    //     int response = postService.likePost(postID, userDetails.getUuid());
-    //     if (response == 1) {
-    //         return ResponseEntity.status(200).body(new ApiResponse<>(true, true,"success"));
-    //     } else {
-    //         return ResponseEntity.status(404).body(new ApiResponse<>(false,false, "fail to find corresponding user or post"));
-    //     } 
-    // }
+    @PostMapping("/like-post")
+    public ResponseEntity<ApiResponse> likePost(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody Long postID) {
+        int response = postService.likePost(postID, userDetails.getUuid());
+        if (response == 1) {
+            return ResponseEntity.status(200).body(new ApiResponse<>(true, true,"success"));
+        } else {
+            return ResponseEntity.status(404).body(new ApiResponse<>(false,false, "fail to find corresponding user or post"));
+        }
+    }
 }

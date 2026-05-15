@@ -67,6 +67,7 @@
       <div class="post-footer">
         <el-space>
           <el-button text :icon="Star" :class="{ 'is-liked': isLiked }" @click="handleLike">{{ likeCount }}</el-button>
+          <el-button text :icon="ChatDotRound" @click="emit('comment', props.post)">{{ commentCount }}</el-button>
         </el-space>
       </div>
     </template>
@@ -76,7 +77,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
+import { Star, ChatDotRound, MoreFilled, Edit, Delete, Warning, CircleClose } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { likePost } from '~/api/post'
 import type { Post } from '../api/types/post'
@@ -87,6 +88,7 @@ const props = defineProps<{
   post: Post
   language?: 'en' | 'zh'
   currentUserEmail?: string
+  currentUserId?: string
   currentUserDisplayName?: string
 }>()
 
@@ -96,17 +98,37 @@ const emit = defineEmits<{
   (e: 'delete', post: Post): void
   (e: 'report', post: Post): void
   (e: 'block', post: Post): void
+  (e: 'comment', post: Post): void
 }>()
 
 const isOwnPost = computed(() => {
-  return props.currentUserEmail && props.post.user?.email === props.currentUserEmail
+  const postEmail = String((props.post.user?.email || (props.post as any).email || (props.post as any).authorEmail || '')).toLowerCase()
+  const myEmail = String(props.currentUserEmail || '').toLowerCase()
+  if (postEmail && myEmail && postEmail === myEmail) {
+    return true
+  }
+
+  const postUserId = String((props.post.user?.uuid || (props.post as any).authorId || (props.post as any).userId || '')).toLowerCase()
+  const myUserId = String(props.currentUserId || '').toLowerCase()
+  return !!(postUserId && myUserId && postUserId === myUserId)
 })
 
 const isLiked = ref(false)
 const likeCount = ref(Number((props.post as any).likes || 0))
+const commentCount = ref(0)
 
 const likeStorageKey = computed(() => `postLike:${props.post.id}`)
 const likeCountStorageKey = computed(() => `postLikeCount:${props.post.id}`)
+const commentCountStorageKey = computed(() => `postComments:${props.post.id}`)
+
+const loadCommentCount = () => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(commentCountStorageKey.value) || '[]')
+    commentCount.value = Array.isArray(parsed) ? parsed.length : 0
+  } catch {
+    commentCount.value = 0
+  }
+}
 
 onMounted(() => {
   const likedRaw = localStorage.getItem(likeStorageKey.value)
@@ -117,6 +139,7 @@ onMounted(() => {
   if (!Number.isNaN(storedCount) && storedCount >= 0) {
     likeCount.value = storedCount
   }
+  loadCommentCount()
 })
 
 watch(() => props.post.id, () => {
@@ -127,6 +150,7 @@ watch(() => props.post.id, () => {
   likeCount.value = !Number.isNaN(storedCount) && storedCount >= 0
     ? storedCount
     : Number((props.post as any).likes || 0)
+  loadCommentCount()
 })
 
 async function handleLike() {

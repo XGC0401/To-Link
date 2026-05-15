@@ -82,6 +82,9 @@
 
           <!-- Messages -->
           <div class="messages-container" ref="messagesContainer">
+            <div v-if="showConversationWelcomeHint" class="new-chat-welcome">
+              {{ newChatWelcomeText }}
+            </div>
             <div
               v-for="message in selectedConversation.messages"
               :key="message.id"
@@ -667,6 +670,16 @@ const availableGroupMembers = computed<GroupMemberOption[]>(() => {
 
 const selectedConversation = computed(() => {
   return conversations.value.find(c => c.id === selectedConversationId.value)
+})
+
+const showConversationWelcomeHint = computed(() => {
+  return !!selectedConversation.value && selectedConversation.value.messages.length === 0
+})
+
+const newChatWelcomeText = computed(() => {
+  return language.value === 'zh'
+    ? '向新朋友打個招呼吧，保持禮貌交流。'
+    : 'Say "Hi" to them and be polite in your new conversation.'
 })
 
 const isConversationBlocked = (conversation?: Conversation) => {
@@ -1437,6 +1450,18 @@ const createGroupConversation = () => {
   gap: 10px;
   max-height: calc(100vh - 250px);
   min-height: 300px;
+}
+
+.new-chat-welcome {
+  margin: auto;
+  max-width: 380px;
+  text-align: center;
+  color: var(--tl-text);
+  border: 1px dashed var(--tl-border);
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--tl-surface) 88%, transparent);
+  font-weight: 600;
 }
 
 .message {

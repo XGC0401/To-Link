@@ -45,7 +45,7 @@
         </div>
         <div v-else class="posts-list">
           <PostCard v-for="post in filteredPosts" :key="post.id" :post="post" :language="language"
-            :current-user-email="currentUser.email" @show-detail="openPostDetail" @edit="editPost" @delete="deletePost"
+            :current-user-email="currentUser.email" :current-user-id="currentUser.id" @show-detail="openPostDetail" @comment="openPostDetail" @edit="editPost" @delete="deletePost"
             @report="reportPost" @block="blockUserFromPost" />
         </div>
         <el-empty v-if="!isLoadingPosts && filteredPosts.length === 0" :description="$t('noPosts')" />
@@ -89,7 +89,7 @@
         </div>
         <div v-else class="posts-list">
           <PostCard v-for="post in filteredLostPosts" :key="post.id" :post="post" :language="language"
-            :current-user-email="currentUser.email" @show-detail="openPostDetail" @edit="editPost" @delete="deletePost"
+            :current-user-email="currentUser.email" :current-user-id="currentUser.id" @show-detail="openPostDetail" @comment="openPostDetail" @edit="editPost" @delete="deletePost"
             @report="reportPost" @block="blockUserFromPost" />
         </div>
         <el-empty v-if="!isLoadingPosts && filteredLostPosts.length === 0" :description="$t('noPosts')" />

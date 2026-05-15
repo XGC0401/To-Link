@@ -31,7 +31,14 @@
       <el-empty v-if="filteredDiscoverUsers.length === 0" :description="$t('noUsersFound')" />
       <div v-else class="discover-grid">
         <el-card v-for="user in filteredDiscoverUsers" :key="`discover-${user.id}`" class="discover-card">
-          <div class="discover-content">
+          <div class="discover-content" @click="openDiscoverProfile(user)">
+            <el-button
+              class="discover-ignore-btn"
+              text
+              circle
+              :icon="Close"
+              @click.stop="ignoreSuggestion(user)"
+            />
             <div class="discover-main">
               <el-avatar :size="52" :src="user.avatar" />
               <div>
@@ -39,7 +46,7 @@
                 <div class="discover-bio">{{ user.bio }}</div>
               </div>
             </div>
-            <el-button type="primary" plain @click="addFriend(user)">{{ $t('addFriend') }}</el-button>
+            <el-button type="primary" plain @click.stop="addFriend(user)">{{ $t('addFriend') }}</el-button>
           </div>
         </el-card>
       </div>
@@ -77,6 +84,27 @@
         </div>
       </el-card>
     </div>
+
+    <el-dialog v-model="showDiscoverProfileDialog" :title="$t('discoverPeople')" width="520px" align-center>
+      <div v-if="selectedDiscoverUser" class="discover-profile-dialog">
+        <div class="discover-profile-header">
+          <el-avatar :size="72" :src="selectedDiscoverUser.avatar" />
+          <div>
+            <div class="discover-profile-name">{{ selectedDiscoverUser.name }}</div>
+            <div class="discover-profile-email">{{ selectedDiscoverUser.email || '-' }}</div>
+          </div>
+        </div>
+        <el-divider />
+        <p class="discover-profile-label">{{ $t('profession') }}</p>
+        <p class="discover-profile-text">{{ selectedDiscoverUser.profession || '-' }}</p>
+        <p class="discover-profile-label">{{ $t('bio') }}</p>
+        <p class="discover-profile-text">{{ selectedDiscoverUser.bio || '-' }}</p>
+      </div>
+      <template #footer>
+        <el-button @click="showDiscoverProfileDialog = false">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" @click="selectedDiscoverUser && addFriend(selectedDiscoverUser)">{{ $t('addFriend') }}</el-button>
+      </template>
+    </el-dialog>
     </div>
   </NuxtLayout>
 </template>
@@ -85,7 +113,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Message, Phone } from '@element-plus/icons-vue'
+import { Message, Phone, Close } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
@@ -101,6 +129,7 @@ interface Friend {
   avatar: string
   status: 'online' | 'offline'
   bio: string
+  profession?: string
   email?: string
 }
 
@@ -152,6 +181,13 @@ const friends = ref<Friend[]>([
 const discoverUsers = ref<Friend[]>([
   
 ])
+const ignoredDiscoverKeys = ref<string[]>([])
+const showDiscoverProfileDialog = ref(false)
+const selectedDiscoverUser = ref<Friend | null>(null)
+
+const getDiscoverKey = (user: Friend) => {
+  return String(user.email || user.id || '').toLowerCase()
+}
 
 const getCurrentAccount = () => {
   if (typeof window === 'undefined') {
@@ -205,7 +241,8 @@ const buildGeneratedUsers = (): Friend[] => {
         email,
         avatar: String(parsed?.avatar || 'https://cube.elemecdn.com/0/88/03b0f476b63c5258a53e1b43f2ecb3.svg'),
         status: 'offline',
-        bio: String(parsed?.bio || parsed?.status || 'To-Link user')
+        profession: String(parsed?.profession || parsed?.status || ''),
+        bio: String(parsed?.bio || '')
       })
     } catch {
       // Ignore malformed entries.
@@ -237,6 +274,15 @@ const loadFriendsState = () => {
     // Ignore malformed storage.
   }
 
+  try {
+    const ignored = JSON.parse(localStorage.getItem('ignoredFriendSuggestions') || '[]')
+    ignoredDiscoverKeys.value = Array.isArray(ignored)
+      ? ignored.map((item) => String(item || '').toLowerCase()).filter(Boolean)
+      : []
+  } catch {
+    ignoredDiscoverKeys.value = []
+  }
+
   const { email: currentEmail } = getCurrentAccount()
   const generatedUsers = buildGeneratedUsers()
   const friendIds = new Set(friends.value.map((item) => String(item.id)))
@@ -252,6 +298,7 @@ const loadFriendsState = () => {
     if (currentEmail && userEmail === currentEmail) return false
     if (friendIds.has(String(user.id))) return false
     if (friendEmails.has(userEmail)) return false
+    if (ignoredDiscoverKeys.value.includes(getDiscoverKey(user))) return false
     return true
   })
 
@@ -272,8 +319,23 @@ const filteredDiscoverUsers = computed(() => {
   const friendIds = new Set(friends.value.map((friend) => String(friend.id)))
   return discoverUsers.value
     .filter((user) => !friendIds.has(String(user.id)))
+    .filter((user) => !ignoredDiscoverKeys.value.includes(getDiscoverKey(user)))
     .filter((user) => !query || user.name.toLowerCase().includes(query) || user.bio.toLowerCase().includes(query))
 })
+
+const openDiscoverProfile = (user: Friend) => {
+  selectedDiscoverUser.value = user
+  showDiscoverProfileDialog.value = true
+}
+
+const ignoreSuggestion = (user: Friend) => {
+  const key = getDiscoverKey(user)
+  if (!key) return
+  ignoredDiscoverKeys.value = [...new Set([...ignoredDiscoverKeys.value, key])]
+  localStorage.setItem('ignoredFriendSuggestions', JSON.stringify(ignoredDiscoverKeys.value))
+  discoverUsers.value = discoverUsers.value.filter((item) => getDiscoverKey(item) !== key)
+  persistFriendsState()
+}
 
 const addFriend = (user: Friend) => {
   if (friends.value.some((friend) => String(friend.id) === String(user.id))) {
@@ -282,6 +344,8 @@ const addFriend = (user: Friend) => {
   }
   friends.value.unshift({ ...user, status: user.status || 'offline' })
   discoverUsers.value = discoverUsers.value.filter((item) => String(item.id) !== String(user.id))
+  showDiscoverProfileDialog.value = false
+  selectedDiscoverUser.value = null
   persistFriendsState()
 
   const targetEmail = String(user.email || '').toLowerCase()
@@ -454,7 +518,7 @@ watch([friends, discoverUsers], () => {
 
 .section-inline-header h3 {
   margin: 0;
-  color: #1d2850;
+  color: #e7edf7;
 }
 
 .discover-grid {
@@ -469,11 +533,19 @@ watch([friends, discoverUsers], () => {
 }
 
 .discover-content {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.discover-ignore-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 2;
 }
 
 .discover-main {
@@ -482,6 +554,7 @@ watch([friends, discoverUsers], () => {
   gap: 16px;
   flex: 1 1 220px;
   min-width: 0;
+  cursor: pointer;
 }
 
 .discover-card :deep(.el-card__body) {
@@ -495,14 +568,18 @@ watch([friends, discoverUsers], () => {
 
 .discover-name {
   font-weight: 700;
-  color: #1d2850;
+  color: #e7edf7;
   line-height: 1.3;
 }
 
 .discover-bio {
   font-size: 14px;
-  color: #5c6590;
+  color: #e7edf7;
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .friend-card {
@@ -553,9 +630,43 @@ watch([friends, discoverUsers], () => {
 
 .friend-info h3 {
   margin: 12px 0 4px 0;
-  color: #1d2850;
+  color: #e7edf7;
   font-size: 20px;
   letter-spacing: 0.01em;
+}
+
+.discover-profile-dialog {
+  display: grid;
+  gap: 8px;
+}
+
+.discover-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.discover-profile-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e7edf7;
+}
+
+.discover-profile-email {
+  font-size: 13px;
+  color: var(--tl-text-muted);
+}
+
+.discover-profile-label {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tl-text-muted);
+}
+
+.discover-profile-text {
+  margin: 0;
+  color: #e7edf7;
+  white-space: pre-wrap;
 }
 
 .friend-status {

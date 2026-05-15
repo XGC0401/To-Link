@@ -114,11 +114,10 @@ public class User {
     @ManyToMany(mappedBy = "blockedUsers", fetch = FetchType.LAZY)
     private Set<User> blockedByUsers = new HashSet<>();
 
-    // @JsonIgnore
-    // @ManyToMany(fetch = FetchType.EAGER)
-    // @JoinTable(name = "user_likePosts", joinColumns = @JoinColumn(name =
-    // "user_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
-    // private Set<PostEntity> likePosts = new HashSet<>();
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_like_posts", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
+    private Set<PostEntity> likePosts = new HashSet<>();
 
     public User() {
     }
@@ -159,7 +158,15 @@ public class User {
         return blockedByUsers;
     }
 
-    // public void addLike(PostEntity post){
-    // this.likePosts.add(post);
-    // }
+    public Set<PostEntity> getLikePosts() {
+        return likePosts;
+    }
+
+    public void addLike(PostEntity post){
+        this.likePosts.add(post);
+    }
+
+    public void removeLike(PostEntity post) {
+        this.likePosts.remove(post);
+    }
 }

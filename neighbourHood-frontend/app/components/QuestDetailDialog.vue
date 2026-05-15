@@ -143,7 +143,7 @@ defineEmits<{
 .author-name {
   margin: 0;
   font-weight: 600;
-  color: #333;
+  color: #e7edf7;
 }
 
 .quest-time {
@@ -158,7 +158,7 @@ defineEmits<{
 
 .detail-body h4 {
   margin: 0 0 8px 0;
-  color: #333;
+  color: #e7edf7;
   font-size: 20px;
   font-weight: 600;
 }
@@ -166,7 +166,7 @@ defineEmits<{
 .detail-body p {
   font-size: 20px;
   line-height: 1.8;
-  color: #333;
+  color: #e7edf7;
   margin-bottom: 16px;
   white-space: pre-wrap;
   word-wrap: break-word;

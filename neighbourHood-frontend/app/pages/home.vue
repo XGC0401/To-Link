@@ -111,8 +111,12 @@
             <template #footer>
               <div class="post-footer">
                 <el-space>
-                  <el-button text :icon="Star">{{ 0 }}</el-button>
-                  <el-button text :icon="ChatDotRound">{{ 0 }}</el-button>
+                  <el-button text :icon="Star" :class="{ 'is-liked': isHomePostLiked(post) }" @click="toggleHomePostLike(post)">
+                    {{ getHomePostLikeCount(post) }}
+                  </el-button>
+                  <el-button text :icon="ChatDotRound" @click="openHomePostComments(post)">
+                    {{ getHomePostCommentCount(post) }}
+                  </el-button>
                 </el-space>
                 <el-space v-if="isMyPost(post) || isAdmin">
                   <el-button v-if="isMyPost(post)" text type="primary" :icon="Edit" @click="editPost(post)">{{ $t('edit') }}</el-button>
@@ -216,6 +220,7 @@
     </div>
 
     <EditPostDialog v-model="showEditPostDialog" :post="selectedEditPost" @save="saveEditedPost" />
+    <PostDetailDialog v-model="showPostDetailDialog" :post="selectedPost" :language="locale as 'en' | 'zh'" />
     <AdminDeletePostDialog
       v-model="showAdminDeleteDialog"
       @confirm="handleAdminDeleteConfirm"
@@ -241,6 +246,7 @@ import { getUser } from '~/api/auth'
 import type { Post } from '~/api/types/post'
 import EditPostDialog from '~/components/EditPostDialog.vue'
 import AdminDeletePostDialog from '~/components/AdminDeletePostDialog.vue'
+import PostDetailDialog from '~/components/PostDetailDialog.vue'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -280,6 +286,8 @@ const showAdminDeleteDialog = ref(false)
 const pendingDeletePost = ref<Post | null>(null)
 const showEditPostDialog = ref(false)
 const selectedEditPost = ref<Post | null>(null)
+const showPostDetailDialog = ref(false)
+const selectedPost = ref<Post | null>(null)
 
 type WeatherDay = {
   date: string
@@ -864,6 +872,44 @@ const goToCreatePost = () => {
   router.push('/create-post')
 }
 
+const getHomePostKey = (post: Post) => String(post.id || '')
+
+const getHomePostLikeStorageKey = (post: Post) => `postLike:${getHomePostKey(post)}`
+const getHomePostLikeCountStorageKey = (post: Post) => `postLikeCount:${getHomePostKey(post)}`
+const getHomePostCommentStorageKey = (post: Post) => `postComments:${getHomePostKey(post)}`
+
+const isHomePostLiked = (post: Post) => {
+  return localStorage.getItem(getHomePostLikeStorageKey(post)) === '1'
+}
+
+const getHomePostLikeCount = (post: Post) => {
+  const stored = Number(localStorage.getItem(getHomePostLikeCountStorageKey(post)))
+  if (!Number.isNaN(stored) && stored >= 0) return stored
+  return Number((post as any).likes || 0)
+}
+
+const getHomePostCommentCount = (post: Post) => {
+  try {
+    const comments = JSON.parse(localStorage.getItem(getHomePostCommentStorageKey(post)) || '[]')
+    return Array.isArray(comments) ? comments.length : 0
+  } catch {
+    return 0
+  }
+}
+
+const toggleHomePostLike = (post: Post) => {
+  const liked = isHomePostLiked(post)
+  const current = getHomePostLikeCount(post)
+  const next = liked ? Math.max(0, current - 1) : current + 1
+  localStorage.setItem(getHomePostLikeStorageKey(post), liked ? '0' : '1')
+  localStorage.setItem(getHomePostLikeCountStorageKey(post), String(next))
+}
+
+const openHomePostComments = (post: Post) => {
+  selectedPost.value = post
+  showPostDetailDialog.value = true
+}
+
 const editPost = (post: Post) => {
   selectedEditPost.value = post
   showEditPostDialog.value = true
@@ -1310,9 +1356,9 @@ const deletePost = (post: Post) => {
 }
 
 .post-tag-your-post.el-tag--info {
-  color: #18317c !important;
-  background: rgba(118, 159, 255, 0.26) !important;
-  border-color: rgba(74, 113, 226, 0.62) !important;
+  color: #7c2d12 !important;
+  background: rgba(251, 146, 60, 0.36) !important;
+  border-color: rgba(245, 158, 11, 0.82) !important;
   font-weight: 700;
 }
 
@@ -1323,9 +1369,9 @@ const deletePost = (post: Post) => {
 }
 
 :global(.dark) .post-tag-your-post.el-tag--info {
-  color: #eff6ff !important;
-  background: rgba(30, 64, 175, 0.5) !important;
-  border-color: rgba(147, 197, 253, 0.78) !important;
+  color: #fff7ed !important;
+  background: rgba(251, 146, 60, 0.44) !important;
+  border-color: rgba(253, 186, 116, 0.86) !important;
   font-weight: 700;
 }
 
