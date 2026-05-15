@@ -7,8 +7,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
 import com.feature.neighbourHood_backend.model.DTO.ChatSendMessageRequestDTO;
+import com.feature.neighbourHood_backend.model.CustomUserDetails;
 import com.feature.neighbourHood_backend.model.entity.User;
-import com.feature.neighbourHood_backend.security.CustomUserDetails;
 import com.feature.neighbourHood_backend.service.ChatService;
 
 @Controller
